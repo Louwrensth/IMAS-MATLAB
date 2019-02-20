@@ -27,7 +27,7 @@
    int status;
    int numSamples;
    void *obj_all_times;
-   int dim1, dim2, dim3, dim4, dim5, dim6;
+   int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
    int int0d;
    double double0d;
    int *intArray;
@@ -485,6 +485,7 @@
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      /* Should we release obj<xsl:value-of select="$level + 1"/>? */
       }
     </xsl:when>
     
