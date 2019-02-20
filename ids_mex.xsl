@@ -15,9 +15,9 @@
 <xsl:template match = "/IDSs">
  <xsl:result-document href="src/ids_get.c" standalone="yes" method="text">
 /*
- * ids_getmex.c - read IDS in MATLAB External Interfaces
+ * ids_get.c - read IDS in MATLAB External Interfaces
  *
- *		ids = ids_getmex(idx, name, occ)
+ *		ids = ids_get(idx, name, occ)
  *
  * This is a MEX file for MATLAB.
 */
@@ -27,41 +27,39 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for two input arguments  
+  // Check for three input arguments  
   if(nrhs != 3) {
-    mexErrMsgIdAndTxt("IMAS:ids_get:nrhs",
+    mexErrMsgIdAndTxt("IMAS:ids_get:nargin",
                       "Three inputs required.");
   }
-  // make sure the first input argument is scalar
-  if( !mxIsDouble(prhs[0]) || 
-       mxIsComplex(prhs[0]) ||
-       mxGetNumberOfElements(prhs[0]) != 1 ) {
+  // make sure the 1st input argument is scalar
+  if( !mxIsNumeric(prhs[0]) ||
+      !mxIsScalar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
-                        "Input index must be a scalar.");
+                        "Input idx must be a scalar.");
   }
-  // make sure the second input argument is a string
+  // make sure the 2nd input argument is a string
   if( !mxIsChar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_get:notChar",
                         "Input name must be a string.");
   }
-  // make sure the third input argument is scalar
-  if( !mxIsDouble(prhs[2]) || 
-       mxIsComplex(prhs[2]) ||
-       mxGetNumberOfElements(prhs[2]) != 1 ) {
+  // make sure the 3rd input argument is scalar
+  if( !mxIsNumeric(prhs[2]) ||
+      !mxIsScalar(prhs[2]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
                         "Input occurence must be a scalar.");
   }
 
   // Check for one output argument
   if(nlhs != 1) {
-    mexErrMsgIdAndTxt("IMAS:ids_get:nlhs",
+    mexErrMsgIdAndTxt("IMAS:ids_get:nargout",
                       "One output required.");
   }
 
-  // Get the value of the index
+  // Get the value of the idx
   int idx = (int) mxGetScalar(prhs[0]);
 #ifndef NDEBUG
-  mexPrintf("The input index is:  %d\n", idx);
+  mexPrintf("The input idx is:  %d\n", idx);
 #endif
 
   // Get the value of the name
@@ -75,10 +73,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #ifndef NDEBUG
   mexPrintf("The input occurence is:  %d\n", occ);
 #endif
-
-  // Prepare the return argument
-  const char** fieldnames = NULL;
-  plhs[0] = mxCreateStructMatrix(1,1,0,fieldnames);
  
   // Call subfunction based on IDS name
   <xsl:apply-templates select = "IDS" mode="SWITCH"/>

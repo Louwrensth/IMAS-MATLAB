@@ -15,8 +15,8 @@ ifeq "$(strip $(CC))" "icc"
  LDFLAGS= -g -pthread
 else
  CC=gcc
- CFLAGS=-DTARGET_API_VERSION=700  -DUSE_MEX_CMD   -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I../../lowlevel  -I"/soft/matlab/R2017a/extern/include" -I"/soft/matlab/R2017a/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g
- LDFLAGS= -g -pthread -fPIC
+ CFLAGS=-DTARGET_API_VERSION=700  -DUSE_MEX_CMD -D__USE_XOPEN2K8 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g
+ LDFLAGS= -g -pthread -fPIC -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++
 endif
 
 BUILD_DIR:=./build
@@ -26,7 +26,7 @@ IDS_SRC_DIR:=$(SRC_DIR)/ids
 INCDIR=-I$(SRC_DIR) -I$(IDS_SRC_DIR) -I../lowlevel
 
 IDSDEF= ../xml/IDSDef.xml
-LIBS=-L../lowlevel -limas
+LIBS=-Wl,-rpath $(realpath $(CURDIR)/../lowlevel) -L../lowlevel -limas
 
 # Check existence of the "indent" utility to get a clean C format
 ifeq "$(shell which indent 2> /dev/null)" ""
@@ -40,18 +40,31 @@ VPATH = $(SRC_DIR) $(IDS_SRC_DIR) build lib
 
 # Get a list of IDS from IDSDEF file
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
-IDS_C_FILES = $(addprefix get_,$(addsuffix .c,$(IDSNAMES)))
-IDS_C_FILES+= $(addprefix get_slice_,$(addsuffix .c,$(IDSNAMES)))
 
 # Generated sources (excluding static sources)
+IDS_C_FILES = $(addprefix get_,$(addsuffix .c,$(IDSNAMES)))
+IDS_C_FILES+= $(addprefix get_slice_,$(addsuffix .c,$(IDSNAMES)))
+#MEX_SRC_FILES = $(ids_get ids_get_slice ids_put ids_put_slice \
+#				ids_put_non_timed)
 GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))
 # Add static sources
+MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
+				imas_open_hdf5 imas_open_public \
+				imas_create imas_create_env \
+				imas_create_hdf5 imas_create_public \
+				imas_close \
+				imas_enable_mem_cache imas_disable_mem_cache \
+				imas_flush_mem_cache imas_discard_mem_cache \
+				)
 SOURCES = $(GENSOURCES)
+SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES))
 
 # Compiled objects
 IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c=.o))
-OBJ_FILES = $(addprefix $(BUILD_DIR)/,imas_mex_utils.o ids_get.o)
-TARGETS = $(addprefix $(LIB_DIR)/,$(IDS_C_FILES:.c=.mexa64))
+OBJ_FILES = $(addprefix $(BUILD_DIR)/,imas_mex_utils.o)
+OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_SRC_FILES:.c=.o))
+#TARGETS = $(addprefix $(LIB_DIR)/,libids_get-mex.so)
+TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
 
 all: $(SOURCES) $(TARGETS)
 
@@ -88,16 +101,23 @@ build: $(OBJ_FILES) $(IDS_OBJ_FILES)
 
 $(LIB_DIR)/libids_get-mex.so : $(GENSOURCES) $(OBJ_FILES) $(IDS_OBJ_FILES)
 	$(mkdir_p) $(LIB_DIR)
-	$(CC) $(LDFLAGS) -o $@ -Wl,-z,defs -shared -Wl,-soname,$(@F).0.0 $(OBJ_FILES) $(IDS_OBJ_FILES) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ -Wl,-z,defs -shared -Wl,-soname,$(@F).$(IMAS_MAJOR).$(IMAS_MINOR) $(OBJ_FILES) $(IDS_OBJ_FILES) $(LIBS)
 
 $(LIB_DIR)/libids_get-mex.a : $(GENSOURCES) $(OBJ_FILES) $(IDS_OBJ_FILES)
 	$(mkdir_p) $(LIB_DIR)
 	$(AR) rvs $@ $(OBJ_FILES)
 
-$(OBJ_FILES): $(BUILD_DIR)/%.o : $(SRC_DIR)/%.c
+$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o
+	$(mkdir_p) $(LIB_DIR)
+	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
+
+$(BUILD_DIR)/c_mexapi_version.o: $(MATLAB)/extern/version/c_mexapi_version.c
+	$(CC) $(CFLAGS) -c $< -o $(@)
+
+$(OBJ_FILES): $(BUILD_DIR)/%.o : %.c
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(@)
 
-$(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(OBJ_FILES) $(IDS_SRC_DIR)/%.c
+$(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(OBJ_FILES) %.c
 	$(CC) $(CFLAGS) $(INCDIR) -c $(lastword $^) -o $(@)
 
 #################################################
