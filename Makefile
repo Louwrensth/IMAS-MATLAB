@@ -41,6 +41,7 @@ VPATH = $(SRC_DIR) $(IDS_SRC_DIR) build lib
 # Get a list of IDS from IDSDEF file
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
 IDS_C_FILES = $(addprefix get_,$(addsuffix .c,$(IDSNAMES)))
+IDS_C_FILES+= $(addprefix get_slice_,$(addsuffix .c,$(IDSNAMES)))
 
 # Generated sources (excluding static sources)
 GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))

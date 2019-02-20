@@ -106,9 +106,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
    void checkStatus(int status) {if(status) printf("%s\n", imas_last_errmsg());}
  </xsl:result-document>
  <xsl:apply-templates select = "IDS" mode="GET"/>
- <!--
-     <xsl:apply-templates select = "IDS" mode="GET_SLICE"/>
- -->
+ <xsl:apply-templates select = "IDS" mode="GET_SLICE"/>
 </xsl:template>
 
 <!--================================================-->
@@ -127,9 +125,77 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 
 <!--================================================-->
+<!--                Template for time               -->
+<!--================================================-->
+
+
+<xsl:template name="printtimepath">
+  <xsl:if test="@type = 'dynamic'">
+    <xsl:choose>
+      <xsl:when test="contains(@coordinate7,'time')"> <xsl:value-of select="translate(replace(@coordinate7,'(itime)',''),'()','')"/></xsl:when> <!-- We remove the (itime) pattern from the coordinate attribute in IDSDef, which is documentation-oriented -->
+      <xsl:when test="contains(@coordinate6,'time')"> <xsl:value-of select="translate(replace(@coordinate6,'(itime)',''),'()','')"/></xsl:when>
+      <xsl:when test="contains(@coordinate5,'time')"> <xsl:value-of select="translate(replace(@coordinate5,'(itime)',''),'()','')"/></xsl:when>
+      <xsl:when test="contains(@coordinate4,'time')"> <xsl:value-of select="translate(replace(@coordinate4,'(itime)',''),'()','')"/></xsl:when>
+      <xsl:when test="contains(@coordinate3,'time')"> <xsl:value-of select="translate(replace(@coordinate3,'(itime)',''),'()','')"/></xsl:when>
+      <xsl:when test="contains(@coordinate2,'time')"> <xsl:value-of select="translate(replace(@coordinate2,'(itime)',''),'()','')"/></xsl:when>
+      <xsl:when test="contains(@coordinate1,'time')"> <xsl:value-of select="translate(replace(@coordinate1,'(itime)',''),'()','')"/></xsl:when>
+    </xsl:choose>
+  </xsl:if>
+  <xsl:if test="@name='time'">
+    <xsl:value-of select="@path"/>
+  </xsl:if>
+  <!-- If the field itself IS time, then it is its own time coordinate -->
+</xsl:template>
+
+<xsl:template name="printtimevariable">
+  <xsl:if test="@type = 'dynamic'">
+    <xsl:choose>
+      <xsl:when test="contains(@coordinate7,'time')">
+	<xsl:value-of select="translate(@coordinate7,'/','.')"/>
+      </xsl:when>
+      <xsl:when test="contains(@coordinate6,'time')">
+	<xsl:value-of select="translate(@coordinate6,'/','.')"/>
+      </xsl:when>
+      <xsl:when test="contains(@coordinate5,'time')">
+	<xsl:value-of select="translate(@coordinate5,'/','.')"/>
+      </xsl:when>
+      <xsl:when test="contains(@coordinate4,'time')">
+	<xsl:value-of select="translate(@coordinate4,'/','.')"/>
+      </xsl:when>
+      <xsl:when test="contains(@coordinate3,'time')">
+	<xsl:value-of select="translate(@coordinate3,'/','.')"/>
+      </xsl:when>
+      <xsl:when test="contains(@coordinate2,'time')">
+	<xsl:value-of select="translate(@coordinate2,'/','.')"/>
+      </xsl:when>
+      <xsl:when test="contains(@coordinate1,'time')">
+	<xsl:value-of select="translate(@coordinate1,'/','.')"/>
+      </xsl:when>
+    </xsl:choose>
+  </xsl:if>
+  <xsl:if test="@name='time'">
+    <xsl:value-of select="translate(@path,'/','.')"/>
+  </xsl:if>
+  <!-- If the field itself IS time, then it is its own time coordinate -->
+</xsl:template>
+
+<xsl:template name="printIsTimed">
+  <xsl:choose>
+    <xsl:when test="@type = 'dynamic'">
+      <xsl:value-of select="1"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="0"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+
+<!--================================================-->
 <!--                 Include section                -->
 <!--================================================-->
 
 <xsl:include href="ids_get.xsl"/>
+<xsl:include href="ids_get_slice.xsl"/>
 
 </xsl:stylesheet>
