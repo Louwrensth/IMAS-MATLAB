@@ -1,5 +1,9 @@
 include ../Makefile.common
 
+# Check that "Saxon-HE.jar" utility is set in CLASSPATH
+SAXONJARFILE?=Saxon-HE.jar
+include ../Makefile.classpath
+
 ifeq ("no","$(strip $(IMAS_MEX))")
 all sources sources_install install clean clean-src:
 	$(warning "Ignoring cppinterface (IMAS_MEX=no).")
@@ -56,9 +60,10 @@ all: $(SOURCES) $(TARGETS)
 sources: $(SOURCES)
 
 # Use an intermediate target to enforce nonparallel generation.
-generate_sources: ids_mex.xsl ids_get.xsl $(IDSDEF)
+generate_sources: ids_mex.xsl ids_get.xsl $(IDSDEF) | saxonicajar
 	@$(mkdir_p) $(BUILD_DIR)
-	xsltproc ids_mex.xsl $(IDSDEF)
+	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:ids_mex.xsl
+#	xsltproc ids_mex.xsl $(IDSDEF)
 
 beautify: generate_sources
 	@for i in $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(SRC_DIR)/ids/*; do \

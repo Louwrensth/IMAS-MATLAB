@@ -14,7 +14,7 @@
 <!--================================================-->
 
 <xsl:template match="IDS" mode="GET">
- <exsl:document href="src/ids/get_{@name}.c" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/get_{@name}.c" standalone="yes" method="text">
    #include "mex.h"
    #include "ual_low_level.h"
    #include "imas_mex_utils.h"
@@ -68,7 +68,7 @@
    endIdsGet(expIdx, path);
    return 0;
    }
- </exsl:document>
+ </xsl:result-document>
 </xsl:template>
 
 

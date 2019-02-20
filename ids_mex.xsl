@@ -13,7 +13,7 @@
 <!--         Template for the whole document        -->
 <!--================================================-->
 <xsl:template match = "/IDSs">
- <exsl:document href="src/ids_get.c" standalone="yes" method="text">
+ <xsl:result-document href="src/ids_get.c" standalone="yes" method="text">
 /*
  * ids_getmex.c - read IDS in MATLAB External Interfaces
  *
@@ -87,8 +87,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
            "Unknown IDS name: %s", name);
 
 }
- </exsl:document>
- <exsl:document href="src/imas_mex_utils.h" standalone="yes" method="text">
+ </xsl:result-document>
+ <xsl:result-document href="src/imas_mex_utils.h" standalone="yes" method="text">
    #define NON_TIMED   0
    #define TIMED       1
    #define TIMED_CLEAR 2
@@ -99,12 +99,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
    #include &lt;stdio.h&gt;
 
    void checkStatus(int status);
- </exsl:document>
- <exsl:document href="src/imas_mex_utils.c" standalone="yes" method="text">
+ </xsl:result-document>
+ <xsl:result-document href="src/imas_mex_utils.c" standalone="yes" method="text">
    #include "imas_mex_utils.h"
 
    void checkStatus(int status) {if(status) printf("%s\n", imas_last_errmsg());}
- <</exsl:document>
+ </xsl:result-document>
  <xsl:apply-templates select = "IDS" mode="GET"/>
  <!--
      <xsl:apply-templates select = "IDS" mode="GET_SLICE"/>
