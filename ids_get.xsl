@@ -50,6 +50,7 @@
    mxArray* data;
    mwIndex ifield;
    mwSize* dims;
+   mwSize dims_scalar[2] = { 1, 1 };
    int _i;
    char *basePath = "<xsl:value-of select="@name"/>";
    char path[strlen(basePath)+4];
@@ -171,8 +172,8 @@
       status = getInt(expIdx, path, clepath, &amp;int0d);
       checkStatus(status);
       if(!status) {
-      double0d = (double) int0d;
-      data = mxCreateDoubleScalar(double0d);
+      data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
+      memcpy(&amp;int0d,mxGetData(data),sizeof(int));
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
@@ -519,8 +520,8 @@
       status = getIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;int0d);
       checkStatus(status);
       if(!status) {
-	  double0d = (double) int0d;
-	  data = mxCreateDoubleScalar(double0d);
+      data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
+      memcpy(&amp;int0d,mxGetData(data),sizeof(int));
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
