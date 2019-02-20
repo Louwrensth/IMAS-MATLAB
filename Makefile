@@ -28,7 +28,7 @@ LIBS=-L../lowlevel -limas
 ifeq "$(shell which indent 2> /dev/null)" ""
  BEAUTIFY = echo
 else
- BEAUTIFY = indent -kr --no-tabs -l1000
+ BEAUTIFY = indent -kr --no-tabs -l1000 -fc1
 endif
 
 # Sets a path where make will search for files
