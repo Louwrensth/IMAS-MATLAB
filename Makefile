@@ -56,9 +56,9 @@ all: $(SOURCES) $(TARGETS)
 sources: $(SOURCES)
 
 # Use an intermediate target to enforce nonparallel generation.
-generate_sources: ids_get.xsl $(IDSDEF)
+generate_sources: ids_mex.xsl ids_get.xsl $(IDSDEF)
 	@$(mkdir_p) $(BUILD_DIR)
-	xsltproc ids_get.xsl $(IDSDEF)
+	xsltproc ids_mex.xsl $(IDSDEF)
 
 beautify: generate_sources
 	@for i in $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(SRC_DIR)/ids/*; do \
