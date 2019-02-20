@@ -26,7 +26,7 @@
    {
    int status;
    int numSamples;
-   void * obj_all_times;
+   void *obj_all_times;
    int dim1, dim2, dim3, dim4, dim5, dim6;
    int int0d;
    double double0d;
@@ -40,7 +40,6 @@
    // Paths-specific variables
    int maxpathsize=128;
    char clepath[maxpathsize];
-   const char *lepath;
    // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
    int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
    int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
@@ -87,26 +86,23 @@
 <xsl:param name="currentpath_expr">
   <xsl:choose>
     <xsl:when test="$path_args">
-      snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);
-    </xsl:when>
+    snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);</xsl:when>
     <xsl:otherwise>
-      snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>");
-    </xsl:otherwise>
+    snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
   </xsl:choose>
 </xsl:param>
 
+// Doc Get <xsl:value-of select="@path_doc"/>
 <xsl:choose>
   <!--========== Array of structure ===========-->
     <!-- Type 1 arrays of structure, with potentially multiple time bases -->
     <xsl:when test = "@data_type = 'struct_array' and @maxoccur!='unbounded' ">
-      // Doc  Get <xsl:value-of select="@path"/>: Type 1 AoS
+      /* Type 1 AoS */
       <xsl:choose>
 	<xsl:when test="$path_args">
-	  snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/Shape_of"<xsl:value-of select="$path_args"/>);
-	</xsl:when>
+	snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/Shape_of"<xsl:value-of select="$path_args"/>);</xsl:when>
 	<xsl:otherwise>
-	  snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/Shape_of");
-	</xsl:otherwise>
+	snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/Shape_of");</xsl:otherwise>
       </xsl:choose>
       status = getInt(expIdx,path, clepath, &amp;int0d);
       if (status == 0) {
@@ -127,8 +123,7 @@
     </xsl:when>
     <!-- Type 3 arrays of structure, with a unique time base -->
     <xsl:when test="@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'">
-      // Doc  Get <xsl:value-of select="@path"/>: Type 3 AoS nested below a Type 1
-      // Structure array of type 3 nested below a Type 1 : <xsl:value-of select = "concat($pointer_name,'%',@name)"/>
+      /* Type 3 AoS (maybe nested below a Type 1) */
       <xsl:value-of select="$currentpath_expr"/>
       status = getObject(expIdx, path, clepath, &amp;obj_all_times, TIMED); // read the whole non-timed block
       checkStatus(status);
@@ -159,7 +154,6 @@
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      //Doc Prepare <xsl:value-of select="@path"/>
       if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
       p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
       <xsl:apply-templates select="field" mode="GET_SINGLE">
@@ -173,7 +167,6 @@
 
   <!--========== Simple types ===========-->
     <xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getInt(expIdx, path, clepath, &amp;int0d);
       checkStatus(status);
@@ -187,7 +180,6 @@
     </xsl:when>
   
     <xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getDouble(expIdx, path, clepath, &amp;double0d);
       checkStatus(status);
@@ -200,7 +192,6 @@
     </xsl:when>
   
     <xsl:when test="@data_type='str_type' or @data_type='STR_0D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getString(expIdx, path, clepath, &amp;str);
       checkStatus(status);
@@ -216,7 +207,6 @@
 	
   <!--========== Vectors ===========-->
     <xsl:when test = "@data_type='int_1d_type' or @data_type='INT_1D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect1DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1);
       checkStatus(status);
@@ -231,7 +221,6 @@
     </xsl:when>
   
     <xsl:when test = "@data_type='flt_1d_type' or @data_type='FLT_1D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect1DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1);
       checkStatus(status);
@@ -246,7 +235,6 @@
     </xsl:when>
       
     <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect1DString(expIdx, path, clepath, &amp;stringArray, &amp;dim1);
       checkStatus(status);
@@ -266,7 +254,6 @@
 
   <!--========== Matrices ===========-->
     <xsl:when test="@data_type='INT_2D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect2DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2);
       checkStatus(status);
@@ -281,7 +268,6 @@
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_2D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect2DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2);
       checkStatus(status);
@@ -297,7 +283,6 @@
 
   <!--========== 3D arrays ===========-->
     <xsl:when test="@data_type='INT_3D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect3DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3);
       checkStatus(status);
@@ -315,7 +300,6 @@
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_3D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect3DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3);
       checkStatus(status);
@@ -334,7 +318,6 @@
 
   <!--========== 4D arrays ===========-->
     <xsl:when test="@data_type='INT_4D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect4DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
       checkStatus(status);
@@ -352,7 +335,6 @@
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_4D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect4DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
       checkStatus(status);
@@ -371,7 +353,6 @@
 
   <!--========== 5D arrays ===========-->
     <xsl:when test="@data_type='INT_5D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect5DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
       checkStatus(status);
@@ -389,7 +370,6 @@
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_5D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect5DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
       checkStatus(status);
@@ -424,7 +404,6 @@
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_6D'">
-      //Doc Get <xsl:value-of select="@path"/>
       <xsl:value-of select="$currentpath_expr"/>
       status = getVect6DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
       checkStatus(status);
@@ -443,7 +422,7 @@
 
   <!--========== Unknown type ===========-->
     <xsl:otherwise>
-      //   Get <xsl:value-of select="@path"/> : PROBLEM : UNIDENTIFIED TYPE !!! <!-- for comment only -->
+      // PROBLEM : UNIDENTIFIED TYPE !!! <!-- for comment only -->
     </xsl:otherwise>
 </xsl:choose>
 
@@ -463,20 +442,20 @@
 <xsl:param name="timed"/>
 
 <xsl:param name="currentobjpath" select="concat($objpath,'/',@name)"/>
+// Doc Get_from_object <xsl:value-of select="@path_doc"/>
 <xsl:choose>
   <!--========== Arrays of structures ==========-->
     <xsl:when test="@data_type='struct_array'">
-      // Get_from_object  <xsl:value-of select="@path"/>
       <xsl:choose>
 	<xsl:when test="$timed='yes' ">
 	  <!-- We are scanning the children of a Type 3 AoS, so we extract the child object at index 0 of the parent object -->
-	  { /*    1Array of structure     */
+	  {	  /*    1Array of structure     */
 	  void *obj<xsl:value-of select="$level + 1"/>;
 	  status = getObjectFromObject(expIdx, obj<xsl:value-of select="$level"/>, "<xsl:value-of select = "$currentobjpath"/>", 0,&amp;obj<xsl:value-of select="$level + 1"/>);
 	</xsl:when>
 	<xsl:otherwise>
 	  <!-- Otherwise we assume it is a Type 2 AoS, so we extract the child object at index iobject -->
-	  { /*    2Array of structure     */
+	  {	  /*    2Array of structure     */
 	  void *obj<xsl:value-of select="$level + 1"/>;
 	  status = getObjectFromObject(expIdx, obj<xsl:value-of select="$level"/>, "<xsl:value-of select = "$currentobjpath"/>", i<xsl:value-of select="$level"/>, &amp;obj<xsl:value-of select="$level + 1"/>);
 	</xsl:otherwise>
@@ -492,7 +471,6 @@
       } else { // else allocate it
       pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(getObjectDim(expIdx,obj<xsl:value-of select="$level + 1"/>),1);
       }
-      //getfromobject  <xsl:value-of select="$currentobjpath"/>)
       for (int i<xsl:value-of select="$level + 1"/> = 0; i<xsl:value-of select="$level + 1"/> &lt; getObjectDim(expIdx,obj<xsl:value-of select="$level + 1"/>); i<xsl:value-of select="$level + 1"/>++) {
 	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="$level + 1"/>);
 	  <xsl:apply-templates select = "field" mode = "GET_FROM_OBJECT">
@@ -508,6 +486,7 @@
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       }
     </xsl:when>
+    
   <!--========== Regular structure ==========-->
     <xsl:when test="@data_type='structure'">
       if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
@@ -521,194 +500,193 @@
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
     </xsl:when>
-    
-    <xsl:otherwise>
-  <!--========== select either timed or non-timed fields ==========-->
-  <!-- <xsl:if test="@timed=$timed"> -->
-      <xsl:choose>
 
-	<xsl:when test="@data_type='str_type' or @data_type='STR_0D'">
-	  status = getStringFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;str);
-	  checkStatus(status);
-	  if(!status) {
-	  char* dstr = strdup(str);
-	  free(str);
-	  data = mxCreateString(dstr);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
-	<xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
-	  status = getIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;int0d);
-	  checkStatus(status);
-	  if(!status) {
+  <!--========== Simple types ===========-->
+    <xsl:when test="@data_type='str_type' or @data_type='STR_0D'">
+      status = getStringFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;str);
+      checkStatus(status);
+      if(!status) {
+      char* dstr = strdup(str);
+      free(str);
+      data = mxCreateString(dstr);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
+      status = getIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;int0d);
+      checkStatus(status);
+      if(!status) {
 	  double0d = (double) int0d;
 	  data = mxCreateDoubleScalar(double0d);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
-	<xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
-	  status = getDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;double0d);
-	  checkStatus(status);
-	  if(!status) {
-	  data = mxCreateDoubleScalar(double0d);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
+      status = getDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;double0d);
+      checkStatus(status);
+      if(!status) {
+      data = mxCreateDoubleScalar(double0d);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
+      status = getVect1DStringFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;stringArray, &amp;dim1);
+      checkStatus(status);
+      if(!status) {
+      dstringArray = malloc(dim1*sizeof(char*));
+      for (_i = 0; _i &lt; dim1; _i++) {
+      dstringArray[_i] = strdup(stringArray[_i]);
+      free(stringArray[_i]);
+      }
+      free((char *)stringArray);
+      data = mxCreateCharMatrixFromStrings(dim1,dstringArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='flt_1d_type' or @data_type='FLT_1D'">
+      status = getVect1DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1);
+      checkStatus(status);
+      if(!status) {
+      data = mxCreateDoubleMatrix(dim1,1,mxREAL);
+      memcpy(doubleArray,mxGetData(data),dim1*sizeof(double));
+      free(doubleArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='int_1d_type' or @data_type='INT_1D'">
+      status = getVect1DIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;intArray, &amp;dim1);
+      checkStatus(status);
+      if(!status) {
+      data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
+      memcpy(intArray,mxGetData(data),dim1*sizeof(int));
+      free(intArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='FLT_2D'">
+      status = getVect2DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2);
+      checkStatus(status);
+      if(!status) {
+      data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
+      memcpy(doubleArray,mxGetData(data),dim1*dim2*sizeof(double));
+      free(doubleArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='INT_2D'">
+      status = getVect2DIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;intArray, &amp;dim1, &amp;dim2);
+      checkStatus(status);
+      if(!status) {
+      data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
+      memcpy(intArray,mxGetData(data),dim1*dim2*sizeof(int));
+      free(intArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='FLT_3D'">
+      status = getVect3DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3);
+      checkStatus(status);
+      if(!status) {
+      dims = malloc(3*sizeof(mwSize));
+      dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
+      data = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
+      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*sizeof(double));
+      free(doubleArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      dims = NULL;
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='INT_3D'">
+      status = getVect3DIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3);
+      checkStatus(status);
+      if(!status) {
+      dims = malloc(3*sizeof(mwSize));
+      dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
+      data = mxCreateNumericArray(3,dims,mxINT32_CLASS,mxREAL);
+      memcpy(intArray,mxGetData(data),dim1*dim2*dim3*sizeof(int));
+      free(intArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      dims = NULL;
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='FLT_4D'">
+      status = getVect4DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
+      checkStatus(status);
+      if(!status) {
+      dims = malloc(4*sizeof(mwSize));
+      dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;
+      data = mxCreateNumericArray(4,dims,mxDOUBLE_CLASS,mxREAL);
+      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(double));
+      free(doubleArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      dims = NULL;
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='FLT_5D'">
+      status = getVect5DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
+      checkStatus(status);
+      if(!status) {
+      dims = malloc(5*sizeof(mwSize));
+      dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
+      data = mxCreateNumericArray(5,dims,mxDOUBLE_CLASS,mxREAL);
+      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(double));
+      free(doubleArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      dims = NULL;
+      data = NULL;
+      }
+    </xsl:when>
+    
+    <xsl:when test="@data_type='FLT_6D'">
+      status = getVect6DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
+      checkStatus(status);
+      if(!status) {
+      dims = malloc(6*sizeof(mwSize));
+      dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;dims[5] = dim6;
+      data = mxCreateNumericArray(6,dims,mxDOUBLE_CLASS,mxREAL);
+      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*dim6*sizeof(double));
+      free(doubleArray);
+      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
+      dims = NULL;
+      data = NULL;
+      }
+    </xsl:when>
 	
-	
-	<xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
-	  status = getVect1DStringFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;stringArray, &amp;dim1);
-	  checkStatus(status);
-	  if(!status) {
-	  dstringArray = malloc(dim1*sizeof(char*));
-	  for (_i = 0; _i &lt; dim1; _i++) {
-	  dstringArray[_i] = strdup(stringArray[_i]);
-	  free(stringArray[_i]);
-	  }
-	  free((char *)stringArray);
-	  data = mxCreateCharMatrixFromStrings(dim1,dstringArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
-	<xsl:when test="@data_type='flt_1d_type' or @data_type='FLT_1D'">
-	  status = getVect1DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1);
-	  checkStatus(status);
-	  if(!status) {
-	  data = mxCreateDoubleMatrix(dim1,1,mxREAL);
-	  memcpy(doubleArray,mxGetData(data),dim1*sizeof(double));
-	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
-	<xsl:when test="@data_type='int_1d_type' or @data_type='INT_1D'">
-	  status = getVect1DIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;intArray, &amp;dim1);
-	  checkStatus(status);
-	  if(!status) {
-	  data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
-	  memcpy(intArray,mxGetData(data),dim1*sizeof(int));
-	  free(intArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
-	
-	<xsl:when test="@data_type='FLT_2D'">
-	  status = getVect2DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2);
-	  checkStatus(status);
-	  if(!status) {
-	  data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
-	  memcpy(doubleArray,mxGetData(data),dim1*dim2*sizeof(double));
-	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
-	<xsl:when test="@data_type='INT_2D'">
-	  status = getVect2DIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;intArray, &amp;dim1, &amp;dim2);
-	  checkStatus(status);
-	  if(!status) {
-	  data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
-	  memcpy(intArray,mxGetData(data),dim1*dim2*sizeof(int));
-	  free(intArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  data = NULL;
-	  }
-	</xsl:when>
-	
-	<xsl:when test="@data_type='FLT_3D'">
-	  status = getVect3DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3);
-	  checkStatus(status);
-	  if(!status) {
-	  dims = malloc(3*sizeof(mwSize));
-	  dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
-	  data = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
-	  memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*sizeof(double));
-	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  dims = NULL;
-	  data = NULL;
-	  }
-	</xsl:when>
-	<xsl:when test="@data_type='INT_3D'">
-	  status = getVect3DIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3);
-	  checkStatus(status);
-	  if(!status) {
-	  dims = malloc(3*sizeof(mwSize));
-	  dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
-	  data = mxCreateNumericArray(3,dims,mxINT32_CLASS,mxREAL);
-	  memcpy(intArray,mxGetData(data),dim1*dim2*dim3*sizeof(int));
-	  free(intArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  dims = NULL;
-	  data = NULL;
-	  }
-	</xsl:when>
-	
-	<xsl:when test="@data_type='FLT_4D'">
-	  status = getVect4DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
-	  checkStatus(status);
-	  if(!status) {
-	  dims = malloc(4*sizeof(mwSize));
-	  dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;
-	  data = mxCreateNumericArray(4,dims,mxDOUBLE_CLASS,mxREAL);
-	  memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(double));
-	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  dims = NULL;
-	  data = NULL;
-	  }
-	</xsl:when>
-	
-	<xsl:when test="@data_type='FLT_5D'">
-	  status = getVect5DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
-	  checkStatus(status);
-	  if(!status) {
-	  dims = malloc(5*sizeof(mwSize));
-	  dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
-	  data = mxCreateNumericArray(5,dims,mxDOUBLE_CLASS,mxREAL);
-	  memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(double));
-	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  dims = NULL;
-	  data = NULL;
-	  }
-	</xsl:when>
-	
-	<xsl:when test="@data_type='FLT_6D'">
-	  status = getVect6DDoubleFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
-	  checkStatus(status);
-	  if(!status) {
-	  dims = malloc(6*sizeof(mwSize));
-	  dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;dims[5] = dim6;
-	  data = mxCreateNumericArray(6,dims,mxDOUBLE_CLASS,mxREAL);
-	  memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*dim6*sizeof(double));
-	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-	  dims = NULL;
-	  data = NULL;
-	  }
-	</xsl:when>
-      </xsl:choose>
-      <!-- 2014</xsl:if> -->
-    </xsl:otherwise>
 </xsl:choose>
 
 </xsl:template>
