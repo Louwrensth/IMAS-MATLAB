@@ -180,9 +180,11 @@
       <xsl:value-of select="$currentpath_expr"/>
       status = getInt(expIdx, path, clepath, &amp;int0d);
       checkStatus(status);
-      if(!status) {
       data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
-      memcpy(&amp;int0d,mxGetData(data),sizeof(int));
+      if(!status) {
+      *(int *)mxGetData(data) = int0d;
+      } else {
+      *(int *)mxGetData(data) = EMPTY_INT;
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
@@ -195,6 +197,8 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleScalar(double0d);
+      } else {
+      data = mxCreateDoubleScalar(EMPTY_DOUBLE);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
@@ -534,9 +538,11 @@
     <xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
       status = getIntFromObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:choose><xsl:when test="$timed='yes'">0</xsl:when><xsl:otherwise>i<xsl:value-of select="$level"/></xsl:otherwise></xsl:choose>, &amp;int0d);
       checkStatus(status);
-      if(!status) {
       data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
-      memcpy(&amp;int0d,mxGetData(data),sizeof(int));
+      if(!status) {
+      *(int *)mxGetData(data) = int0d;
+      } else {
+      *(int *)mxGetData(data) = EMPTY_INT;
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
@@ -548,6 +554,8 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleScalar(double0d);
+      } else {
+      data = mxCreateDoubleScalar(EMPTY_DOUBLE);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);

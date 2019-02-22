@@ -227,7 +227,9 @@
 	  if(!status) {
 	  data = mxCreateDoubleScalar(double0d);
 	  }
-          }
+          } else {
+	  data = mxCreateDoubleScalar(EMPTY_DOUBLE);
+	  }
           ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
@@ -236,13 +238,15 @@
 	<xsl:when test="@data_type='int_1d_type' or @data_type='INT_1D'">
 	  <xsl:value-of select="$currentpath_expr"/>
 	  getDimension(expIdx, path, clepath, &amp;numDims, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4,&amp; dim5, &amp;dim6, &amp;dim7);
+	  data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
 	  if (dim1 &gt; 0) {
 	  status = getIntSlice(expIdx, path, clepath, timebasepath, &amp;int0d , inTime, &amp;retTime, interpolMode);
 	  checkStatus(status);
 	  if(!status) {
-	  data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
-	  memcpy(&amp;int0d,mxGetData(data),sizeof(int));
+	  *(int *)mxGetData(data) = int0d;
 	  }
+	  } else {
+	  *(int *)mxGetData(data) = EMPTY_INT;
           }
           ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
