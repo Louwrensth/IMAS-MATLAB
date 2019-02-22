@@ -111,16 +111,20 @@
       pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,1);
       for (i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=0; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>&lt;n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>++) {
       p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
       <xsl:apply-templates select="field" mode="GET_SINGLE">
 	<xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
 	<xsl:with-param name="path_format" select="concat($currentpath_format,'/%d')"/>
 	<xsl:with-param name="path_args" select="concat($path_args,',i',@name,'_',generate-id(.),'+1')"/>
       </xsl:apply-templates>
       mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = NULL;
       }
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
     </xsl:when>
     <!-- Type 3 arrays of structure, with a unique time base -->
     <xsl:when test="@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'">
@@ -137,7 +141,9 @@
       status = getObjectFromObject(expIdx,obj_all_times, "ALLTIMES", i1, &amp;obj1);  // extract a single time
       checkStatus(status);
       if (!status) {
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i1);
+      if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
       <xsl:apply-templates select = "field" mode = "GET_FROM_OBJECT">
         <xsl:with-param name="level" select="1"/>
         <xsl:with-param name="objpath" select="@name"/>
@@ -145,12 +151,14 @@
         <xsl:with-param name="timed" select="'yes'"/>
       </xsl:apply-templates>
       mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i1,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = NULL;
       }
       }
       releaseObject(expIdx,obj_all_times);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
     </xsl:when>
 
   <!--========== Regular structure ===========-->
@@ -164,6 +172,7 @@
       </xsl:apply-templates>
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
     </xsl:when>
 
   <!--========== Simple types ===========-->
@@ -463,7 +472,7 @@
       </xsl:choose>
       checkStatus(status);
       if (!status) {
-      if (mxIsCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>)) { // does this array already exist? (timed and non timed parts can share the same array)
+      if (pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/> != NULL &amp;&amp; mxIsCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>)) { // does this array already exist? (timed and non timed parts can share the same array)
       if (getObjectDim(expIdx,obj<xsl:value-of select="$level + 1"/>) != 0 &amp;&amp; mxGetNumberOfElements(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>) != getObjectDim(expIdx,obj<xsl:value-of select="$level + 1"/>)) { // then it must have the right number of elements
       mexErrMsgIdAndTxt("IMAS:ids_get:invalid_size",
            "Array of structures has different number of timed and nontimed elements for <xsl:value-of select = "@path"/>\n");
@@ -474,6 +483,8 @@
       }
       for (int i<xsl:value-of select="$level + 1"/> = 0; i<xsl:value-of select="$level + 1"/> &lt; getObjectDim(expIdx,obj<xsl:value-of select="$level + 1"/>); i<xsl:value-of select="$level + 1"/>++) {
 	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="$level + 1"/>);
+	  if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
+	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
 	  <xsl:apply-templates select = "field" mode = "GET_FROM_OBJECT">
 	    <xsl:with-param name="level" select="$level + 1"/>
 	    <xsl:with-param name="objpath" select="@name"/>
@@ -481,10 +492,12 @@
 	    <xsl:with-param name="timed" select="'no'"/>  <!-- We assume the nested children are necessarily Type 2 -->
 	  </xsl:apply-templates>
 	  mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="$level + 1"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-	  }
+	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = NULL;
+      }
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
       /* Should we release obj<xsl:value-of select="$level + 1"/>? */
       }
     </xsl:when>
@@ -501,6 +514,7 @@
       </xsl:apply-templates>
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
     </xsl:when>
 
   <!--========== Simple types ===========-->
