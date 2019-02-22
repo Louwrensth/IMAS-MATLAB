@@ -72,30 +72,30 @@
 <!--!!!!!!!!!!!!!!!!!!!!!!!!!        GET_SLICE for FIELDS       !!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 <!-- GET_SLICE -->
 <xsl:template match="field" mode="GET_SLICE">
-<xsl:param name="pointer_name"/>
-<xsl:param name="path_format"/>
-<xsl:param name="path_args"/>
+  <xsl:param name="pointer_name"/>
+  <xsl:param name="path_format"/>
+  <xsl:param name="path_args"/>
 
-<xsl:param name="currentpath_format">
+  <xsl:param name="currentpath_format">
+    <xsl:choose>
+      <xsl:when test="$path_format"><xsl:value-of select="concat($path_format,'/',@name)"/></xsl:when>
+      <xsl:otherwise><xsl:value-of select="@name"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:param>
+
+  <xsl:param name="currentpath_expr">
+    <xsl:choose>
+      <xsl:when test="$path_args">
+      snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);</xsl:when>
+      <xsl:otherwise>
+      snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
+    </xsl:choose>
+  </xsl:param>
+
+  // Doc Get_slice <xsl:value-of select="@path_doc"/>
   <xsl:choose>
-    <xsl:when test="$path_format"><xsl:value-of select="concat($path_format,'/',@name)"/></xsl:when>
-    <xsl:otherwise><xsl:value-of select="@name"/></xsl:otherwise>
-  </xsl:choose>
-</xsl:param>
 
-<xsl:param name="currentpath_expr">
-  <xsl:choose>
-    <xsl:when test="$path_args">
-    snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);</xsl:when>
-    <xsl:otherwise>
-    snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
-  </xsl:choose>
-</xsl:param>
-
-// Doc Get_slice <xsl:value-of select="@path_doc"/>
-<xsl:choose>
-
-  <!--========== Regular structure ===========-->
+    <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
       if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
       p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
@@ -108,8 +108,8 @@
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
     </xsl:when>
 
-  <!--========== Array of structure ===========-->
-   <!-- Type 1 arrays of structure, with potentially multiple time bases -->
+    <!--========== Array of structure ===========-->
+    <!-- Type 1 arrays of structure, with potentially multiple time bases -->
     <xsl:when test = "@data_type = 'struct_array' and @maxoccur!='unbounded' ">
       {      /* Type 1 AoS */
       <xsl:choose>
@@ -203,11 +203,11 @@
 	  dstr = strdup(str);
 	  free(str);
 	  data = mxCreateCharMatrixFromStrings(1,&amp;dstr);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 	
 	<xsl:when test="@data_type='flt_1d_type' or @data_type='FLT_1D'">
@@ -218,11 +218,11 @@
 	  checkStatus(status);
 	  if(!status) {
 	  data = mxCreateDoubleScalar(double0d);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 
 	<xsl:when test="@data_type='int_1d_type' or @data_type='INT_1D'">
@@ -234,11 +234,11 @@
 	  if(!status) {
 	  data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
 	  memcpy(&amp;int0d,mxGetData(data),sizeof(int));
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 
 	<xsl:when test="@data_type='FLT_2D'">
@@ -251,11 +251,11 @@
 	  data = mxCreateDoubleMatrix(dim1,1,mxREAL);
 	  memcpy(doubleArray,mxGetData(data),dim1*sizeof(double));
 	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 	
 	<xsl:when test="@data_type='INT_2D'">
@@ -268,11 +268,11 @@
 	  data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
 	  memcpy(intArray,mxGetData(data),dim1*sizeof(int));
 	  free(intArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 	
 	<xsl:when test="@data_type='FLT_3D'">
@@ -285,11 +285,11 @@
 	  data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
 	  memcpy(doubleArray,mxGetData(data),dim1*dim2*sizeof(double));
 	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 	
 	<xsl:when test="@data_type='INT_3D'">
@@ -302,11 +302,11 @@
 	  data = mxCreateNumericMatrix(dim1,dim2,mxINT32_CLASS,mxREAL);
 	  memcpy(intArray,mxGetData(data),dim1*dim2*sizeof(int));
 	  free(intArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 	
 	<xsl:when test="@data_type='FLT_4D'">
@@ -321,11 +321,11 @@
 	  data = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
 	  memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*sizeof(double));
 	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 	
 	<xsl:when test="@data_type='FLT_5D'">
@@ -340,11 +340,11 @@
 	  data = mxCreateNumericArray(4,dims,mxDOUBLE_CLASS,mxREAL);
 	  memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(double));
 	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 	
 	<xsl:when test="@data_type='FLT_6D'">
@@ -359,11 +359,11 @@
 	  data = mxCreateNumericArray(5,dims,mxDOUBLE_CLASS,mxREAL);
 	  memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(double));
 	  free(doubleArray);
-	  ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
+	  }
+          }
+          ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
 	  mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
 	  data = NULL;
-	  }
-	  }
 	</xsl:when>
 
 	<xsl:otherwise>
@@ -382,7 +382,7 @@
       </xsl:apply-templates>
     </xsl:otherwise>
     
-</xsl:choose>
+  </xsl:choose>
 
 </xsl:template>
 

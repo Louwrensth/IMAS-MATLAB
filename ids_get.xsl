@@ -174,10 +174,10 @@
       if(!status) {
       data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
       memcpy(&amp;int0d,mxGetData(data),sizeof(int));
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
   
     <xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
@@ -186,10 +186,10 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleScalar(double0d);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
   
     <xsl:when test="@data_type='str_type' or @data_type='STR_0D'">
@@ -200,10 +200,10 @@
       dstr = strdup(str);
       free(str);
       data = mxCreateString(dstr);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
 	
   <!--========== Vectors ===========-->
@@ -215,10 +215,10 @@
       data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
   
     <xsl:when test = "@data_type='flt_1d_type' or @data_type='FLT_1D'">
@@ -229,10 +229,10 @@
       data = mxCreateDoubleMatrix(dim1,1,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
       
     <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
@@ -247,10 +247,10 @@
       }
       free((char *)stringArray);
       data = mxCreateCharMatrixFromStrings(dim1,dstringArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
 
   <!--========== Matrices ===========-->
@@ -262,10 +262,10 @@
       data = mxCreateNumericMatrix(dim1,dim2,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*dim2*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_2D'">
@@ -276,10 +276,10 @@
       data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
 
   <!--========== 3D arrays ===========-->
@@ -293,11 +293,11 @@
       data = mxCreateNumericArray(3,dims,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*dim2*dim3*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_3D'">
@@ -310,11 +310,11 @@
       data = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
   <!--========== 4D arrays ===========-->
@@ -328,11 +328,11 @@
       data = mxCreateNumericArray(4,dims,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_4D'">
@@ -345,11 +345,11 @@
       data = mxCreateNumericArray(4,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
   <!--========== 5D arrays ===========-->
@@ -363,11 +363,11 @@
       data = mxCreateNumericArray(5,dims,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_5D'">
@@ -379,11 +379,11 @@
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
   <!--========== 6D arrays ===========-->
@@ -397,11 +397,11 @@
       data = mxCreateNumericArray(6,dims,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*dim6*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_6D'">
@@ -414,11 +414,11 @@
       data = mxCreateNumericArray(6,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*dim6*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 
   <!--========== Unknown type ===========-->
@@ -511,10 +511,10 @@
       char* dstr = strdup(str);
       free(str);
       data = mxCreateString(dstr);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
@@ -523,10 +523,10 @@
       if(!status) {
       data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
       memcpy(&amp;int0d,mxGetData(data),sizeof(int));
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
@@ -534,10 +534,10 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleScalar(double0d);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
@@ -551,10 +551,10 @@
       }
       free((char *)stringArray);
       data = mxCreateCharMatrixFromStrings(dim1,dstringArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='flt_1d_type' or @data_type='FLT_1D'">
@@ -564,10 +564,10 @@
       data = mxCreateDoubleMatrix(dim1,1,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='int_1d_type' or @data_type='INT_1D'">
@@ -577,10 +577,10 @@
       data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='FLT_2D'">
@@ -590,10 +590,10 @@
       data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='INT_2D'">
@@ -603,10 +603,10 @@
       data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*dim2*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='FLT_3D'">
@@ -618,11 +618,11 @@
       data = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='INT_3D'">
@@ -634,11 +634,11 @@
       data = mxCreateNumericArray(3,dims,mxINT32_CLASS,mxREAL);
       memcpy(intArray,mxGetData(data),dim1*dim2*dim3*sizeof(int));
       free(intArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='FLT_4D'">
@@ -650,11 +650,11 @@
       data = mxCreateNumericArray(4,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='FLT_5D'">
@@ -666,11 +666,11 @@
       data = mxCreateNumericArray(5,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
     
     <xsl:when test="@data_type='FLT_6D'">
@@ -682,11 +682,11 @@
       data = mxCreateNumericArray(6,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*dim6*sizeof(double));
       free(doubleArray);
+      }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
       data = NULL;
-      }
     </xsl:when>
 	
 </xsl:choose>
