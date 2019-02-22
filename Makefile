@@ -1,7 +1,7 @@
 include ../Makefile.common
 
 # Check that "Saxon-HE.jar" utility is set in CLASSPATH
-SAXONJARFILE?=Saxon-HE.jar
+#SAXONJARFILE?=Saxon-HE.jar
 include ../Makefile.classpath
 
 ifeq ("no","$(strip $(IMAS_MEX))")
@@ -44,9 +44,11 @@ IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
 # Generated sources (excluding static sources)
 IDS_C_FILES = $(addprefix get_,$(addsuffix .c,$(IDSNAMES)))
 IDS_C_FILES+= $(addprefix get_slice_,$(addsuffix .c,$(IDSNAMES)))
-#MEX_SRC_FILES = $(ids_get ids_get_slice ids_put ids_put_slice \
-#				ids_put_non_timed)
+MEX_IDS_FILES = $(addsuffix .c,ids_get)
+# ids_get_slice)
+# ids_put ids_put_slice ids_put_non_timed)
 GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))
+GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(MEX_IDS_FILES))
 # Add static sources
 MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
 				imas_open_hdf5 imas_open_public \
@@ -63,8 +65,10 @@ SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES))
 IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c=.o))
 OBJ_FILES = $(addprefix $(BUILD_DIR)/,imas_mex_utils.o)
 OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_SRC_FILES:.c=.o))
+OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_IDS_FILES:.c=.o))
 #TARGETS = $(addprefix $(LIB_DIR)/,libids_get-mex.so)
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
+TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c=.mexa64))
 
 all: $(SOURCES) $(TARGETS)
 
@@ -74,7 +78,7 @@ all: $(SOURCES) $(TARGETS)
 sources: $(SOURCES)
 
 # Use an intermediate target to enforce nonparallel generation.
-generate_sources: ids_mex.xsl ids_get.xsl $(IDSDEF) | saxonicajar
+generate_sources: ids_mex.xsl ids_get.xsl ids_get_slice.xsl $(IDSDEF) | saxonicajar
 	@$(mkdir_p) $(BUILD_DIR)
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:ids_mex.xsl
 #	xsltproc ids_mex.xsl $(IDSDEF)
@@ -107,6 +111,8 @@ $(LIB_DIR)/libids_get-mex.a : $(GENSOURCES) $(OBJ_FILES) $(IDS_OBJ_FILES)
 	$(mkdir_p) $(LIB_DIR)
 	$(AR) rvs $@ $(OBJ_FILES)
 
+$(LIB_DIR)/ids_get.mexa64: $(addprefix get_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_get.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
+$(LIB_DIR)/ids_get_slice.mexa64: $(addprefix get_slice_,$(addsuffix .o, $(IDSNAMES))) ids_get_slice.o c_mexapi_version.o
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o
 	$(mkdir_p) $(LIB_DIR)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)

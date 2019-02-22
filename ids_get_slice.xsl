@@ -41,11 +41,11 @@
    // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
    int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
    int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
-   mxArray* pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
-   mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
+   mxArray* pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
+   mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
    // Structure-specific variables<xsl:for-each select=".//field[@data_type='structure']">
-   mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
-   mxArray* data;
+   mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
+   mxArray* data=NULL;
    mwIndex ifield;
    mwSize* dims;
    mwSize dims_scalar[2] = { 1, 1 };

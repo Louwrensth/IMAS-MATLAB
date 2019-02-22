@@ -21,6 +21,7 @@
  *
  * This is a MEX file for MATLAB.
 */
+#include "ids_get.h"
 #include "mex.h"
 #include &lt;string.h&gt;
 
@@ -82,6 +83,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 }
  </xsl:result-document>
+ <xsl:result-document href="src/ids/ids_get.h" standalone="yes" method="text">
+  #include "mex.h"
+  <xsl:apply-templates select = "IDS" mode="LIST"/>
+ </xsl:result-document>
  <xsl:result-document href="src/imas_mex_utils.h" standalone="yes" method="text">
    #define NON_TIMED   0
    #define TIMED       1
@@ -112,12 +117,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #ifndef NDEBUG
      mexPrintf("Matched <xsl:value-of select="@name"/>");
 #endif
-     return;
-     //int err = get_<xsl:value-of select="@name"/>(idx);
-     //if (!err) return;
+     int err = get_<xsl:value-of select="@name"/>(idx,occ,&amp;plhs[0]);
+     if (!err) return;
 }</xsl:template>
 
-
+<xsl:template match="IDS" mode="LIST">
+int get_<xsl:value-of select="@name"/>(int expIdx, int occ, mxArray** ids);</xsl:template>
 <!--================================================-->
 <!--                Template for time               -->
 <!--================================================-->
