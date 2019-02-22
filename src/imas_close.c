@@ -25,7 +25,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         mexErrMsgIdAndTxt("IMAS:imas_create:nargout", "Zero output required.");
     }
     // Get the value of the index
-    int idx = (int) mxGetScalar(prhs[1]);
+    int idx = (int) mxGetScalar(prhs[0]);
 #ifndef NDEBUG
     mexPrintf("The input idx is:  %d\n", idx);
 #endif
