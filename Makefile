@@ -58,8 +58,8 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
 				imas_enable_mem_cache imas_disable_mem_cache \
 				imas_flush_mem_cache imas_discard_mem_cache \
 				)
-SOURCES = $(GENSOURCES)
-SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES))
+SOURCES = $(GENSOURCES) 
+SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES) imas_mex_utils.c)
 
 # Compiled objects
 IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c=.o))
@@ -69,6 +69,7 @@ OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_IDS_FILES:.c=.o))
 #TARGETS = $(addprefix $(LIB_DIR)/,libids_get-mex.so)
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c=.mexa64))
+
 
 all: $(SOURCES) $(TARGETS)
 

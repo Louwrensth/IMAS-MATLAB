@@ -87,23 +87,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
   #include "mex.h"
   <xsl:apply-templates select = "IDS" mode="LIST"/>
  </xsl:result-document>
- <xsl:result-document href="src/imas_mex_utils.h" standalone="yes" method="text">
-   #define NON_TIMED   0
-   #define TIMED       1
-   #define TIMED_CLEAR 2
-
-   #include "ual_low_level.h"
-   #include &lt;stdlib.h&gt;
-   #include &lt;string.h&gt;
-   #include &lt;stdio.h&gt;
-
-   void checkStatus(int status);
- </xsl:result-document>
- <xsl:result-document href="src/imas_mex_utils.c" standalone="yes" method="text">
-   #include "imas_mex_utils.h"
-
-   void checkStatus(int status) {if(status) printf("%s\n", imas_last_errmsg());}
- </xsl:result-document>
  <xsl:apply-templates select = "IDS" mode="GET"/>
  <xsl:apply-templates select = "IDS" mode="GET_SLICE"/>
 </xsl:template>
