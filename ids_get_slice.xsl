@@ -18,7 +18,7 @@
    #include &lt;string.h&gt;
    #include &lt;stdio.h&gt;
 
-   int get_slice_<xsl:value-of select="@name"/>(int expIdx, int idx, double inTime, char interpolMode, mxArray** ids)
+   int get_slice_<xsl:value-of select="@name"/>(int expIdx, int idx, double inTime, int interpolMode, mxArray** ids)
    {
    int status;
    int numSamples;
@@ -34,7 +34,7 @@
    const char **dstringArray;
    char *dstr;
    // Paths-specific variables
-   int maxpathsize=128;
+   int maxpathsize=1024;
    char clepath[maxpathsize];
    char timebasepath[maxpathsize];
    char* timepath;
@@ -60,6 +60,7 @@
    status = beginIdsGetSlice(expIdx,  path, inTime);
    checkStatus(status);
    if(status) return status;
+   *ids = mxCreateStructMatrix(1,1,0,NULL);
    <xsl:apply-templates select="field" mode="GET_SLICE">
      <xsl:with-param name="pointer_name" select="'*ids'"/>
    </xsl:apply-templates>

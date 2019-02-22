@@ -38,7 +38,7 @@
    const char **dstringArray;
    char *dstr;
    // Paths-specific variables
-   int maxpathsize=128;
+   int maxpathsize=1024;
    char clepath[maxpathsize];
    // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
    int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;

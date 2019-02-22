@@ -88,6 +88,104 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:apply-templates select = "IDS" mode="LIST"/>
  </xsl:result-document>
  <xsl:apply-templates select = "IDS" mode="GET"/>
+ <xsl:result-document href="src/ids/ids_get_slice.c" standalone="yes" method="text">
+/*
+ * ids_get_slice.c - read IDS in MATLAB External Interfaces
+ *
+ *		ids = ids_get_slice(idx, name, occ, inTime, interpolMode)
+ *
+ * This is a MEX file for MATLAB.
+*/
+#include "ids_get_slice.h"
+#include "mex.h"
+#include &lt;string.h&gt;
+
+void mexFunction(int nlhs, mxArray *plhs[],
+                 int nrhs, const mxArray *prhs[])
+{
+  // Check for three input arguments  
+  if(nrhs != 5) {
+    mexErrMsgIdAndTxt("IMAS:ids_get_slice:nargin",
+                      "Five inputs required.");
+  }
+  // make sure the 1st input argument is scalar
+  if( !mxIsNumeric(prhs[0]) ||
+      !mxIsScalar(prhs[0]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_get_slice:notScalar",
+                        "Input idx must be a scalar.");
+  }
+  // make sure the 2nd input argument is a string
+  if( !mxIsChar(prhs[1]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_get_slice:notChar",
+                        "Input name must be a string.");
+  }
+  // make sure the 3rd input argument is scalar
+  if( !mxIsNumeric(prhs[2]) ||
+      !mxIsScalar(prhs[2]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_get_slice:notScalar",
+                        "Input occurence must be a scalar.");
+  }
+  // make sure the 4th input argument is scalar
+  if( !mxIsNumeric(prhs[3]) ||
+      !mxIsScalar(prhs[3]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_get_slice:notScalar",
+                        "Input inTime must be a scalar.");
+  }
+  // make sure the 5th input argument is scalar
+  if( !mxIsNumeric(prhs[4]) ||
+      !mxIsScalar(prhs[4]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_get_slice:notScalar",
+                        "Input interpolMode must be a scalar.");
+  }
+
+  // Check for one output argument
+  if(nlhs != 1) {
+    mexErrMsgIdAndTxt("IMAS:ids_get_slice:nargout",
+                      "One output required.");
+  }
+
+  // Get the value of the idx
+  int idx = (int) mxGetScalar(prhs[0]);
+#ifndef NDEBUG
+  mexPrintf("The input idx is:  %d\n", idx);
+#endif
+
+  // Get the value of the name
+  char *name = mxArrayToString(prhs[1]);
+#ifndef NDEBUG
+  mexPrintf("The input name is:  %s\n", name);
+#endif
+
+  // Get the value of the occurence
+  int occ = (int) mxGetScalar(prhs[2]);
+#ifndef NDEBUG
+  mexPrintf("The input occurence is:  %d\n", occ);
+#endif
+
+  // Get the value of the inTime
+  double inTime = mxGetScalar(prhs[3]);
+#ifndef NDEBUG
+  mexPrintf("The input inTime is:  %f\n", inTime);
+#endif
+
+  // Get the value of the occurence
+  int interpolMode = (int) mxGetScalar(prhs[4]);
+#ifndef NDEBUG
+  mexPrintf("The input interpolMode is:  %d\n", interpolMode);
+#endif
+ 
+  // Call subfunction based on IDS name
+  <xsl:apply-templates select = "IDS" mode="SWITCH_SLICE"/>
+  // Error if there was no match
+  mexErrMsgIdAndTxt("IMAS:ids_get_slice:unknown_ids",
+           "Unknown IDS name: %s", name);
+
+}
+ </xsl:result-document>
+ <xsl:result-document href="src/ids/ids_get_slice.h" standalone="yes" method="text">
+  #include "mex.h"
+  <xsl:apply-templates select = "IDS" mode="LIST_SLICE"/>
+ </xsl:result-document>
  <xsl:apply-templates select = "IDS" mode="GET_SLICE"/>
 </xsl:template>
 
@@ -104,8 +202,20 @@ void mexFunction(int nlhs, mxArray *plhs[],
      if (!err) return;
 }</xsl:template>
 
+<xsl:template match="IDS" mode="SWITCH_SLICE">
+  if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
+#ifndef NDEBUG
+     mexPrintf("Matched <xsl:value-of select="@name"/>");
+#endif
+     int err = get_slice_<xsl:value-of select="@name"/>(idx,occ,inTime,interpolMode,&amp;plhs[0]);
+     if (!err) return;
+}</xsl:template>
+
 <xsl:template match="IDS" mode="LIST">
 int get_<xsl:value-of select="@name"/>(int expIdx, int occ, mxArray** ids);</xsl:template>
+
+<xsl:template match="IDS" mode="LIST_SLICE">
+int get_slice_<xsl:value-of select="@name"/>(int expIdx, int occ, double inTime, int interpolMode, mxArray** ids);</xsl:template>
 <!--================================================-->
 <!--                Template for time               -->
 <!--================================================-->
