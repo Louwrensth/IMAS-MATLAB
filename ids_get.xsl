@@ -116,7 +116,7 @@
 	<xsl:with-param name="path_format" select="concat($currentpath_format,'/%d')"/>
 	<xsl:with-param name="path_args" select="concat($path_args,',i',@name,'_',generate-id(.),'+1')"/>
       </xsl:apply-templates>
-      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       }
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -144,7 +144,7 @@
         <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
         <xsl:with-param name="timed" select="'yes'"/>
       </xsl:apply-templates>
-      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i1,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i1,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       }
       }
       releaseObject(expIdx,obj_all_times);
@@ -480,8 +480,8 @@
 	    <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
 	    <xsl:with-param name="timed" select="'no'"/>  <!-- We assume the nested children are necessarily Type 2 -->
 	  </xsl:apply-templates>
-	  mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="$level + 1"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-      }
+	  mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="$level + 1"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+	  }
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);

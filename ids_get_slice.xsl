@@ -129,7 +129,7 @@
 	<xsl:with-param name="path_format" select="concat($currentpath_format,'/%d')"/>
 	<xsl:with-param name="path_args" select="concat($path_args,',i',@name,'_',generate-id(.),'+1')"/>
       </xsl:apply-templates>
-      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       }
       }
       }
@@ -156,7 +156,7 @@
         <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
         <xsl:with-param name="timed" select="'yes'"/>
       </xsl:apply-templates>
-      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,0,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) 0,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       releaseObject(expIdx,obj_single_time);
       }
       }
