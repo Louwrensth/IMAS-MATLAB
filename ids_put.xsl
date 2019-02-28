@@ -22,7 +22,7 @@
     #include &lt;string.h&gt;
     #include &lt;stdio.h&gt;
 
-    int put_<xsl:value-of select="@name"/>(int expIdx, int idx, mxArray** ids)
+    int put_<xsl:value-of select="@name"/>(int expIdx, int idx, mxArray* ids)
     {
     int status;
     int numSamples;
@@ -52,6 +52,8 @@
     // Structure-specific variables<xsl:for-each select=".//field[@data_type='structure']">
     mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
     mxArray* data=NULL;
+    mxArray* ptime;
+    double* dtime;
     int ifield;
     mwSize* dims;
     mwSize dims_scalar[2] = { 1, 1 };
@@ -71,6 +73,11 @@
     status = beginIdsPut(expIdx, path);
     checkStatus(status);
     if(status) return status;
+    ptime = mxGetField(ids, (mwIndex) 0, "time");
+    if (ptime == NULL)
+      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_time",
+      "Unable to retrieve ids%%time");
+    dtime = mxGetPr(ptime);
     <xsl:apply-templates select="field" mode="PUT_SINGLE">
       <xsl:with-param name="pointer_name" select="'*ids'"/>
     </xsl:apply-templates>
@@ -142,171 +149,119 @@
     <xsl:choose>
       <!--========== Regular structures ==========-->
       <xsl:when test="@data_type='structure'">
-	<xsl:choose>
-	  <xsl:when test="$variable_path">
-	    <xsl:apply-templates select="field" mode="PUT_SINGLE">
-	      <xsl:with-param name="variable_path" select="concat($variable_path,'.',@name)"/>
-	      <xsl:with-param name="mds_path" select="concat($mds_path,'+string(&quot;/',@name,'&quot;)')"/>
-              <xsl:with-param name="non_timed" select="$non_timed"/>
-	    </xsl:apply-templates>
-	  </xsl:when>
-	  <xsl:otherwise>
-	    <xsl:apply-templates select="field" mode="PUT_SINGLE">
-	      <xsl:with-param name="variable_path" select="@name"/>
-	      <xsl:with-param name="mds_path" select="concat('&quot;',@name,'&quot;')"/>
-              <xsl:with-param name="non_timed" select="$non_timed"/>
-	    </xsl:apply-templates>
-	  </xsl:otherwise>
-	</xsl:choose>
+	p<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetField(<xsl:value-of select="$pointer_name"/>,(mwIndex) 0, <xsl:value-of select="@name"/>);
+	if (p<xsl:value-of select="concat(@name,generate-id(.))"/> == NULL)
+	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
+	"Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
+	<xsl:apply-templates select="field" mode="PUT_SINGLE">
+	  <xsl:with-param name="variable_path" select="concat($variable_path,'.',@name)"/>
+	  <xsl:with-param name="mds_path" select="concat($mds_path,'+string(&quot;/',@name,'&quot;)')"/>
+          <xsl:with-param name="non_timed" select="$non_timed"/>
+	</xsl:apply-templates>
       </xsl:when>
 
       <!--========== Arrays of structures ==========-->
       <xsl:when test="@data_type='struct_array' and @maxoccur!='unbounded'">
 	<!-- Type 1 arrays of structure, with potentially multiple time bases -->
-	// Type 1
+	/* AoS of type 1 */
 	<xsl:choose>
-	  <xsl:when test="$variable_path">
-            if ( <xsl:value-of select = "concat($variable_path,'.',@name)"/>.extent(0) &gt; 0) {
-	    clepath = <xsl:value-of select="$mds_path"/>  + string("/<xsl:value-of select="@name"/>/Shape_of");
-	    status = putInt(expIdx,path,clepath,<xsl:value-of select="concat($variable_path,'.',@name)"/>.extent(0));
-	    checkStatus(status);
-	    if (status) return status;
-	    for (i<xsl:value-of select="concat(@name,generate-id(.))"/> = 0;i<xsl:value-of select="concat(@name,generate-id(.))"/>&lt;<xsl:value-of select="concat($variable_path,'.',@name)"/>.extent(0); i<xsl:value-of select="concat(@name,generate-id(.))"/>++){
-	    <xsl:apply-templates select="field" mode="PUT_SINGLE">
-	      <xsl:with-param name="variable_path" select="concat($variable_path,'.',@name,'(i',@name,generate-id(.),')')"/>
-	      <xsl:with-param name="mds_path" select="concat($mds_path,' + ','string(&quot;/',@name,'/&quot;) + int2str(i',@name,generate-id(.),',1)')"/>
-              <xsl:with-param name="non_timed" select="$non_timed"/>
-	    </xsl:apply-templates>
-	    }
-            }
-	  </xsl:when>
+	  <xsl:when test="$path_args">
+	  snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/Shape_of"<xsl:value-of select="$path_args"/>);</xsl:when>
 	  <xsl:otherwise>
-            if ( <xsl:value-of select = "translate(@path,'/','.')"/>.extent(0) &gt; 0) {
-	    clepath =  "<xsl:value-of select="@name"/>/Shape_of";
-	    status = putInt(expIdx,path, clepath, <xsl:value-of select="@name"/>.extent(0));
-	    checkStatus(status);
-	    if (status) return status;
-	    for ( i<xsl:value-of select="concat(@name,generate-id(.))"/> = 0;i<xsl:value-of select="concat(@name,generate-id(.))"/>&lt;<xsl:value-of select="@name"/>.extent(0);i<xsl:value-of select="concat(@name,generate-id(.))"/>++){
-	    <xsl:apply-templates select="field" mode="PUT_SINGLE">
-	      <xsl:with-param name="variable_path" select="concat(@name,'(i',@name,generate-id(.),')')"/>
-	      <xsl:with-param name="mds_path" select="concat('&quot;',@name,'/&quot; + int2str(i',@name,generate-id(.),',1)')"/>
-              <xsl:with-param name="non_timed" select="$non_timed"/>
-	    </xsl:apply-templates>
-	    }
-            }
-	  </xsl:otherwise>
+	  snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/Shape_of");</xsl:otherwise>
 	</xsl:choose>
+	pa<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetField(<xsl:value-of select="$pointer_name"/>,(mwIndex) 0, <xsl:value-of select="@name"/>);
+	if (pa<xsl:value-of select="concat(@name,generate-id(.))"/> == NULL)
+	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
+	"Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
+	n<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetNumberOfElements(pa<xsl:value-of select="concat(@name,generate-id(.))"/>);
+        if (n<xsl:value-of select="concat(@name,generate-id(.))"/> &gt; 0) {
+	status = putInt(expIdx, path, clepath, n<xsl:value-of select="concat(@name,generate-id(.))"/>);
+	checkStatus(status);
+	if (status) return status;
+	for (i<xsl:value-of select="concat(@name,generate-id(.))"/> = 0;i<xsl:value-of select="concat(@name,generate-id(.))"/>&lt; n<xsl:value-of select="concat(@name,generate-id(.))"/>; i<xsl:value-of select="concat(@name,generate-id(.))"/>++){
+	p<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,generate-id(.))"/>, (mwIndex) i<xsl:value-of select="concat(@name,generate-id(.))"/>);
+	if (p<xsl:value-of select="concat(@name,generate-id(.))"/> == NULL)
+	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_AoS_element",
+      "Unable to retrieve element %d in %s (in PUT_SINGLE)", i<xsl:value-of select="concat(@name,generate-id(.))"/>, "<xsl:value-of select="@path"/>");
+	<xsl:apply-templates select="field" mode="PUT_SINGLE">
+	  <xsl:with-param name="variable_path" select="concat($variable_path,'.',@name,'(i',@name,generate-id(.),')')"/>
+	  <xsl:with-param name="mds_path" select="concat($mds_path,' + ','string(&quot;/',@name,'/&quot;) + int2str(i',@name,generate-id(.),',1)')"/>
+          <xsl:with-param name="non_timed" select="$non_timed"/>
+	</xsl:apply-templates>
+	}
+        }
       </xsl:when>
 
       <xsl:when test="@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'">
-	//-- Type 3 arrays of structure, with a unique time base 3OK
+	<!-- Type 3 arrays of structure, with a unique time base -->
+	/* AoS of type 3 */
+	<xsl:value-of select="$currentpath_expr"/>
+	pa<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetField(<xsl:value-of select="$pointer_name"/>,(mwIndex) 0, <xsl:value-of select="@name"/>);
+	if (pa<xsl:value-of select="concat(@name,generate-id(.))"/> == NULL)
+	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
+	"Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
+	n<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetNumberOfElements(pa<xsl:value-of select="concat(@name,generate-id(.))"/>);
+        if (n<xsl:value-of select="concat(@name,generate-id(.))"/> &gt; 0) {
+	<xsl:value-of select="$currentpath_expr"/>
+	void *obj_all_times = beginObject(expIdx, (void *) -1, 0, clepath, TIMED_CLEAR);
+	for (int i1 = 0; i1 &lt; n<xsl:value-of select="concat(@name,generate-id(.))"/>; i1++) {
+	void *obj1 = beginObject(expIdx, obj_all_times, i1, "ALLTIMES", TIMED);
+	p<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,generate-id(.))"/>, (mwIndex) i1);
+	if (p<xsl:value-of select="concat(@name,generate-id(.))"/> == NULL)
+	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_AoS_element",
+	"Unable to retrieve element %d in %s (in PUT_SINGLE)", i<xsl:value-of select="concat(@name,generate-id(.))"/>, "<xsl:value-of select="@path"/>");
+        <xsl:apply-templates select = "field" mode = "PUT_IN_OBJECT">
+          <xsl:with-param name="level" select="1"/>
+          <xsl:with-param name="objpath" select="@name"/>
+          <xsl:with-param name="idxpath" select="concat($variable_path,'.',@name,'(0)')"/>
+          <xsl:with-param name="child_index" select="0"/>
+	</xsl:apply-templates>
+	void *obj = putObjectInObject(expIdx,obj_all_times, "ALLTIMES", i1, obj1);
+	}
+        // Store time of the array of structure (hidden variable for the user, but used by the UAL for future get_slice operations)
+        // A temporary "time" vector is filled then put as a regular variable (outside of the object) as AoS%time
+        dim1 = n<xsl:value-of select="concat(@name,generate-id(.))"/>;
+        double *timeh = malloc(dim1*sizeof(double));
+
+        if (ids_properties.homogeneous_time == 1) 
+        {
+        for (int i1 = 0; i1 &lt; dim1; i1++)
+        timeh[i1] = dtime[i1];
+        }
+        else 
+        {   // Check the presence of a time vector at the root of the  AoS (on the first index only)
+	p<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,generate-id(.))"/>, (mwIndex) 0);
+	data = mxGetField(p<xsl:value-of select="concat(@name,generate-id(.))"/>, "time");
+        if ( mxGetScalar(data) == EMPTY_DOUBLE) 
+        {
+        puts("ERROR : the time vector of the type 3 array of structure <xsl:value-of select = "translate(@path,'/','.')"/> must be filled");
+        return (-1);
+        }
+        else 
+        {
+        for( int i1 = 0; i1 &lt; dim1; i1++)
+        {// the AoS time vector is there, fill time with it
+	p<xsl:value-of select="concat(@name,generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,generate-id(.))"/>, (mwIndex) i1);
+	data = mxGetField(p<xsl:value-of select="concat(@name,generate-id(.))"/>, "time");
+        timeh[i1] = mxGetScalar(data);
+        }
+        }
+        }
+        // Start to put time1
 	<xsl:choose>
-	  <xsl:when test="$variable_path">
-	    // Structure array of type 3 nested below a Type 1 : <xsl:value-of select = "concat($variable_path,'.',@name)"/>
-	    if (<xsl:value-of select = "concat($variable_path,'.',@name)"/>.extent(0) &gt; 0) {
-	    // char fullpath[1024];
-	    clepath = "path<xsl:value-of select="concat('/',substring($mds_path,2))"/> + string("/<xsl:value-of select="@name"/>");
-	    void *obj_all_times = beginObject(expIdx,(void *) -1,0,clepath,TIMED_CLEAR);
-	    for (int i1 = 0; i1 &lt; <xsl:value-of select = "concat($variable_path,'.',@name)"/>.extent(0); i1++) {
-	    void *obj1 = beginObject(expIdx,obj_all_times,i1,"ALLTIMES",TIMED);
-            <xsl:apply-templates select = "field" mode = "PUT_IN_OBJECT">
-              <xsl:with-param name="level" select="1"/>
-              <xsl:with-param name="objpath" select="@name"/>
-              <xsl:with-param name="idxpath" select="concat($variable_path,'.',@name,'(0)')"/>
-              <xsl:with-param name="child_index" select="0"/>
-	    </xsl:apply-templates>
-	    void *obj = putObjectInObject(expIdx,obj_all_times, "ALLTIMES", i1, obj1);
-	    }
-            // Store time of the array of structure (hidden variable for the user, but used by the UAL for future get_slice operations)
-            // A temporary "time" vector is filled then put as a regular variable (outside of the object) as AoS%time
-            dim1= <xsl:value-of select = "concat($variable_path,'.',@name)"/>.extent(0);
-            double *timeh = new double[dim1];
-
-            if (ids_properties.homogeneous_time == 1) 
-            {
-            for (int i1 = 0; i1 &lt; dim1; i1++)
-            timeh[i1] = time(i1);
-            }
-            else 
-            {   // Check the presence of a time vector at the root of the  AoS (on the first index only)
-            if (<xsl:value-of select = "concat($variable_path,'.',@name)"/>(0).time == EMPTY_DOUBLE) 
-            {
-            puts("ERROR : the time vector of the type 3 array of structure <xsl:value-of select = "translate(@path,'/','.')"/> must be filled");
-            return (-1);
-            }
-            else 
-            {
-            for( int i1 = 0; i1 &lt;<xsl:value-of select = "concat($variable_path,'.',@name)"/>.extent(0); i1++)
-            {// the AoS time vector is there, fill time with it
-            timeh[i1] = <xsl:value-of select = "concat($variable_path,'.',@name)"/>(i1).time;
-            }
-            }
-            }
-            // Start to put time1
-            timepath = <xsl:value-of select="$mds_path"/> + string("/<xsl:value-of select="@name"/>/time");
-            beginIdsPutTimed(expIdx, path,dim1, timeh);
-            status = putVect1DDouble(expIdx, path, timepath, timepath, timeh, dim1, 1);
-            checkStatus(status);
-            if (status) return status;
-            endIdsPutTimed(expIdx, path);
-            timepath=<xsl:value-of select = "concat($mds_path,' + string(&quot;/',@name)"/>");
-            putObject(expIdx, path, timepath, obj_all_times, 1);
-            }
-          </xsl:when>
-
-          <xsl:otherwise>
-            // Structure array of type 3 : <xsl:value-of select = "@path"/>
-            if (<xsl:value-of select = "translate(@path,'/','.')"/>.extent(0) &gt; 0) {
-            sprintf(fullpath,"%s/<xsl:value-of select = "@path"/>",path);
-            dim1 = <xsl:value-of select = "translate(@path,'/','.')"/>.extent(0);
-            void *obj_all_times = beginObject(expIdx,(void *) -1,0,fullpath,TIMED_CLEAR);
-            for (int i1 = 0; i1 &lt; dim1; i1++){
-            void *obj1 = beginObject(expIdx,obj_all_times,i1,"ALLTIMES",TIMED);
-            <xsl:apply-templates select = "field" mode="PUT_IN_OBJECT">
-              <xsl:with-param name="level" select="1"/>
-              <xsl:with-param name="objpath" select="@name"/>
-              <xsl:with-param name="idxpath" select="concat(translate(@path,'/','.'),'(i1)')"/>
-              <xsl:with-param name="child_index" select="0"/>
-            </xsl:apply-templates>
-	    void *obj = putObjectInObject(expIdx,obj_all_times, "ALLTIMES", i1, obj1);
-	    }
-            // Store time of the array of structure (hidden variable for the user, but used by the UAL for future get_slice operations)
-            dim1= <xsl:value-of select = "translate(@path,'/','.')"/>.extent(0);
-            double *timeh = new double[dim1];
-	    if (ids_properties.homogeneous_time == 1) 
-            {
-            for (int i1 = 0; i1 &lt; dim1; i1++)
-            timeh[i1] = time(i1);
-            }
-            else 
-            {   // Check the presence of a time vector at the root of the  AoS (on the first index only)
-            if (<xsl:value-of select = "translate(@path,'/','.')"/>(0).time == EMPTY_DOUBLE) 
-            {
-            puts("ERROR : the time vector of the type 3 array of structure <xsl:value-of select = "translate(@path,'/','.')"/> must be filled");
-            return (-1);
-            }
-            else 
-            {
-            for( int i1 = 0; i1 &lt;<xsl:value-of select = "translate(@path,'/','.')"/>.extent(0); i1++)
-            {// the AoS time vector is there, fill time with it
-            timeh[i1] = <xsl:value-of select = "translate(@path,'/','.')"/>(i1).time;
-            }
-            }
-            }
-            timepath=&quot;<xsl:call-template name="printtimepath"/>&quot;;
-            beginIdsPutTimed(expIdx, path,dim1, timeh);
-            status = putVect1DDouble(expIdx, path, timepath, timepath, timeh, dim1, 1);
-            checkStatus(status);
-            if (status) return status;
-
-            endIdsPutTimed(expIdx, path);
-            //if (ual_debug.equals("yes")) puts("Put <xsl:call-template name="printtimevariable"/> " + time);
-            //deallocate(time)
-            timepath=&quot;<xsl:value-of select = "@path"/>&quot;;
-            putObject(expIdx, path, timepath, obj_all_times, 1);
-            }
-          </xsl:otherwise>
-        </xsl:choose>
+	  <xsl:when test="$path_args">
+	  snprintf(timepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/time"<xsl:value-of select="$path_args"/>);</xsl:when>
+	  <xsl:otherwise>
+	  snprintf(timepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/time");</xsl:otherwise>
+	</xsl:choose>
+        beginIdsPutTimed(expIdx, path,dim1, timeh);
+        status = putVect1DDouble(expIdx, path, timepath, timepath, timeh, dim1, 1);
+        checkStatus(status);
+        if (status) return status;
+        endIdsPutTimed(expIdx, path);
+        putObject(expIdx, path, clepath, obj_all_times, 1); // replaced timepath with clepath
+        }
       </xsl:when>
 
       <xsl:when test="@data_type='struct_array' and @maxoccur='unbounded' and @type!='dynamic'">
@@ -320,7 +275,6 @@
             <!-- Handle only non-timed descendants of type 2 AoS for the moment -->
             <!-- Type 2 structure arrays not handled yet, I put here a copy of the ITM treatment for recall -->
             // Write non-timed fields
-            //char fullpath[1024]; //18/04
             sprintf(fullpath,"path/<xsl:value-of select = "@path"/>");
             void *obj1=beginObject(expIdx,-1,1,fullpath,NON_TIMED);
             dim1=<xsl:value-of select = "translate(@path,'/','.')"/>.extent(0);
@@ -801,72 +755,43 @@
 
 <xsl:template name="puttime_SINGLE">
   <xsl:choose>
-    <xsl:when test="$variable_path">
+    <xsl:when test="@type='dynamic'">
+      if (ids_properties.homogeneous_time == 0) {
+      <!--XSLtest whether this is a data/time structure, otherwise assume that the timepath attribute from IDSDef is correct-->
       <xsl:choose>
-	<xsl:when test="@type='dynamic'">
-	  if (ids_properties.homogeneous_time == 0) {
-	  <!--XSLtest whether this is a data/time structure, otherwise assume that the timepath attribute from IDSDef is correct-->
+	<xsl:when test="(@name='data' and ../field[@name='time']) or (@name='time' and ../field[@name='data']) or @name='data_error_upper' or @name='data_error_lower'">
 	  <xsl:choose>
-	    <xsl:when test="(@name='data' and ../field[@name='time']) or (@name='time' and ../field[@name='data']) or @name='data_error_upper' or @name='data_error_lower'">
-	      timebasepath=<xsl:value-of select="$mds_path"/>+string("/time");
-	      dim1= <xsl:value-of select="concat($variable_path,'.time')"/>.extent(0);
-	      doubleArray = new double[dim1];
-	      for(_i = 0; _i &lt;  dim1; _i++)
-	      doubleArray[_i] = <xsl:value-of select="concat($variable_path,'.time')"/>(_i);
-	      beginIdsPutTimed(expIdx, path,dim1,doubleArray);
-	      delete [] doubleArray;
-	    </xsl:when>
+	    <xsl:when test="$path_args">
+	    snprintf(timebasepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/time"<xsl:value-of select="$path_args"/>);</xsl:when>
 	    <xsl:otherwise>
-	      timebasepath="<xsl:call-template name="printtimepath"/>";
-	      <!--  dim1= <xsl:value-of select = "translate($variable_path,'/','.')"/>.extent(0); -->
-	      dim1= <xsl:call-template name="printtimevariable"/>.extent(0);
-	      doubleArray = new double[dim1];
-	      for(_i = 0; _i &lt;  dim1; _i++)
-	      doubleArray[_i] =<xsl:call-template name="printtimevariable"/>(_i);
-	      beginIdsPutTimed(expIdx, path, dim1,doubleArray);
-	      delete [] doubleArray;
-	    </xsl:otherwise>
+	    snprintf(timebasepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/time");</xsl:otherwise>
 	  </xsl:choose>
-	  } else {
-	  timebasepath="time";
-	  dim1= time.extent(0);
-	  doubleArray = new double[dim1];
-	  for(_i = 0; _i &lt;  dim1; _i++)
-	  doubleArray[_i] = time(_i);
-	  beginIdsPutTimed(expIdx, path,dim1,doubleArray);
-	  delete [] doubleArray;
-	  }
+	  ptime = mxGetField(<xsl:value-of select="$pointer_name"/>,"time");
+	  if (ptime == NULL)
+	  mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
+	  "Unable to retrieve field time of %s", <xsl:value-of select="@path"/>);
+	  dim1 = mxGetNumberOfElements(ptime);
+	  doubleArray = mxGetPr(ptime);
+	  beginIdsPutTimed(expIdx, path, dim1, doubleArray);
+	  doubleArray = NULL;
 	</xsl:when>
 	<xsl:otherwise>
-	  timebasepath = "";
+	  <!-- TODO -->
+	  timebasepath="<xsl:call-template name="printtimepath"/>";
+	  ptime = <xsl:call-template name="printtimevariable"/>
+	  dim1 = mxGetNumberOfElements(ptime);
+	  doubleArray = mxGetPr(ptime);
+	  beginIdsPutTimed(expIdx, path, dim1, doubleArray);
+	  doubleArray = NULL;
 	</xsl:otherwise>
       </xsl:choose>
+      } else {
+      timebasepath="time";
+      beginIdsPutTimed(expIdx, path, dim1, dtime);
+      }
     </xsl:when>
     <xsl:otherwise>
-      <xsl:choose>
-	<xsl:when test="@type='dynamic'">
-	  if (ids_properties.homogeneous_time == 0) {
-	  timebasepath="<xsl:call-template name="printtimepath"/>";
-	  dim1= <xsl:call-template name="printtimevariable"/>.extent(0);
-	  doubleArray = new double[dim1];
-	  for(_i = 0; _i &lt;  dim1; _i++)
-	  doubleArray[_i] = <xsl:call-template name="printtimevariable"/>(_i);
-	  beginIdsPutTimed(expIdx, path, dim1,doubleArray);
-	  delete[] doubleArray;
-	  } else {
-	  timebasepath="time";
-	  dim1= <xsl:call-template name="printtimevariable"/>.extent(0);
-	  doubleArray = new double[dim1];
-	  for(_i = 0; _i &lt;  dim1; _i++)
-	  doubleArray[_i] = <xsl:call-template name="printtimevariable"/>(_i);
-	  beginIdsPutTimed(expIdx, path, dim1,doubleArray);
-	  delete[] doubleArray;
-	  }
-	</xsl:when>
-	<xsl:otherwise>
-	  timebasepath = "";
-	</xsl:otherwise>
-      </xsl:choose>
+      timebasepath = "";
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>
