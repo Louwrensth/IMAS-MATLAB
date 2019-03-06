@@ -235,9 +235,9 @@
         if (n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> &gt; 0) {
 	<xsl:choose>
 	  <xsl:when test="$path_args">
-	  snprintf(clepath,maxpathsize,"path/<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);</xsl:when>
+	  snprintf(clepath,maxpathsize,"%s/<xsl:value-of select="$currentpath_format"/>",path<xsl:value-of select="$path_args"/>);</xsl:when>
 	  <xsl:otherwise>
-	  snprintf(clepath,maxpathsize,"%s","path/<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
+	  snprintf(clepath,maxpathsize,"%s/%s",path,"<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
 	</xsl:choose>
 	void *obj_all_times = beginObject(expIdx, (void *) -1, 0, clepath, TIMED_CLEAR);
 	for (int i1 = 0; i1 &lt; n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i1++) {
