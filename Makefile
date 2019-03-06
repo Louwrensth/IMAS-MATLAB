@@ -43,9 +43,11 @@ IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
 
 # Generated sources (excluding static sources)
 IDS_C_FILES = $(addprefix get_,$(addsuffix .c,$(IDSNAMES)))
+IDS_C_FILES+= $(addprefix put_,$(addsuffix .c,$(IDSNAMES)))
 IDS_C_FILES+= $(addprefix get_slice_,$(addsuffix .c,$(IDSNAMES)))
-MEX_IDS_FILES = $(addsuffix .c,ids_get ids_get_slice)
-# ids_put ids_put_slice ids_put_non_timed)
+IDS_C_FILES+= $(addprefix put_slice_,$(addsuffix .c,$(IDSNAMES)))
+IDS_C_FILES+= $(addprefix put_non_timed_,$(addsuffix .c,$(IDSNAMES)))
+MEX_IDS_FILES = $(addsuffix .c,ids_get ids_put ids_get_slice ids_put_slice ids_put_non_timed)
 GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))
 GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(MEX_IDS_FILES))
 # Add static sources
@@ -78,7 +80,7 @@ all: $(SOURCES) $(TARGETS)
 sources: $(SOURCES)
 
 # Use an intermediate target to enforce nonparallel generation.
-generate_sources: ids_mex.xsl ids_get.xsl ids_get_slice.xsl $(IDSDEF) | saxonicajar
+generate_sources: ids_mex.xsl ids_get.xsl ids_put.xsl ids_get_slice.xsl ids_put_slice.xsl $(IDSDEF) | saxonicajar
 	@$(mkdir_p) $(BUILD_DIR)
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:ids_mex.xsl
 #	xsltproc ids_mex.xsl $(IDSDEF)
@@ -113,6 +115,9 @@ $(LIB_DIR)/libids_get-mex.a : $(GENSOURCES) $(OBJ_FILES) $(IDS_OBJ_FILES)
 
 $(LIB_DIR)/ids_get.mexa64: $(addprefix get_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_get.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
 $(LIB_DIR)/ids_get_slice.mexa64: $(addprefix get_slice_,$(addsuffix .o, $(IDSNAMES))) ids_get_slice.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
+$(LIB_DIR)/ids_put.mexa64: $(addprefix put_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_put.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
+$(LIB_DIR)/ids_put_slice.mexa64: $(addprefix put_slice_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_put_slice.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
+$(LIB_DIR)/ids_put_non_timed.mexa64: $(addprefix put_non_timed_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_put_non_timed.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o
 	$(mkdir_p) $(LIB_DIR)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
