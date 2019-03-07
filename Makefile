@@ -42,15 +42,30 @@ VPATH = $(SRC_DIR) $(IDS_SRC_DIR) build lib
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
 
 # Generated sources (excluding static sources)
-IDS_C_FILES = $(addprefix get_,$(addsuffix .c,$(IDSNAMES)))
-IDS_C_FILES+= $(addprefix get_slice_,$(addsuffix .c,$(IDSNAMES)))
-IDS_C_FILES+= $(addprefix put_,$(addsuffix .c,$(IDSNAMES)))
-IDS_C_FILES+= $(addprefix put_slice_,$(addsuffix .c,$(IDSNAMES)))
-IDS_C_FILES+= $(addprefix put_non_timed_,$(addsuffix .c,$(IDSNAMES)))
-IDS_C_FILES+= $(addprefix delete_,$(addsuffix .c,$(IDSNAMES)))
-MEX_IDS_FILES = $(addsuffix .c,ids_get ids_put ids_get_slice ids_put_slice ids_put_non_timed)
+GET_SOURCES           = $(addprefix get_,          $(addsuffix .c.in,$(IDSNAMES))) ids_get.c.in ids_get.h.in
+GET_SLICE_SOURCES     = $(addprefix get_slice_,    $(addsuffix .c.in,$(IDSNAMES))) ids_get_slice.c.in ids_get_slice.h.in
+PUT_SOURCES           = $(addprefix put_,          $(addsuffix .c.in,$(IDSNAMES))) ids_put.c.in ids_put.h.in
+PUT_SLICE_SOURCES     = $(addprefix put_slice_,    $(addsuffix .c.in,$(IDSNAMES))) ids_put_slice.c.in ids_put_slice.h.in
+PUT_NON_TIMED_SOURCES = $(addprefix put_non_timed_,$(addsuffix .c.in,$(IDSNAMES))) ids_put_non_timed.c.in ids_put_non_timed.h.in
+DELETE_SOURCES        = $(addprefix delete_,       $(addsuffix .c.in,$(IDSNAMES)))
+
+ALL_SOURCES = $(GET_SOURCES) $(GET_SLICE_SOURCES) $(PUT_SOURCES) $(PUT_SLICE_SOURCES) $(PUT_NON_TIMED_SOURCES) $(DELETE_SOURCES)
+
+IDS_C_FILES   = $(filter-out ids_%     , $(ALL_SOURCES))
+MEX_IDS_FILES = $(filter     ids_%.c.in, $(ALL_SOURCES))
+HEADER_FILES  = $(filter     ids_%.h.in, $(ALL_SOURCES))
+
 GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))
 GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(MEX_IDS_FILES))
+GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(HEADER_FILES))
+
+GET_SRC_FILES           = $(addprefix $(IDS_SRC_DIR)/,$(GET_SOURCES))
+GET_SLICE_SRC_FILES     = $(addprefix $(IDS_SRC_DIR)/,$(GET_SLICE_SOURCES))
+PUT_SRC_FILES           = $(addprefix $(IDS_SRC_DIR)/,$(PUT_SOURCES))
+PUT_SLICE_SRC_FILES     = $(addprefix $(IDS_SRC_DIR)/,$(PUT_SLICE_SOURCES))
+PUT_NON_TIMED_SRC_FILES = $(addprefix $(IDS_SRC_DIR)/,$(PUT_NON_TIMED_SOURCES))
+DELETE_SRC_FILES        = $(addprefix $(IDS_SRC_DIR)/,$(DELETE_SOURCES))
+
 # Add static sources
 MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
 				imas_open_hdf5 imas_open_public \
@@ -60,17 +75,17 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
 				imas_enable_mem_cache imas_disable_mem_cache \
 				imas_flush_mem_cache imas_discard_mem_cache \
 				)
-SOURCES = $(GENSOURCES) 
+SOURCES = $(GENSOURCES)
 SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES) imas_mex_utils.c)
 
 # Compiled objects
-IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c=.o))
+IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c.in=.o))
+IDS_OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_IDS_FILES:.c.in=.o))
 OBJ_FILES = $(addprefix $(BUILD_DIR)/,imas_mex_utils.o)
 OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_SRC_FILES:.c=.o))
-OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_IDS_FILES:.c=.o))
-#TARGETS = $(addprefix $(LIB_DIR)/,libids_get-mex.so)
+
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
-TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c=.mexa64))
+TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c.in=.mexa64))
 
 
 all: $(SOURCES) $(TARGETS)
@@ -80,46 +95,34 @@ all: $(SOURCES) $(TARGETS)
 #################################################
 sources: $(SOURCES)
 
-# Use an intermediate target to enforce nonparallel generation.
-generate_sources: ids_mex.xsl ids_get.xsl ids_put.xsl ids_get_slice.xsl ids_put_slice.xsl $(IDSDEF) | saxonicajar
-	@$(mkdir_p) $(BUILD_DIR)
-	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:ids_mex.xsl
-#	xsltproc ids_mex.xsl $(IDSDEF)
-
-beautify: generate_sources
-	@for i in $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(SRC_DIR)/ids/*; do \
-		echo Correcting indentation of $$i; \
-		$(BEAUTIFY) $$i; \
-	done
-	@$(RM) $(SRC_DIR)/*~  $(SRC_DIR)/ids/*~
-
-# Test if all generated sources are found to exist as files to
-# gracefully skip generation if not needed.
-ifeq ($(words $(GENSOURCES)), $(words $(wildcard $(GENSOURCES))))
+$(GET_SRC_FILES): ids_get.xsl mex_tools.xsl get_single.xsl get_from_object.xsl
+$(GET_SLICE_SRC_FILES): ids_get_slice.xsl mex_tools.xsl get_slice.xsl get_from_object.xsl time_tools.xsl
+$(PUT_SRC_FILES): ids_put.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl time_tools.xsl
+$(PUT_SLICE_SRC_FILES): ids_put_slice.xsl mex_tools.xsl put_slice.xsl put_in_object.xsl time_tools.xsl
+$(PUT_NON_TIMED_SRC_FILES): ids_put_non_timed.xsl mex_tools.xsl put_single.xsl put_in_object.xsl
+$(DELETE_SRC_FILES): ids_delete.xsl
 $(GENSOURCES):
-else
-$(GENSOURCES): generate_sources beautify
-endif
+	@$(mkdir_p) $(BUILD_DIR)
+	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$(filter ids_%.xsl,$^)
+#	xsltproc $(filter ids_%.xsl,$^) $(IDSDEF)
+
+$(IDS_SRC_DIR)/%.c: %.c.in
+	$(BEAUTIFY) $< -o $@
+
+$(IDS_SRC_DIR)/%.h: %.h.in
+	$(BEAUTIFY) $< -o $@
 
 #################################################
 #              BUILD
 #################################################
 build: $(OBJ_FILES) $(IDS_OBJ_FILES)
 
-$(LIB_DIR)/libids_get-mex.so : $(GENSOURCES) $(OBJ_FILES) $(IDS_OBJ_FILES)
-	$(mkdir_p) $(LIB_DIR)
-	$(CC) $(LDFLAGS) -o $@ -Wl,-z,defs -shared -Wl,-soname,$(@F).$(IMAS_MAJOR).$(IMAS_MINOR) $(OBJ_FILES) $(IDS_OBJ_FILES) $(LIBS)
-
-$(LIB_DIR)/libids_get-mex.a : $(GENSOURCES) $(OBJ_FILES) $(IDS_OBJ_FILES)
-	$(mkdir_p) $(LIB_DIR)
-	$(AR) rvs $@ $(OBJ_FILES)
-
-$(LIB_DIR)/ids_get.mexa64: $(addprefix get_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_get.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
-$(LIB_DIR)/ids_get_slice.mexa64: $(addprefix get_slice_,$(addsuffix .o, $(IDSNAMES))) ids_get_slice.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
-$(LIB_DIR)/ids_put.mexa64: $(addprefix put_,$(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_put.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
-$(LIB_DIR)/ids_put_slice.mexa64: $(addprefix put_slice_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_put_slice.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
-$(LIB_DIR)/ids_put_non_timed.mexa64: $(addprefix put_non_timed_,$(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES))) $(BUILD_DIR)/ids_put_non_timed.o c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
-$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o
+$(LIB_DIR)/ids_get.mexa64:           $(addprefix get_,          $(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/ids_get_slice.mexa64:     $(addprefix get_slice_,    $(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/ids_put.mexa64:           $(addprefix put_,          $(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix put_slice_,    $(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/ids_put_non_timed.mexa64: $(addprefix put_non_timed_,$(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
 	$(mkdir_p) $(LIB_DIR)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 
@@ -129,8 +132,13 @@ $(BUILD_DIR)/c_mexapi_version.o: $(MATLAB)/extern/version/c_mexapi_version.c
 $(OBJ_FILES): $(BUILD_DIR)/%.o : %.c
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(@)
 
-$(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(OBJ_FILES) %.c
-	$(CC) $(CFLAGS) $(INCDIR) -c $(lastword $^) -o $(@)
+$(BUILD_DIR)/ids_get.o:           $(IDS_SRC_DIR)/ids_get.h
+$(BUILD_DIR)/ids_get_slice.o:     $(IDS_SRC_DIR)/ids_get_slice.h
+$(BUILD_DIR)/ids_put.o:           $(IDS_SRC_DIR)/ids_put.h
+$(BUILD_DIR)/ids_put_slice.o:     $(IDS_SRC_DIR)/ids_put_slice.h
+$(BUILD_DIR)/ids_put_non_timed.o: $(IDS_SRC_DIR)/ids_put_non_timed.h
+$(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(@)
 
 #################################################
 #              INSTALL

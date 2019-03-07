@@ -10,11 +10,121 @@
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
 <!--================================================-->
+<!--                 Include section                -->
+<!--================================================-->
+
+<xsl:include href="mex_tools.xsl"/>
+<xsl:include href="put_single.xsl"/>
+<xsl:include href="put_in_object.xsl"/>
+<xsl:include href="puttime_single.xsl"/>
+<xsl:include href="time_tools.xsl"/>
+
+<!--================================================-->
+<!--         Template for the whole document        -->
+<!--================================================-->
+
+<xsl:template match = "/IDSs">
+ <xsl:result-document href="src/ids/ids_put_non_timed.c.in" standalone="yes" method="text">
+/*
+ * ids_put_non_timed.c - write non-timed fields of IDS in MATLAB External Interfaces
+ *
+ *		ids = ids_put_non_timed(idx, name, occ, ids)
+ *
+ * This is a MEX file for MATLAB.
+*/
+#include "ids_put_non_timed.h"
+#include "mex.h"
+#include &lt;string.h&gt;
+
+void mexFunction(int nlhs, mxArray *plhs[],
+                 int nrhs, const mxArray *prhs[])
+{
+  // Check for three input arguments  
+  if(nrhs != 4) {
+    mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:nargin",
+                      "Four inputs required.");
+  }
+  // make sure the 1st input argument is scalar
+  if( !mxIsNumeric(prhs[0]) ||
+      !mxIsScalar(prhs[0]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:notScalar",
+                        "Input idx must be a scalar.");
+  }
+  // make sure the 2nd input argument is a string
+  if( !mxIsChar(prhs[1]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:notChar",
+                        "Input name must be a string.");
+  }
+  // make sure the 3rd input argument is scalar
+  if( !mxIsNumeric(prhs[2]) ||
+      !mxIsScalar(prhs[2]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:notScalar",
+                        "Input occurence must be a scalar.");
+  }
+  // make sure the 4th input argument is scalar
+  if( !mxIsStruct(prhs[3]) ||
+      !mxIsScalar(prhs[3]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:notScalar",
+                        "Input ids must be a scalar structure.");
+  }
+
+  // Check for no output argument
+  if(nlhs != 0) {
+    mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:nargout",
+                      "No output required.");
+  }
+
+  // Get the value of the idx
+  int idx = (int) mxGetScalar(prhs[0]);
+#ifndef NDEBUG
+  mexPrintf("The input idx is:  %d\n", idx);
+#endif
+
+  // Get the value of the name
+  char *name = mxArrayToString(prhs[1]);
+#ifndef NDEBUG
+  mexPrintf("The input name is:  %s\n", name);
+#endif
+
+  // Get the value of the occurence
+  int occ = (int) mxGetScalar(prhs[2]);
+#ifndef NDEBUG
+  mexPrintf("The input occurence is:  %d\n", occ);
+#endif
+
+  // Get the value of the ids
+#ifndef NDEBUG
+  mexPrintf("The input ids is:  %s\n", "SKIPPED");
+#endif
+
+ 
+  // Call subfunction based on IDS name
+  <xsl:apply-templates select = "IDS" mode="SWITCH">
+    <xsl:with-param name="function_name">put_non_timed</xsl:with-param>
+    <xsl:with-param name="function_args">idx, occ, prhs[3]</xsl:with-param>
+  </xsl:apply-templates>
+  // Error if there was no match
+  mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:unknown_ids",
+           "Unknown IDS name: %s", name);
+
+}
+ </xsl:result-document>
+ <xsl:result-document href="src/ids/ids_put_non_timed.h.in" standalone="yes" method="text">
+  #include "mex.h"
+  <xsl:apply-templates select = "IDS" mode="LIST">
+    <xsl:with-param name="prefix" select="'int put_non_timed_'"/>
+    <xsl:with-param name="suffix" select="'(int expIdx, int occ, const mxArray* ids);'"/>
+  </xsl:apply-templates>
+ </xsl:result-document>
+ <xsl:apply-templates select = "IDS" mode="PUT_NON_TIMED"/>
+</xsl:template>
+
+<!--================================================-->
 <!--                Template for IDSs               -->
 <!--================================================-->
 
 <xsl:template match="IDS" mode="PUT_NON_TIMED">
-  <xsl:result-document href="src/ids/put_non_timed_{@name}.c" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/put_non_timed_{@name}.c.in" standalone="yes" method="text">
     #include "mex.h"
     #include "ual_low_level.h"
     #include "imas_mex_utils.h"
@@ -52,13 +162,13 @@
     const mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
     // Structure-specific variables<xsl:for-each select=".//field[@data_type='structure']">
     const mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
+    int ifield;
     const mxArray* data=NULL;
     const mxArray* ptime;
     double* dtime;
     const mxArray* pids_props=NULL;
     const mxArray* phomog_time=NULL;
     int homogeneous_time=EMPTY_INT;
-    int ifield;
     const mwSize* dims;
     int _i;
     char *basePath = "<xsl:value-of select="@name"/>";

@@ -10,11 +10,19 @@
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
 <!--================================================-->
+<!--         Template for the whole document        -->
+<!--================================================-->
+
+<xsl:template match = "/IDSs">
+ <xsl:apply-templates select = "IDS" mode="DELETE"/>
+</xsl:template>
+
+<!--================================================-->
 <!--                Template for IDSs               -->
 <!--================================================-->
 
 <xsl:template match="IDS" mode="DELETE">
-  <xsl:result-document href="src/ids/delete_{@name}.c" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/delete_{@name}.c.in" standalone="yes" method="text">
     #include "mex.h"
     #include "ual_low_level.h"
     #include "imas_mex_utils.h"

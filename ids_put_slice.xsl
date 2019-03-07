@@ -10,11 +10,120 @@
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
 <!--================================================-->
+<!--                 Include section                -->
+<!--================================================-->
+
+<xsl:include href="mex_tools.xsl"/>
+<xsl:include href="put_slice.xsl"/>
+<xsl:include href="put_in_object.xsl"/>
+<xsl:include href="time_tools.xsl"/>
+
+<!--================================================-->
+<!--         Template for the whole document        -->
+<!--================================================-->
+
+<xsl:template match = "/IDSs">
+ <xsl:result-document href="src/ids/ids_put_slice.c.in" standalone="yes" method="text">
+/*
+ * ids_put_slice.c - write IDS slice in MATLAB External Interfaces
+ *
+ *		ids = ids_put_slice(idx, name, occ, ids)
+ *
+ * This is a MEX file for MATLAB.
+*/
+#include "ids_put_slice.h"
+#include "mex.h"
+#include &lt;string.h&gt;
+
+void mexFunction(int nlhs, mxArray *plhs[],
+                 int nrhs, const mxArray *prhs[])
+{
+  // Check for three input arguments  
+  if(nrhs != 4) {
+    mexErrMsgIdAndTxt("IMAS:ids_put_slice:nargin",
+                      "Four inputs required.");
+  }
+  // make sure the 1st input argument is scalar
+  if( !mxIsNumeric(prhs[0]) ||
+      !mxIsScalar(prhs[0]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
+                        "Input idx must be a scalar.");
+  }
+  // make sure the 2nd input argument is a string
+  if( !mxIsChar(prhs[1]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notChar",
+                        "Input name must be a string.");
+  }
+  // make sure the 3rd input argument is scalar
+  if( !mxIsNumeric(prhs[2]) ||
+      !mxIsScalar(prhs[2]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
+                        "Input occurence must be a scalar.");
+  }
+  // make sure the 4th input argument is scalar
+  if( !mxIsStruct(prhs[3]) ||
+      !mxIsScalar(prhs[3]) ) {
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
+                        "Input ids must be a scalar structure.");
+  }
+
+  // Check for no output argument
+  if(nlhs != 0) {
+    mexErrMsgIdAndTxt("IMAS:ids_put_slice:nargout",
+                      "No output required.");
+  }
+
+  // Get the value of the idx
+  int idx = (int) mxGetScalar(prhs[0]);
+#ifndef NDEBUG
+  mexPrintf("The input idx is:  %d\n", idx);
+#endif
+
+  // Get the value of the name
+  char *name = mxArrayToString(prhs[1]);
+#ifndef NDEBUG
+  mexPrintf("The input name is:  %s\n", name);
+#endif
+
+  // Get the value of the occurence
+  int occ = (int) mxGetScalar(prhs[2]);
+#ifndef NDEBUG
+  mexPrintf("The input occurence is:  %d\n", occ);
+#endif
+
+  // Get the value of the ids
+#ifndef NDEBUG
+  mexPrintf("The input ids is:  %s\n", "SKIPPED");
+#endif
+
+ 
+  // Call subfunction based on IDS name
+  <xsl:apply-templates select = "IDS" mode="SWITCH">
+    <xsl:with-param name="function_name">put_slice</xsl:with-param>
+    <xsl:with-param name="function_args">idx, occ, prhs[3]</xsl:with-param>
+  </xsl:apply-templates>
+  // Error if there was no match
+  mexErrMsgIdAndTxt("IMAS:ids_put_slice:unknown_ids",
+           "Unknown IDS name: %s", name);
+
+}
+ </xsl:result-document>
+ <xsl:result-document href="src/ids/ids_put_slice.h.in" standalone="yes" method="text">
+  #include "mex.h"
+  <xsl:apply-templates select = "IDS" mode="LIST">
+    <xsl:with-param name="prefix" select="'int put_slice_'"/>
+    <xsl:with-param name="suffix" select="'(int expIdx, int occ, const mxArray* ids);'"/>
+  </xsl:apply-templates>
+ </xsl:result-document>
+ <xsl:apply-templates select = "IDS" mode="PUT_SLICE"/>
+</xsl:template>
+
+<!--================================================-->
 <!--                Template for IDSs               -->
 <!--================================================-->
 
 <xsl:template match="IDS" mode="PUT_SLICE">
-  <xsl:result-document href="src/ids/put_slice_{@name}.c" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/put_slice_{@name}.c.in" standalone="yes" method="text">
     #include "mex.h"
     #include "ual_low_level.h"
     #include "imas_mex_utils.h"
@@ -51,13 +160,13 @@
     const mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
     // Structure-specific variables<xsl:for-each select=".//field[@data_type='structure']">
     const mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
+    int ifield;
     const mxArray* data=NULL;
     const mxArray* ptime;
     double* dtime;
     const mxArray* pids_props=NULL;
     const mxArray* phomog_time=NULL;
     int homogeneous_time=EMPTY_INT;
-    int ifield;
     const mwSize* dims;
     int _i;
     char *basePath = "<xsl:value-of select="@name"/>";
@@ -101,281 +210,6 @@
     return 0;
     }
   </xsl:result-document>
-</xsl:template>
-
-<!--=================================================-->
-<!--              put field into a slice             -->
-<!--=================================================-->
-
-<xsl:template match="field" mode="PUT_SLICE">
-  <xsl:param name="pointer_name"/>
-  <xsl:param name="AosParent_name"/>
-  <xsl:param name="path_format"/>
-  <xsl:param name="path_args"/>
-
-  <xsl:param name="currentpath_format">
-    <xsl:choose>
-      <xsl:when test="$path_format"><xsl:value-of select="concat($path_format,'/',@name)"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="@name"/></xsl:otherwise>
-    </xsl:choose>
-  </xsl:param>
-
-  <xsl:param name="currentpath_expr">
-    <xsl:choose>
-      <xsl:when test="$path_args">
-      snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);</xsl:when>
-      <xsl:otherwise>
-      snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
-    </xsl:choose>
-  </xsl:param>
-
-  <xsl:if test="@type ='dynamic' or @data_type='structure' or @data_type='struct_array'">
-  // Doc PutSlice <xsl:value-of select="@path_doc"/>
-    <xsl:choose>
-      <!--========== Regular structures ==========-->
-      <xsl:when test="@data_type='structure'">
-	p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetField(<xsl:value-of select="$pointer_name"/>,(mwIndex) 0, "<xsl:value-of select="@name"/>");
-	if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> == NULL)
-	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
-	"Unable to retrieve field %s (in PUT_SLICE)", "<xsl:value-of select="@path"/>");
-	<xsl:apply-templates select="field" mode="PUT_SLICE">
-	  <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
-	  <xsl:with-param name="AosParent_name" select="$AosParent_name"/>
-	  <xsl:with-param name="path_format" select="$currentpath_format"/>
-	  <xsl:with-param name="path_args" select="$path_args"/>
-	</xsl:apply-templates>
-      </xsl:when>
-
-      <!--========== Arrays of structures ==========-->
-      <xsl:when test="@data_type='struct_array' and @maxoccur!='unbounded'">
-	<!-- Type 1 arrays of structure, with potentially multiple time bases -->
-	/* AoS of type 1 */
-	<xsl:choose>
-	  <xsl:when test="$path_args">
-	  snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/Shape_of"<xsl:value-of select="$path_args"/>);</xsl:when>
-	  <xsl:otherwise>
-	  snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/Shape_of");</xsl:otherwise>
-	</xsl:choose>
-	pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetField(<xsl:value-of select="$pointer_name"/>,(mwIndex) 0, "<xsl:value-of select="@name"/>");
-	if (pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/> == NULL)
-	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
-	"Unable to retrieve field %s (in PUT_SLICE)", "<xsl:value-of select="@path"/>");
-	n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetNumberOfElements(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-        if (n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> &gt; 0) {
-	status = putInt(expIdx, path, clepath, n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-	checkStatus(status);
-	if (status) return status;
-	for (i<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = 0;i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>&lt; n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>++){
-	p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, (mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-	if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> == NULL)
-	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_AoS_element",
-      "Unable to retrieve element %d in %s (in PUT_SLICE)", i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, "<xsl:value-of select="@path"/>");
-	<xsl:apply-templates select="field" mode="PUT_SLICE">
-	  <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
-	  <xsl:with-param name="AosParent_name" select="concat('p',@name,'_',generate-id(.))"/>
-	  <xsl:with-param name="path_format" select="concat($currentpath_format,'/%d')"/>
-	  <xsl:with-param name="path_args" select="concat($path_args,',i',@name,'_',generate-id(.),'+1')"/>
-	</xsl:apply-templates>
-	}
-        }
-      </xsl:when>
-
-      <xsl:when test="@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'">
-	<!-- Type 3 arrays of structure, with a unique time base -->
-	/* AoS of type 3 */
-	pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetField(<xsl:value-of select="$pointer_name"/>,(mwIndex) 0, "<xsl:value-of select="@name"/>");
-	if (pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/> == NULL)
-	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
-	"Unable to retrieve field %s (in PUT_SLICE)", "<xsl:value-of select="@path"/>");
-	n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetNumberOfElements(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-        if (n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> &gt; 0) {
-	<xsl:choose>
-	  <xsl:when test="$path_args">
-	  snprintf(clepath,maxpathsize,"%s/<xsl:value-of select="$currentpath_format"/>",path<xsl:value-of select="$path_args"/>);</xsl:when>
-	  <xsl:otherwise>
-	  snprintf(clepath,maxpathsize,"%s/%s",path,"<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
-	</xsl:choose>
-	void *obj_single_time = beginObject(expIdx, (void *) -1, 0, clepath, TIMED);
-	void *obj1 = beginObject(expIdx, obj_single_time, 0, "ALLTIMES", TIMED);
-	int i1 = 0; // Used in PUT_IN_OBJECT
-	p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, (mwIndex) 0);
-	if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> == NULL)
-	mexErrMsgIdAndTxt("IMAS:ids_put:invalid_AoS_element",
-	"Unable to retrieve element %d in %s (in PUT_SLICE)", 0, "<xsl:value-of select="@path"/>");
-        <xsl:apply-templates select = "field" mode = "PUT_IN_OBJECT">
-          <xsl:with-param name="level" select="1"/>
-          <xsl:with-param name="objpath" select="@name"/>
-	  <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
-	</xsl:apply-templates>
-	void *obj = putObjectInObject(expIdx, obj_single_time, "ALLTIMES", i1, obj1);
-	<xsl:value-of select="$currentpath_expr"/>
-	status = putObjectSlice(expIdx, path, clepath, dtime[0], obj);
-	checkStatus(status);
-	if (status) return status;
-        // Store time of the array of structure (hidden variable for the user, but used by the UAL for future get_slice operations)
-        // A temporary "time" vector is filled then put as a regular variable (outside of the object) as AoS%time
-        double timeh = -1;
-
-	// Check the presence of a time vector at the root of the  AoS (on the first index only)
-        if (homogeneous_time == 1) 
-        {
-        timeh = dtime[0];
-        }
-        else
-	{   
-	p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, (mwIndex) 0);
-	data = mxGetField(p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, (mwIndex) 0, "time");
-        if ( mxGetScalar(data) == EMPTY_DOUBLE) 
-        {
-        mexErrMsgIdAndTxt("IMAS:ids_put_slice:Aos_3_invalid_time","The time vector of the type 3 array of structure <xsl:value-of select = "translate(@path,'/','.')"/> must be filled");
-        return (-1);
-        }
-        else 
-        {
-        // the AoS time vector is there, fill time with it
-	p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, (mwIndex) 0);
-	data = mxGetField(p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, (mwIndex) 0, "time");
-        timeh = mxGetScalar(data);
-        }
-        }
-        // Start to put time1
-        status = putDoubleSlice(expIdx, path, timebasepath, timebasepath, timeh, timeh);
-        checkStatus(status);
-        if (status) return status;
-        }
-      </xsl:when>
-
-      <!--========== Vectors ==========-->
-      <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	str = mxArrayToString(data);
-	status = putStringSlice(expIdx, path,  clepath, timebasepath, str, dtime[0]);
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <xsl:when test="@data_type='int_1d_type' or @data_type='INT_1D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	status = putIntSlice(expIdx, path, clepath, timebasepath, *(int *) mxGetData(data), dtime[0]);
-	checkStatus(status);
-	if (status)  return status;
-      </xsl:when>
-
-      <xsl:when test="@data_type='flt_1d_type' or @data_type='FLT_1D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	status = putDoubleSlice(expIdx, path, clepath, timebasepath, mxGetScalar(data), dtime[0]);
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <!--========== Matrices ==========-->
-      <xsl:when test="@data_type='FLT_2D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dim1 = mxGetM(data);
-	doubleArray = mxGetPr(data);
-	status = putVect1DDoubleSlice(expIdx, path, clepath, timebasepath, doubleArray, dim1, dtime[0]);
-	doubleArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <xsl:when test="@data_type='INT_2D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dim1 = mxGetM(data);
-	intArray = (int *) mxGetData(data);
-	status = putVect1DIntSlice(expIdx, path, clepath, timebasepath, intArray, dim1, dtime[0]);
-	intArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <!--========== 3D arrays ==========-->
-      <xsl:when test="@data_type='FLT_3D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dim1 = mxGetM(data);
-	dim2 = mxGetN(data);
-	doubleArray = mxGetPr(data);
-	status = putVect2DDoubleSlice(expIdx, path, clepath, timebasepath, doubleArray, dim1, dim2, dtime[0]);
-	doubleArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <xsl:when test="@data_type='INT_3D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dim1 = mxGetM(data);
-	dim2 = mxGetN(data);
-	intArray = (int *) mxGetData(data);
-	status = putVect2DIntSlice(expIdx, path, clepath, timebasepath, intArray, dim1, dim2, dtime[0]);
-	intArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <!--========== 4D arrays ==========-->
-      <xsl:when test="@data_type='FLT_4D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dims = mxGetDimensions(data);
-	dim1 = dims[0];
-	dim2 = dims[1];
-	dim3 = dims[2];
-	doubleArray = mxGetPr(data);
-	status = putVect3DDoubleSlice(expIdx, path, clepath,timebasepath, doubleArray, dim1, dim2, dim3, dtime[0]);
-	doubleArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <xsl:when test="@data_type='INT_4D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dims = mxGetDimensions(data);
-	dim1 = dims[0];
-	dim2 = dims[1];
-	dim3 = dims[2];
-	intArray = (int *) mxGetData(data);
-	status = putVect3DIntSlice(expIdx, path, clepath, timebasepath, intArray, dim1, dim2, dim3, dtime[0]);
-	intArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <!--========== 5D arrays ==========-->
-      <xsl:when test="@data_type='FLT_5D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dims = mxGetDimensions(data);
-	dim1 = dims[0];
-	dim2 = dims[1];
-	dim3 = dims[2];
-	dim4 = dims[3];
-	doubleArray = mxGetPr(data);
-	status = putVect4DDoubleSlice(expIdx, path, clepath, timebasepath, doubleArray, dim1, dim2, dim3, dim4, dtime[0]);
-	doubleArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <!--========== 6D arrays ==========-->
-      <xsl:when test="@data_type='FLT_6D'">
-	<xsl:value-of select="$currentpath_expr"/>
-	dims = mxGetDimensions(data);
-	dim1 = dims[0];
-	dim2 = dims[1];
-	dim3 = dims[2];
-	dim4 = dims[3];
-	dim5 = dims[4];
-	doubleArray = mxGetPr(data);
-	status = putVect5DDoubleSlice(expIdx, path, clepath, timebasepath, doubleArray, dim1, dim2, dim3, dim4, dim5, dtime[0]);
-	doubleArray = NULL;
-	checkStatus(status);
-	if (status) return status;
-      </xsl:when>
-
-      <xsl:otherwise>
-	// PROBLEM : UNIDENTIFIED TYPE !!! <!-- for comment only -->
-      </xsl:otherwise>
-
-    </xsl:choose>
-  </xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>
