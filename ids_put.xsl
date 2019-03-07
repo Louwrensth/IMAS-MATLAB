@@ -22,21 +22,7 @@
     #include &lt;string.h&gt;
     #include &lt;stdio.h&gt;
 
-    int deleteAll_<xsl:value-of select="@name"/>(int expIdx, int idx)
-    {
-    // Paths-specific variables
-    int maxpathsize=1024;
-    char clepath[maxpathsize];<xsl:for-each select=".//field[@data_type='struct_array' and @maxoccur!='unbounded']">
-    int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; </xsl:for-each>
-    char *basePath = "<xsl:value-of select="@name"/>";
-    char path[strlen(basePath)+4];
-    if(idx &lt; 1)
-    sprintf(path, "%s", basePath);
-    else
-    sprintf(path, "%s/%d", basePath, idx);
-    <xsl:apply-templates select="field" mode="DELETE"/>
-    return 0;
-    }
+    int delete_<xsl:value-of select="@name"/>(int expIdx, int idx);
 
     int put_<xsl:value-of select="@name"/>(int expIdx, int idx, const mxArray* ids)
     {
@@ -101,7 +87,7 @@
       mexErrMsgIdAndTxt("IMAS:ids_put:invalid_time",
       "Unable to retrieve ids%%time");
     dtime = mxGetPr(ptime);
-    deleteAll_<xsl:value-of select="@name"/>(expIdx, idx);
+    delete_<xsl:value-of select="@name"/>(expIdx, idx);
     status = beginIdsPut(expIdx, path);
     checkStatus(status);
     if(status) return status;
@@ -885,49 +871,6 @@
     </xsl:when>
     <xsl:otherwise>
       timebasepath = "";
-    </xsl:otherwise>
-  </xsl:choose>
-</xsl:template>
-
-<xsl:template match="field" mode="DELETE">
-  <xsl:param name="path_format"/>
-  <xsl:param name="path_args"/>
-
-  <xsl:param name="currentpath_format">
-    <xsl:choose>
-      <xsl:when test="$path_format"><xsl:value-of select="concat($path_format,'/',@name)"/></xsl:when>
-      <xsl:otherwise><xsl:value-of select="@name"/></xsl:otherwise>
-    </xsl:choose>
-  </xsl:param>
-
-  <xsl:param name="currentpath_expr">
-    <xsl:choose>
-      <xsl:when test="$path_args">
-      snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);</xsl:when>
-      <xsl:otherwise>
-      snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
-    </xsl:choose>
-  </xsl:param>
-
-  <xsl:choose>
-    <xsl:when test="@data_type='structure'">
-      <xsl:apply-templates select="field" mode="DELETE">
-	<xsl:with-param name="path_format" select="$currentpath_format"/>
-	<xsl:with-param name="path_args" select="$path_args"/>
-      </xsl:apply-templates>
-    </xsl:when>
-    <!--========== Arrays of structures ==========-->
-    <xsl:when test="@data_type='struct_array' and @maxoccur!='unbounded'">
-      for (i<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = 0;i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>&lt;<xsl:value-of select="@maxoccur"/>; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>++){
-      <xsl:apply-templates select="field" mode="DELETE">
-	<xsl:with-param name="path_format" select="concat($currentpath_format,'/%d')"/>
-	<xsl:with-param name="path_args" select="concat($path_args,',i',@name,'_',generate-id(.),'+1')"/>
-      </xsl:apply-templates>
-      }
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:value-of select="$currentpath_expr"/>
-      deleteData(expIdx, path, clepath);
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>

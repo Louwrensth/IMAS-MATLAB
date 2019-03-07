@@ -22,21 +22,7 @@
     #include &lt;string.h&gt;
     #include &lt;stdio.h&gt;
 
-    int deleteAll_<xsl:value-of select="@name"/>(int expIdx, int idx)
-    {
-    // Paths-specific variables
-    int maxpathsize=1024;
-    char clepath[maxpathsize];<xsl:for-each select=".//field[@data_type='struct_array' and @maxoccur!='unbounded']">
-    int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; </xsl:for-each>
-    char *basePath = "<xsl:value-of select="@name"/>";
-    char path[strlen(basePath)+4];
-    if(idx &lt; 1)
-    sprintf(path, "%s", basePath);
-    else
-    sprintf(path, "%s/%d", basePath, idx);
-    <xsl:apply-templates select="field" mode="DELETE"/>
-    return 0;
-    }
+    int delete_<xsl:value-of select="@name"/>(int expIdx, int idx);
 
     int put_non_timed_<xsl:value-of select="@name"/>(int expIdx, int idx, const mxArray* ids)
     {
@@ -101,7 +87,7 @@
       mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:invalid_time",
       "Unable to retrieve ids%%time");
     dtime = mxGetPr(ptime);
-    deleteAll_<xsl:value-of select="@name"/>(expIdx, idx);
+    delete_<xsl:value-of select="@name"/>(expIdx, idx);
     status = beginIdsPutNonTimed(expIdx, path);
     checkStatus(status);
     if(status) return status;

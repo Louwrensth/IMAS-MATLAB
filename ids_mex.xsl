@@ -478,6 +478,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   </xsl:apply-templates>
  </xsl:result-document>
  <xsl:apply-templates select = "IDS" mode="PUT_NON_TIMED"/>
+ <xsl:apply-templates select = "IDS" mode="DELETE"/>
 </xsl:template>
 
 <!--================================================-->
@@ -585,5 +586,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
 <xsl:include href="ids_put.xsl"/>
 <xsl:include href="ids_put_slice.xsl"/>
 <xsl:include href="ids_put_non_timed.xsl"/>
+<xsl:include href="ids_delete.xsl"/>
 
 </xsl:stylesheet>
