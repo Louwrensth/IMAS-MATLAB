@@ -49,7 +49,7 @@
 	  doubleArray = NULL;
 	</xsl:when>
 	<xsl:otherwise>
-	  timebasepath="<xsl:call-template name="printtimepath"/>";
+	  snprintf(timebasepath,maxpathsize,"%s","<xsl:call-template name="printtimepath"/>");
 	  ptime = <xsl:call-template name="printtimevariable">
 	  <xsl:with-param name="pointer_name" select="$pointer_name"/>
 	  <xsl:with-param name="AosParent_name" select="$AosParent_name"/>
@@ -61,12 +61,12 @@
 	</xsl:otherwise>
       </xsl:choose>
       } else {
-      timebasepath="time";
+      snprintf(timebasepath,maxpathsize,"%s","time");
       beginIdsPutTimed(expIdx, path, dim1, dtime);
       }
     </xsl:when>
     <xsl:otherwise>
-      timebasepath = "";
+      snprintf(timebasepath,maxpathsize,"%s","");
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>

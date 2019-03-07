@@ -162,7 +162,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
    int maxpathsize=1024;
    char clepath[maxpathsize];
    char timebasepath[maxpathsize];
-   char* timepath;
    // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
    int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
    int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
