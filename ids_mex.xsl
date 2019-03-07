@@ -76,16 +76,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #endif
  
   // Call subfunction based on IDS name
-  <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix">
-      if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
-      #ifndef NDEBUG
-      mexPrintf("Matched <xsl:value-of select="@name"/>");
-      #endif
-    int err = get_</xsl:with-param>
-    <xsl:with-param name="suffix">(idx,occ,&amp;plhs[0]);
-    if (!err) return;
-    }</xsl:with-param>
+  <xsl:apply-templates select = "IDS" mode="SWITCH">
+    <xsl:with-param name="prefix">int err = get_</xsl:with-param>
+    <xsl:with-param name="suffix">(idx,occ,&amp;plhs[0]);</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
   mexErrMsgIdAndTxt("IMAS:ids_get:unknown_ids",
@@ -188,16 +181,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #endif
  
   // Call subfunction based on IDS name
-  <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix">
-      if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
-      #ifndef NDEBUG
-      mexPrintf("Matched <xsl:value-of select="@name"/>");
-      #endif
-    int err = get_slice_</xsl:with-param>
-    <xsl:with-param name="suffix">(idx,occ,inTime,interpolMode,&amp;plhs[0]);
-    if (!err) return;
-    }</xsl:with-param>
+  <xsl:apply-templates select = "IDS" mode="SWITCH">
+    <xsl:with-param name="prefix">int err = get_slice_</xsl:with-param>
+    <xsl:with-param name="suffix">(idx,occ,inTime,interpolMode,&amp;plhs[0]);</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
   mexErrMsgIdAndTxt("IMAS:ids_get_slice:unknown_ids",
@@ -288,16 +274,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
  
   // Call subfunction based on IDS name
-  <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix">
-      if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
-      #ifndef NDEBUG
-      mexPrintf("Matched <xsl:value-of select="@name"/>");
-      #endif
-    int err = put_</xsl:with-param>
-    <xsl:with-param name="suffix">(idx, occ, prhs[3]);
-    if (!err) return;
-    }</xsl:with-param>
+  <xsl:apply-templates select = "IDS" mode="SWITCH">
+    <xsl:with-param name="prefix">int err = put_</xsl:with-param>
+    <xsl:with-param name="suffix">(idx, occ, prhs[3]);</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
   mexErrMsgIdAndTxt("IMAS:ids_put:unknown_ids",
@@ -388,16 +367,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
  
   // Call subfunction based on IDS name
-  <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix">
-      if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
-      #ifndef NDEBUG
-      mexPrintf("Matched <xsl:value-of select="@name"/>");
-      #endif
-    int err = put_slice_</xsl:with-param>
-    <xsl:with-param name="suffix">(idx, occ, prhs[3]);
-    if (!err) return;
-    }</xsl:with-param>
+  <xsl:apply-templates select = "IDS" mode="SWITCH">
+    <xsl:with-param name="prefix">int err = put_slice_</xsl:with-param>
+    <xsl:with-param name="suffix">(idx, occ, prhs[3]);</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
   mexErrMsgIdAndTxt("IMAS:ids_put_slice:unknown_ids",
@@ -488,16 +460,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
  
   // Call subfunction based on IDS name
-  <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix">
-      if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
-      #ifndef NDEBUG
-      mexPrintf("Matched <xsl:value-of select="@name"/>");
-      #endif
-    int err = put_non_timed_</xsl:with-param>
-    <xsl:with-param name="suffix">(idx, occ, prhs[3]);
-    if (!err) return;
-    }</xsl:with-param>
+  <xsl:apply-templates select = "IDS" mode="SWITCH">
+    <xsl:with-param name="prefix">int err = put_non_timed_</xsl:with-param>
+    <xsl:with-param name="suffix">(idx, occ, prhs[3]);</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
   mexErrMsgIdAndTxt("IMAS:ids_put_non_timed:unknown_ids",
@@ -523,6 +488,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:param name="prefix"/>
   <xsl:param name="suffix"/>
 <xsl:value-of select="$prefix"/><xsl:value-of select="@name"/><xsl:value-of select="$suffix"/></xsl:template>
+
+<xsl:template match="IDS" mode="SWITCH">
+  <xsl:param name="prefix"/>
+  <xsl:param name="suffix"/>
+  if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
+  #ifndef NDEBUG
+  mexPrintf("Matched <xsl:value-of select="@name"/>\n");
+  #endif
+  <xsl:value-of select="$prefix"/><xsl:value-of select="@name"/><xsl:value-of select="$suffix"/>
+  return err;
+}</xsl:template>
+
 
 <!--================================================-->
 <!--                Template for time               -->
