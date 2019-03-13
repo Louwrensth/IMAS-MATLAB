@@ -51,7 +51,7 @@
       n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=int0d;
       pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,1);
       for (i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=0; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>&lt;n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>++) {
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
       p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
       <xsl:apply-templates select="field" mode="GET_SINGLE">
@@ -74,15 +74,15 @@
       status = getObject(expIdx, path, clepath, &amp;obj_all_times, TIMED); // read the whole non-timed block
       checkStatus(status);
       if(!status) {
-      dim1 = getObjectDim(expIdx,obj_all_times);
-      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(dim1,1);
+      n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = getObjectDim(expIdx,obj_all_times);
+      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,1);
       //if (ual_debug =='yes') write(*,*) &amp; 'Get <xsl:value-of select = "@path"/>, lentime =', lentime
-      for (int i1 = 0; i1 &lt; dim1; i1++) {  // fill every time slice
+      for (int i1 = 0; i1 &lt; n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i1++) {  // fill every time slice
       void *obj1;
       status = getObjectFromObject(expIdx,obj_all_times, "ALLTIMES", i1, &amp;obj1);  // extract a single time
       checkStatus(status);
       if (!status) {
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i1);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i1);
       if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
       p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
       <xsl:apply-templates select = "field" mode = "GET_FROM_OBJECT">

@@ -49,7 +49,7 @@
       pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(getObjectDim(expIdx,obj<xsl:value-of select="$level + 1"/>),1);
       }
       for (int i<xsl:value-of select="$level + 1"/> = 0; i<xsl:value-of select="$level + 1"/> &lt; getObjectDim(expIdx,obj<xsl:value-of select="$level + 1"/>); i<xsl:value-of select="$level + 1"/>++) {
-	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="$level + 1"/>);
+	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="$level + 1"/>);
 	  if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
 	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
 	  <xsl:apply-templates select = "field" mode = "GET_FROM_OBJECT">

@@ -64,7 +64,7 @@
       n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=int0d;
       pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,1);
       for (i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=0; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>&lt;n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>++) {
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
       p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
       <xsl:apply-templates select="field" mode="GET_SLICE">
@@ -94,7 +94,7 @@
       checkStatus(status);
       if (!status) {
       pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(1,1);
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,0);
+      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) 0);
       <xsl:apply-templates select = "field" mode = "GET_FROM_OBJECT">
         <xsl:with-param name="level" select="1"/>
         <xsl:with-param name="objpath" select="@name"/>
