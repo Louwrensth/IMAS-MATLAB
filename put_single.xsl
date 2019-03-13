@@ -363,10 +363,11 @@
 	  <xsl:with-param name="path_args" select="$path_args"/>
 	</xsl:call-template>
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
+	dim3 = numDims > 2 ? dims[2] : 1;
 	doubleArray = mxGetPr(data);
 	status = putVect3DDouble(expIdx, path, clepath,timebasepath, doubleArray, dim1, dim2, dim3, <xsl:call-template name="printIsTimed"/>);
 	doubleArray = NULL;
@@ -385,10 +386,11 @@
 	  <xsl:with-param name="path_args" select="$path_args"/>
 	</xsl:call-template>
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
+	dim3 = numDims > 2 ? dims[2] : 1;
 	intArray = (int *) mxGetData(data);
 	status = putVect3DInt(expIdx, path, clepath,timebasepath, intArray, dim1, dim2, dim3, <xsl:call-template name="printIsTimed"/>);
 	intArray = NULL;
@@ -408,11 +410,12 @@
 	  <xsl:with-param name="path_args" select="$path_args"/>
 	</xsl:call-template>
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
-	dim4 = dims[3];
+	dim3 = numDims > 2 ? dims[2] : 1;
+	dim4 = numDims > 3 ? dims[3] : 1;
 	doubleArray = mxGetPr(data);
 	status = putVect4DDouble(expIdx, path, clepath,timebasepath, doubleArray, dim1, dim2, dim3, dim4, <xsl:call-template name="printIsTimed"/>);
 	doubleArray = NULL;
@@ -432,12 +435,13 @@
 	  <xsl:with-param name="path_args" select="$path_args"/>
 	</xsl:call-template>
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
-	dim4 = dims[3];
-	dim5 = dims[4];
+	dim3 = numDims > 2 ? dims[2] : 1;
+	dim4 = numDims > 3 ? dims[3] : 1;
+	dim5 = numDims > 4 ? dims[4] : 1;
 	doubleArray = mxGetPr(data);
 	status = putVect5DDouble(expIdx, path, clepath, timebasepath, doubleArray, dim1, dim2, dim3, dim4, dim5, <xsl:call-template name="printIsTimed"/>);
 	doubleArray = NULL;
@@ -457,13 +461,14 @@
 	  <xsl:with-param name="path_args" select="$path_args"/>
 	</xsl:call-template>
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
-	dim4 = dims[3];
-	dim5 = dims[4];
-	dim6 = dims[5];
+	dim3 = numDims > 2 ? dims[2] : 1;
+	dim4 = numDims > 3 ? dims[3] : 1;
+	dim5 = numDims > 4 ? dims[4] : 1;
+	dim6 = numDims > 5 ? dims[5] : 1;
 	doubleArray = mxGetPr(data);
 	status = putVect6DDouble(expIdx, path, clepath,timebasepath, doubleArray, dim1, dim2, dim3, dim4, dim5, dim6, <xsl:call-template name="printIsTimed"/>);
 	doubleArray = NULL;

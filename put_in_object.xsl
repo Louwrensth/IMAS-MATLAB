@@ -173,11 +173,12 @@
 
     <!--========== 3D arrays ==========-->
     <xsl:when test="@data_type='FLT_3D'">
+      numDims = mxGetNumberOfDimensions(data);
       dims = mxGetDimensions(data);
       dim1In = (int) dims[0];
       if ( dim1In > 0) {
       dim2In = (int) dims[1];
-      dim3In = (int) dims[2];
+      dim3In = numDims > 2 ? (int) dims[2] : 1;
       doubleArray = mxGetPr(data);
       obj<xsl:value-of select="$level"/> = putVect3DDoubleInObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:value-of select="$child_index"/>, doubleArray, dim1In, dim2In, dim3In);
       doubleArray = NULL;
@@ -187,11 +188,12 @@
     </xsl:when>
 
     <xsl:when test="@data_type='INT_3D'">
+      numDims = mxGetNumberOfDimensions(data);
       dims = mxGetDimensions(data);
       dim1In = (int) dims[0];
       if ( dim1In > 0) {
       dim2In = (int) dims[1];
-      dim3In = (int) dims[2];
+      dim3In = numDims > 2 ? (int) dims[2] : 1;
       intArray = (int *)mxGetData(data);
       obj<xsl:value-of select="$level"/> = putVect3DIntInObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:value-of select="$child_index"/>, intArray, dim1In, dim2In, dim3In);
       intArray = NULL;
@@ -202,12 +204,13 @@
 
     <!--========== 4D arrays ==========-->
     <xsl:when test="@data_type='FLT_4D'">
+      numDims = mxGetNumberOfDimensions(data);
       dims = mxGetDimensions(data);
       dim1In = (int) dims[0];
       if ( dim1In > 0) {
       dim2In = (int) dims[1];
-      dim3In = (int) dims[2];
-      dim4In = (int) dims[3];
+      dim3In = numDims > 2 ? (int) dims[2] : 1;
+      dim4In = numDims > 3 ? (int) dims[3] : 1;
       doubleArray = mxGetPr(data);
       obj<xsl:value-of select="$level"/> = putVect4DDoubleInObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:value-of select="$child_index"/>, doubleArray, dim1In, dim2In, dim3In, dim4In);
       doubleArray = NULL;
@@ -218,13 +221,14 @@
 
     <!--========== 5D arrays ==========-->
     <xsl:when test="@data_type='FLT_5D'">
+      numDims = mxGetNumberOfDimensions(data);
       dims = mxGetDimensions(data);
       dim1In = (int) dims[0];
       if ( dim1In > 0) {
       dim2In = (int) dims[1];
-      dim3In = (int) dims[2];
-      dim4In = (int) dims[3];
-      dim5In = (int) dims[4];
+      dim3In = numDims > 2 ? (int) dims[2] : 1;
+      dim4In = numDims > 3 ? (int) dims[3] : 1;
+      dim5In = numDims > 4 ? (int) dims[4] : 1;
       doubleArray = mxGetPr(data);
       obj<xsl:value-of select="$level"/> = putVect5DDoubleInObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:value-of select="$child_index"/>, doubleArray, dim1In, dim2In, dim3In, dim4In, dim5In);
       doubleArray = NULL;
@@ -235,14 +239,15 @@
 
     <!--========== 6D arrays ==========-->
     <xsl:when test="@data_type='FLT_6D'">
+      numDims = mxGetNumberOfDimensions(data);
       dims = mxGetDimensions(data);
       dim1In = (int) dims[0];
       if ( dim1In > 0) {
       dim2In = (int) dims[1];
-      dim3In = (int) dims[2];
-      dim4In = (int) dims[3];
-      dim5In = (int) dims[4];
-      dim6In = (int) dims[5];
+      dim3In = numDims > 2 ? (int) dims[2] : 1;
+      dim4In = numDims > 3 ? (int) dims[3] : 1;
+      dim5In = numDims > 4 ? (int) dims[4] : 1;
+      dim6In = numDims > 5 ? (int) dims[5] : 1;
       doubleArray = mxGetPr(data);
       obj<xsl:value-of select="$level"/> = putVect6DDoubleInObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:value-of select="$child_index"/>, doubleArray, dim1In, dim2In, dim3In, dim4In, dim5In, dim6In);
       doubleArray = NULL;

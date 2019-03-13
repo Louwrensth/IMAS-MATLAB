@@ -223,10 +223,11 @@
       <!--========== 4D arrays ==========-->
       <xsl:when test="@data_type='FLT_4D'">
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
+	dim3 = numDims > 2 ? (int) dims[2] : 1;
 	doubleArray = mxGetPr(data);
 	status = putVect3DDoubleSlice(expIdx, path, clepath,timebasepath, doubleArray, dim1, dim2, dim3, dtime[0]);
 	doubleArray = NULL;
@@ -236,10 +237,11 @@
 
       <xsl:when test="@data_type='INT_4D'">
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
+	dim3 = numDims > 2 ? dims[2] : 1;
 	intArray = (int *) mxGetData(data);
 	status = putVect3DIntSlice(expIdx, path, clepath, timebasepath, intArray, dim1, dim2, dim3, dtime[0]);
 	intArray = NULL;
@@ -250,11 +252,12 @@
       <!--========== 5D arrays ==========-->
       <xsl:when test="@data_type='FLT_5D'">
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
-	dim4 = dims[3];
+	dim3 = numDims > 2 ? dims[2] : 1;
+	dim4 = numDims > 3 ? dims[3] : 1;
 	doubleArray = mxGetPr(data);
 	status = putVect4DDoubleSlice(expIdx, path, clepath, timebasepath, doubleArray, dim1, dim2, dim3, dim4, dtime[0]);
 	doubleArray = NULL;
@@ -265,12 +268,13 @@
       <!--========== 6D arrays ==========-->
       <xsl:when test="@data_type='FLT_6D'">
 	<xsl:value-of select="$currentpath_expr"/>
+	numDims = mxGetNumberOfDimensions(data);
 	dims = mxGetDimensions(data);
 	dim1 = dims[0];
 	dim2 = dims[1];
-	dim3 = dims[2];
-	dim4 = dims[3];
-	dim5 = dims[4];
+	dim3 = numDims > 2 ? dims[2] : 1;
+	dim4 = numDims > 3 ? dims[3] : 1;
+	dim5 = numDims > 4 ? dims[4] : 1;
 	doubleArray = mxGetPr(data);
 	status = putVect5DDoubleSlice(expIdx, path, clepath, timebasepath, doubleArray, dim1, dim2, dim3, dim4, dim5, dtime[0]);
 	doubleArray = NULL;
