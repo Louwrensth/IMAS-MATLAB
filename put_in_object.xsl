@@ -17,11 +17,11 @@
   <xsl:param name="level"/> <!-- recursion level -->
   <xsl:param name="objpath"/> <!-- path inside the object -->
   <xsl:param name="pointer_name"/>
+  <xsl:param name="child_index"/> <!-- index to use to add a child in the current object -->
 
-  <!-- build the index to use to add a child in the current object -->
-  <xsl:param name="child_index" select="concat('i',$level)"/>
   <!-- build the path of the current field inside the object -->
   <xsl:param name="currentobjpath" select="concat($objpath,'/',@name)"/>
+  // Doc Put_in_object <xsl:value-of select="@path_doc"/>
   <xsl:if test="
 		@data_type='str_type' or @data_type='STR_0D' or
 		@data_type='int_type' or @data_type='INT_0D' or
@@ -65,7 +65,7 @@
       pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetFieldByNumber(<xsl:value-of select="$pointer_name"/>,(mwIndex) 0, ifield);
       n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = (pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/> == NULL) ? 0 : mxGetNumberOfElements(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
       if (n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> &gt; 0) {
-      void *obj<xsl:value-of select="$level + 1"/> = beginObject(expIdx,obj<xsl:value-of select="$level"/>,0,"<xsl:value-of select="$currentobjpath"/>",NON_TIMED);
+      void *obj<xsl:value-of select="$level + 1"/> = beginObject(expIdx,obj<xsl:value-of select="$level"/>, 0, "<xsl:value-of select="$currentobjpath"/>",NON_TIMED);
       // Start to declare a nested Type 2 Aos
       for (int i<xsl:value-of select="$level + 1"/> = 0; i<xsl:value-of select="$level + 1"/> &lt; n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i<xsl:value-of select="$level + 1"/>++) {
       p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>, (mwIndex) i<xsl:value-of select="$level + 1"/>);
@@ -76,6 +76,7 @@
 	<xsl:with-param name="level" select="$level + 1"/>
 	<xsl:with-param name="objpath" select="@name"/>
 	<xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
+	<xsl:with-param name="child_index" select="concat('i',$level + 1)"/>
       </xsl:apply-templates>
       }
       obj<xsl:value-of select="$level"/> = putObjectInObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:value-of select="$child_index"/>, obj<xsl:value-of select="$level + 1"/>);
@@ -93,6 +94,7 @@
 	<xsl:with-param name="level" select="$level"/>
 	<xsl:with-param name="objpath" select="$currentobjpath"/>
 	<xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
+	<xsl:with-param name="child_index" select="$child_index"/>
       </xsl:apply-templates>
     </xsl:when>
 

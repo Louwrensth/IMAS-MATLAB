@@ -147,8 +147,10 @@
           <xsl:with-param name="level" select="1"/>
           <xsl:with-param name="objpath" select="@name"/>
 	  <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
+          <xsl:with-param name="child_index" select="0"/>
 	</xsl:apply-templates>
-	void *obj = putObjectInObject(expIdx,obj_all_times, "ALLTIMES", i1, obj1);
+	obj_all_times = putObjectInObject(expIdx, obj_all_times, "ALLTIMES", i1, obj1);
+	checkObject(obj_all_times);
 	}
         // Store time of the array of structure (hidden variable for the user, but used by the UAL for future get_slice operations)
         // A temporary "time" vector is filled then put as a regular variable (outside of the object) as AoS%time
@@ -192,7 +194,9 @@
         if (status) return status;
         endIdsPutTimed(expIdx, path);
 	<xsl:value-of select="$currentpath_expr"/> // path where object will be stored
-        putObject(expIdx, path, clepath, obj_all_times, 1);
+        status = putObject(expIdx, path, clepath, obj_all_times, 1);
+        checkStatus(status);
+        if (status) return status;
         }
       </xsl:when>
 
@@ -217,6 +221,7 @@
               <xsl:with-param name="level" select="1"/>
               <xsl:with-param name="objpath" select="@name"/>
 	      <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
+              <xsl:with-param name="child_index" select="i1"/>
             </xsl:apply-templates>
             }
             }

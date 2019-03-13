@@ -114,10 +114,11 @@
           <xsl:with-param name="level" select="1"/>
           <xsl:with-param name="objpath" select="@name"/>
 	  <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
+          <xsl:with-param name="child_index" select="0"/>
 	</xsl:apply-templates>
-	void *obj = putObjectInObject(expIdx, obj_single_time, "ALLTIMES", i1, obj1);
+	obj_single_time = putObjectInObject(expIdx, obj_single_time, "ALLTIMES", i1, obj1);
 	<xsl:value-of select="$currentpath_expr"/>
-	status = putObjectSlice(expIdx, path, clepath, dtime[0], obj);
+	status = putObjectSlice(expIdx, path, clepath, dtime[0], obj_single_time);
 	checkStatus(status);
 	if (status) return status;
         // Store time of the array of structure (hidden variable for the user, but used by the UAL for future get_slice operations)
