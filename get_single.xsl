@@ -167,7 +167,7 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
-      memcpy(intArray,mxGetData(data),dim1*sizeof(int));
+      memcpy((int *)mxGetData(data),intArray,dim1*sizeof(int));
       free(intArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -181,7 +181,7 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleMatrix(dim1,1,mxREAL);
-      memcpy(doubleArray,mxGetData(data),dim1*sizeof(double));
+      memcpy((double *)mxGetData(data),doubleArray,dim1*sizeof(double));
       free(doubleArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -214,7 +214,7 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateNumericMatrix(dim1,dim2,mxINT32_CLASS,mxREAL);
-      memcpy(intArray,mxGetData(data),dim1*dim2*sizeof(int));
+      memcpy((int *)mxGetData(data),intArray,dim1*dim2*sizeof(int));
       free(intArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -228,7 +228,7 @@
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
-      memcpy(doubleArray,mxGetData(data),dim1*dim2*sizeof(double));
+      memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*sizeof(double));
       free(doubleArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -245,7 +245,7 @@
       dims = malloc(3*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
       data = mxCreateNumericArray(3,dims,mxINT32_CLASS,mxREAL);
-      memcpy(intArray,mxGetData(data),dim1*dim2*dim3*sizeof(int));
+      memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*sizeof(int));
       free(intArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -262,7 +262,7 @@
       dims = malloc(3*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
       data = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
-      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*sizeof(double));
+      memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*sizeof(double));
       free(doubleArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -280,7 +280,7 @@
       dims = malloc(4*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;
       data = mxCreateNumericArray(4,dims,mxINT32_CLASS,mxREAL);
-      memcpy(intArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(int));
+      memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*dim4*sizeof(int));
       free(intArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -297,7 +297,7 @@
       dims = malloc(4*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;
       data = mxCreateNumericArray(4,dims,mxDOUBLE_CLASS,mxREAL);
-      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*sizeof(double));
+      memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*dim4*sizeof(double));
       free(doubleArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -315,7 +315,7 @@
       dims = malloc(5*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
       data = mxCreateNumericArray(5,dims,mxINT32_CLASS,mxREAL);
-      memcpy(intArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(int));
+      memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*dim4*dim5*sizeof(int));
       free(intArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -331,7 +331,7 @@
       if(!status) {
       dims = malloc(5*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
-      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*sizeof(double));
+      memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*dim4*dim5*sizeof(double));
       free(doubleArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -349,7 +349,7 @@
       dims = malloc(6*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;dims[5] = dim6;
       data = mxCreateNumericArray(6,dims,mxINT32_CLASS,mxREAL);
-      memcpy(intArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*dim6*sizeof(int));
+      memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*dim4*dim5*dim6*sizeof(int));
       free(intArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
@@ -366,7 +366,7 @@
       dims = malloc(6*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;dims[5] = dim6;
       data = mxCreateNumericArray(6,dims,mxDOUBLE_CLASS,mxREAL);
-      memcpy(doubleArray,mxGetData(data),dim1*dim2*dim3*dim4*dim5*dim6*sizeof(double));
+      memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*dim4*dim5*dim6*sizeof(double));
       free(doubleArray);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
