@@ -62,6 +62,7 @@
       </xsl:choose>
       } else {
       snprintf(timebasepath,maxpathsize,"%s","time");
+      dim1 = mxGetNumberOfElements(ptime);
       beginIdsPutTimed(expIdx, path, dim1, dtime);
       }
     </xsl:when>
