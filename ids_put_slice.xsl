@@ -167,7 +167,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     const mxArray* phomog_time=NULL;
     int homogeneous_time=EMPTY_INT;
     const mwSize* dims;
-    int _i;
+    int _i, _j;
     char *basePath = "<xsl:value-of select="@name"/>";
     char path[strlen(basePath)+4];
     pids_props = mxGetField(ids, (mwIndex) 0, "ids_properties");

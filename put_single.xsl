@@ -248,8 +248,12 @@
 	dim2 = mxGetN(data);
 	str = mxArrayToString(data); // char * only ...
 	stringArray = malloc(dim1*sizeof(char *));
-	for (_i = 0; _i &lt; dim1; _i++)
-	stringArray[_i] = str + _i*dim2; // TODO null character ...
+	for (_i = 0; _i &lt; dim1; _i++) {
+	stringArray[_i] = malloc((dim2+1)*sizeof(char));
+	for (_j = 0; _j &lt; dim2; _j++)
+	stringArray[_i][_j] = str[_i+dim1*_j];
+	stringArray[_i][dim2] = '\000';
+	}
 	status = putVect1DString(expIdx, path, clepath, timebasepath, stringArray, dim1, <xsl:call-template name="printIsTimed"/>);
 	stringArray = NULL;
 	checkStatus(status);

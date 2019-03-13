@@ -129,8 +129,12 @@
       dim2In = mxGetN(data);
       str = mxArrayToString(data); // char * only ...
       stringArray = malloc(dim1In*sizeof(char *));
-      for (_i = 0; _i &lt; dim1In; _i++)
-      stringArray[_i] = str + _i*dim2In; // TODO null character ...
+      for (_i = 0; _i &lt; dim1In; _i++) {
+      stringArray[_i] = malloc((dim2In+1)*sizeof(char));
+      for (_j = 0; _j &lt; dim2In; _j++)
+      stringArray[_i][_j] = str[_i+dim1In*_j];
+      stringArray[_i][dim2In+1] = '\000';
+      }
       obj<xsl:value-of select="$level"/> = putVect1DStringInObject(expIdx,obj<xsl:value-of select="$level"/>, "<xsl:value-of select="$currentobjpath"/>", <xsl:value-of select="$child_index"/>, stringArray, dim1In);
       free(stringArray);
       stringArray = NULL;
