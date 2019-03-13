@@ -191,7 +191,8 @@
         checkStatus(status);
         if (status) return status;
         endIdsPutTimed(expIdx, path);
-        putObject(expIdx, path, clepath, obj_all_times, 1); // replaced timepath with clepath
+	<xsl:value-of select="$currentpath_expr"/> // path where object will be stored
+        putObject(expIdx, path, clepath, obj_all_times, 1);
         }
       </xsl:when>
 
