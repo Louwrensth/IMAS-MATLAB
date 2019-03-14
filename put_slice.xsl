@@ -37,6 +37,23 @@
 
   <xsl:if test="@type ='dynamic' or @data_type='structure' or @data_type='struct_array'">
   // Doc PutSlice <xsl:value-of select="@path_doc"/>
+    <xsl:if test="
+		  @data_type='str_1d_type' or @data_type='STR_1D' or
+		  @data_type='flt_1d_type' or @data_type='FLT_1D' or
+		  @data_type='int_1d_type' or @data_type='INT_1D' or
+		  @data_type='FLT_2D' or @data_type='INT_2D' or
+		  @data_type='FLT_3D' or @data_type='INT_3D' or
+		  @data_type='FLT_4D' or @data_type='INT_4D' or
+		  @data_type='FLT_5D' or @data_type='INT_5D' or
+		  @data_type='FLT_6D' or @data_type='INT_6D'"> 
+      ifield = mxGetFieldNumber(<xsl:value-of select="$pointer_name"/>, "<xsl:value-of select="@name"/>");
+      if (ifield &lt; 0)
+      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
+      "Unable to retrieve field %s (in PUT_SLICE)", "<xsl:value-of select="@path"/>");
+      data = mxGetFieldByNumber(<xsl:value-of select="$pointer_name"/>, (mwIndex) 0, ifield);
+      if (data != NULL &amp;&amp; mxGetNumberOfElements(data) &gt; 0) {
+    </xsl:if>
+
     <xsl:choose>
       <!--========== Regular structures ==========-->
       <xsl:when test="@data_type='structure'">
@@ -288,6 +305,17 @@
       </xsl:otherwise>
 
     </xsl:choose>
+    <xsl:if test="
+		  @data_type='str_1d_type' or @data_type='STR_1D' or
+		  @data_type='flt_1d_type' or @data_type='FLT_1D' or
+		  @data_type='int_1d_type' or @data_type='INT_1D' or
+		  @data_type='FLT_2D' or @data_type='INT_2D' or
+		  @data_type='FLT_3D' or @data_type='INT_3D' or
+		  @data_type='FLT_4D' or @data_type='INT_4D' or
+		  @data_type='FLT_5D' or @data_type='INT_5D' or
+		  @data_type='FLT_6D' or @data_type='INT_6D'"> 
+      }
+    </xsl:if>
   </xsl:if>
 </xsl:template>
 
