@@ -83,6 +83,13 @@
 	<xsl:with-param name="path_args" select="concat($path_args,',i',@name,'_',generate-id(.),'+1')"/>
       </xsl:apply-templates>
       }
+      <xsl:choose>
+	<xsl:when test="$path_args">
+	snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/Shape_of"<xsl:value-of select="$path_args"/>);</xsl:when>
+	<xsl:otherwise>
+	snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/Shape_of");</xsl:otherwise>
+      </xsl:choose>
+      deleteData(expIdx, path, clepath);
     </xsl:when>
     <xsl:otherwise>
       <xsl:value-of select="$currentpath_expr"/>
