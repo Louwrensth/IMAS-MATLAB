@@ -165,7 +165,13 @@
         }
         }
         // Start to put time1
-        status = putDoubleSlice(expIdx, path, timebasepath, timebasepath, timeh, timeh);
+	<xsl:choose>
+	  <xsl:when test="$path_args">
+	  snprintf(timepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/time"<xsl:value-of select="$path_args"/>);</xsl:when>
+	  <xsl:otherwise>
+	  snprintf(timepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/time");</xsl:otherwise>
+	</xsl:choose>
+        status = putDoubleSlice(expIdx, path, timepath, timepath, timeh, timeh);
         checkStatus(status);
         if (status) return status;
         }
