@@ -59,122 +59,66 @@
       <xsl:apply-templates select="child::IDS" mode="generate"/>
     </exsl:document>
     <exsl:document href="tests/imas_test.m" method="text">
-
-      <xsl:text>function status = imas_test()&#10;</xsl:text>
-      <xsl:text>&#9;disp('Starting Matlab HLI tests...')&#10;</xsl:text>
+      <xsl:text>function tests = imas_test()&#10;</xsl:text>
+      <xsl:text>&#9;tests = functiontests(localfunctions);&#10;</xsl:text>
+      <xsl:text>end&#10;</xsl:text>
+      <xsl:text>&#10;</xsl:text>
+      <xsl:apply-templates select="child::IDS" mode="test"/>
+      <xsl:text>function setupOnce(testCase)&#10;</xsl:text>
       <xsl:text>&#9;idx = imas_create('ids',9999,9999,0,0);&#10;</xsl:text>
-      <xsl:text>&#9;list = IDS_list;&#10;</xsl:text>
-      <xsl:text>&#9;for item = list.'&#10;</xsl:text>
-      <xsl:text>&#9;&#9;disp(item{1});&#10;</xsl:text>
-      <xsl:text>&#9;&#9;ids = ids_rand(item{1},false);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;ids_put(idx,item{1},0,ids);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;sdi = ids_get(idx,item{1},0);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;comparator(ids,sdi,item{1});&#10;</xsl:text>
-      <xsl:text>&#9;&#9;ids = ids_rand(item{1},true);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;sdi = ids_get_slice(idx,item{1},0,0.0);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;comparator(ids,sdi,item{1});&#10;</xsl:text>
-      <xsl:text>&#9;&#9;ids_put_non_timed(idx,item{1},0,ids);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;ids_put_slice(idx,item{1},0,ids);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;sdi = ids_get(idx,item{1},0);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;comparator(ids,sdi,item{1});&#10;</xsl:text>
-      <xsl:text>&#9;end&#10;</xsl:text>
-      <xsl:text>&#9;disp('Matlab HLI tests finished.')&#10;</xsl:text>
+      <xsl:text>&#9;testCase.TestData.idx = idx;&#10;</xsl:text>
+      <xsl:text>end&#10;</xsl:text>
       <xsl:text>&#10;</xsl:text>
-      
-      <xsl:text>function occ = get_occurrence_str(idsName, occurrence)&#10;</xsl:text>
-      <xsl:text>&#9;if occurrence == 0&#10;</xsl:text>
-      <xsl:text>&#9;&#9;occ=idsName;&#10;</xsl:text>
-      <xsl:text>&#9;else&#10;</xsl:text>
-      <xsl:text>&#9;&#9;occ=sprintf('%s/%d',idsName, occurrence);&#10;</xsl:text>
-      <xsl:text>&#9;end&#10;</xsl:text>
-      <xsl:text>&#10;</xsl:text>
-
-      <xsl:text>function idsx = init()&#10;</xsl:text>
-      <xsl:text>&#9;disp('Initializing...')&#10;</xsl:text>
-      <xsl:text>&#9;options = {};&#10;</xsl:text>
-      <xsl:text>&#9;options.method = 'put';&#10;</xsl:text>
-      <xsl:text>&#9;TESTSHOT = 9999;&#10;</xsl:text>
-      <xsl:text>&#9;TESTRUN  = 9999;&#10;</xsl:text>
-      <xsl:text>&#9;rng('default');&#10;</xsl:text>
-      <xsl:text>&#9;if strcmp(options.method,'put')&#10;</xsl:text>
-      <xsl:text>&#9;&#9;fname='create';&#10;</xsl:text>
-      <xsl:text>&#9;else&#10;</xsl:text>
-      <xsl:text>&#9;&#9;fname='open';&#10;</xsl:text>
-      <xsl:text>&#9;end&#10;</xsl:text>
-      <xsl:text>&#9;IMAS_MAJOR_VERSION = '3';&#10;</xsl:text>
-      <xsl:text>&#9;IMASDB_PATH = sprintf('%s%s', getenv('HOME'), '/public/imasdb/test');&#10;</xsl:text>
-      <xsl:text>&#9;if ~exist (IMASDB_PATH, 'dir')&#10;</xsl:text>
-      <xsl:text>&#9;&#9;ME = MException('IMAS:noSuchPath','Directory %s not found',IMASDB_PATH);&#10;</xsl:text>
-      <xsl:text>&#9;&#9;throw (ME);&#10;</xsl:text>
-      <xsl:text>&#9;end&#10;</xsl:text>
-      <xsl:text>&#9;if fname=='create'&#10;</xsl:text>
-      <xsl:text>&#9;&#9;idsx=imas_create_env('ids',TESTSHOT,TESTRUN,0,0,getenv('USER'),'test',IMAS_MAJOR_VERSION);&#10;</xsl:text>
-      <xsl:text>&#9;else&#10;</xsl:text>
-      <xsl:text>&#9;&#9;idsx=imas_open_env('ids',TESTSHOT,TESTRUN,getenv('USER'),'test',IMAS_MAJOR_VERSION);&#10;</xsl:text>
-      <xsl:text>&#9;end&#10;</xsl:text>
-      <xsl:text>&#10;</xsl:text>
-
-      <xsl:text>function finish(idx)&#10;</xsl:text>
-      <xsl:text>&#9;disp('Closing...')&#10;</xsl:text>
+      <xsl:text>function teadownOnce(testCase)&#10;</xsl:text>
+      <xsl:text>&#9;idx = TestCase.testData.idx;&#10;</xsl:text>
       <xsl:text>&#9;imas_close(idx);&#10;</xsl:text>
-      <xsl:text>&#10;</xsl:text>
+      <xsl:text>end&#10;</xsl:text>
     </exsl:document>
   </xsl:template>
 
-  <!-- IDS put()-->
-  <xsl:template match="IDS" mode="put">
-    <xsl:text>function test_put_</xsl:text><xsl:value-of select="@name"/><xsl:text>(idx)&#10;</xsl:text>
-    <xsl:text>&#9;message = ['Testing put() on ','</xsl:text><xsl:value-of select="@name"/><xsl:text>'];&#10;</xsl:text>
-    <xsl:text>&#9;disp(message)&#10;</xsl:text>
-    <xsl:text>&#9;rng(1);&#10;</xsl:text>
-    <xsl:text>&#9;ids = ids_gen('</xsl:text><xsl:value-of select="@name"/><xsl:text>');&#10;</xsl:text>
-    <xsl:text>&#9;for occurrence=1:(</xsl:text><xsl:value-of select="@maxoccur"/><xsl:text>)&#10;</xsl:text>
-    <xsl:apply-templates select="field" mode="put"/>
-    <xsl:text>&#9;&#9;ids_put(idx, get_occurrence_str('</xsl:text><xsl:value-of select="@name"/><xsl:text>', occurrence), ids);&#10;</xsl:text>
-    <xsl:text>&#9;end&#10;</xsl:text>
+  <xsl:template match="IDS" mode="test">
+    <xsl:text>function testPutGet_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
+    <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
+    <xsl:text>&#9;idx = testCase.TestData.idx;&#10;</xsl:text>
+    <xsl:text>&#9;ids = ids_rand(path,false);&#10;</xsl:text>
+    <xsl:text>&#9;ids_put(idx,path,0,ids);&#10;</xsl:text>
+    <xsl:text>&#9;sdi = ids_get(idx,path,0);&#10;</xsl:text>
+    <xsl:text>&#9;comparator(ids,sdi,path);&#10;</xsl:text>
+    <xsl:text>end&#10;</xsl:text>
     <xsl:text>&#10;</xsl:text>
-  </xsl:template>
-
-  <!-- IDS get()-->
-  <xsl:template match="IDS" mode="get">
-    <xsl:text>function ids = test_get_</xsl:text><xsl:value-of select="@name"/><xsl:text>(idx)&#10;</xsl:text>
-    <xsl:text>&#9;message = ['Testing get() on ','</xsl:text><xsl:value-of select="@name"/><xsl:text>'];&#10;</xsl:text>
-    <xsl:text>&#9;disp(message)&#10;</xsl:text>
-    <xsl:text>&#9;rng(1);&#10;</xsl:text>
-    <xsl:text>&#9;for occurrence=1:(</xsl:text><xsl:value-of select="@maxoccur"/><xsl:text>)&#10;</xsl:text>
-    <xsl:text>&#9;&#9;ids = ids_get(idx, get_occurrence_str('</xsl:text><xsl:value-of select="@name"/><xsl:text>', occurrence));&#10;</xsl:text>
-    <xsl:apply-templates select="field" mode="get"/>
-    <xsl:text>&#9;end&#10;</xsl:text>
+    <xsl:text>function testPutGetSlice_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
+    <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
+    <xsl:text>&#9;idx = testCase.TestData.idx;&#10;</xsl:text>
+    <xsl:text>&#9;ids = ids_rand(path,false);&#10;</xsl:text>
+    <xsl:text>&#9;ids_put(idx,path,0,ids);&#10;</xsl:text>
+    <xsl:text>&#9;ids = ids_rand(path,true);&#10;</xsl:text>
+    <xsl:text>&#9;time = 1.0;&#10;</xsl:text>
+    <xsl:text>&#9;interp = 1; % closest sample&#10;</xsl:text>
+    <xsl:text>&#9;sdi = ids_get_slice(idx,path,0,time,interp);&#10;</xsl:text>
+    <xsl:text>&#9;comparator(ids,sdi,path);&#10;</xsl:text>
+    <xsl:text>end&#10;</xsl:text>
     <xsl:text>&#10;</xsl:text>
-  </xsl:template>
-
-  <!-- IDS putSlice()-->
-  <xsl:template match="IDS" mode="putSlice">
-    <xsl:text>function test_putSlice_</xsl:text><xsl:value-of select="@name"/><xsl:text>(idx)&#10;</xsl:text>
-    <xsl:text>&#9;message = ['Testing putSlice() on ','</xsl:text><xsl:value-of select="@name"/><xsl:text>'];&#10;</xsl:text>
-    <xsl:text>&#9;disp(message)&#10;</xsl:text>
-    <xsl:text>&#9;rng(1);&#10;</xsl:text>
-    <xsl:text>&#9;ids = ids_gen('</xsl:text><xsl:value-of select="@name"/><xsl:text>');&#10;</xsl:text>
-    <xsl:text>&#9;for occurrence=1:(</xsl:text><xsl:value-of select="@maxoccur"/><xsl:text>)&#10;</xsl:text>
-    <xsl:apply-templates select="field" mode="putSlice"/>
-    <xsl:text>&#9;&#9;ids_put(idx, get_occurrence_str('</xsl:text><xsl:value-of select="@name"/><xsl:text>', occurrence), ids);&#10;</xsl:text>
-    <xsl:text>&#9;&#9;ids_put_slice(idx, get_occurrence_str('</xsl:text><xsl:value-of select="@name"/><xsl:text>', occurrence), ids);&#10;</xsl:text>
-    <xsl:text>&#9;end&#10;</xsl:text>
+    <xsl:text>function testPutSliceGet_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
+    <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
+    <xsl:text>&#9;idx = testCase.TestData.idx;&#10;</xsl:text>
+    <xsl:text>&#9;ids = ids_rand(path,true);&#10;</xsl:text>
+    <xsl:text>&#9;ids_put_non_timed(idx,path,0,ids);&#10;</xsl:text>
+    <xsl:text>&#9;ids_put_slice(idx,path,0,ids);&#10;</xsl:text>
+    <xsl:text>&#9;sdi = ids_get(idx,path,0);&#10;</xsl:text>
+    <xsl:text>&#9;comparator(ids,sdi,path);&#10;</xsl:text>
+    <xsl:text>end&#10;</xsl:text>
     <xsl:text>&#10;</xsl:text>
-  </xsl:template>
-
-  <!-- IDS getSlice()-->
-  <xsl:template match="IDS" mode="getSlice">
-    <xsl:text>function ids = test_getSlice_</xsl:text><xsl:value-of select="@name"/><xsl:text>(idx)&#10;</xsl:text>
-    <xsl:text>&#9;message = ['Testing getSlice() on ','</xsl:text><xsl:value-of select="@name"/><xsl:text>'];&#10;</xsl:text>
-    <xsl:text>&#9;disp(message)&#10;</xsl:text>
-    <xsl:text>&#9;rng(1);&#10;</xsl:text>
-    <xsl:text>&#9;for occurrence=1:(</xsl:text><xsl:value-of select="@maxoccur"/><xsl:text>)&#10;</xsl:text>
-    <xsl:text>&#9;&#9;interp=1; %closest sample&#10;</xsl:text>
-    <xsl:text>&#9;&#9;ids = ids_get_slice(idx, get_occurrence_str('</xsl:text><xsl:value-of select="@name"/><xsl:text>', occurrence), 0.0, interp);&#10;</xsl:text>
-    <xsl:apply-templates select="field" mode="getSlice"/>
-    <xsl:text>&#9;end&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
+    <xsl:text>function testPutSliceGetSlice_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
+    <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
+    <xsl:text>&#9;idx = testCase.TestData.idx;&#10;</xsl:text>
+    <xsl:text>&#9;ids = ids_rand(path,true);&#10;</xsl:text>
+    <xsl:text>&#9;ids_put_non_timed(idx,path,0,ids);&#10;</xsl:text>
+    <xsl:text>&#9;ids_put_slice(idx,path,0,ids);&#10;</xsl:text>
+    <xsl:text>&#9;time = 1.0;&#10;</xsl:text>
+    <xsl:text>&#9;interp = 1; % closest sample&#10;</xsl:text>
+    <xsl:text>&#9;sdi = ids_get_slice(idx,path,0,time,interp);&#10;</xsl:text>
+    <xsl:text>&#9;comparator(ids,sdi,path);&#10;</xsl:text>
+    <xsl:text>end&#10;</xsl:text>
   </xsl:template>
 
 <xsl:template match="IDS" mode="generate">
