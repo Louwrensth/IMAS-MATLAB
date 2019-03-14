@@ -502,8 +502,7 @@
 		  @data_type='FLT_4D' or @data_type='INT_4D' or
 		  @data_type='FLT_5D' or @data_type='INT_5D' or
 		  @data_type='FLT_6D' or @data_type='INT_6D'"> 
-      } 
-
+      }
     </xsl:if>
   </xsl:if>
 </xsl:template>
