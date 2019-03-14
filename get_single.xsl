@@ -331,6 +331,7 @@
       if(!status) {
       dims = malloc(5*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
+      data = mxCreateNumericArray(5,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*dim4*dim5*sizeof(double));
       free(doubleArray);
       }
