@@ -61,6 +61,8 @@
 	  mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="$level + 1"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
 	  p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = NULL;
       }
+      } else {
+      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(0,0);
       }
       ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
