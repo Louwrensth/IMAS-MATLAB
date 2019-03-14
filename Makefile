@@ -96,7 +96,7 @@ all: $(SOURCES) $(TARGETS)
 sources: $(SOURCES)
 
 $(GET_SRC_FILES): ids_get.xsl mex_tools.xsl get_single.xsl get_from_object.xsl
-$(GET_SLICE_SRC_FILES): ids_get_slice.xsl mex_tools.xsl get_slice.xsl get_from_object.xsl time_tools.xsl
+$(GET_SLICE_SRC_FILES): ids_get_slice.xsl mex_tools.xsl get_slice.xsl get_single.xsl get_from_object.xsl time_tools.xsl
 $(PUT_SRC_FILES): ids_put.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl time_tools.xsl
 $(PUT_SLICE_SRC_FILES): ids_put_slice.xsl mex_tools.xsl put_slice.xsl put_in_object.xsl time_tools.xsl
 $(PUT_NON_TIMED_SRC_FILES): ids_put_non_timed.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl

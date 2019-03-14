@@ -15,6 +15,7 @@
 
 <xsl:include href="mex_tools.xsl"/>
 <xsl:include href="get_slice.xsl"/>
+<xsl:include href="get_single.xsl"/>
 <xsl:include href="get_from_object.xsl"/>
 <xsl:include href="time_tools.xsl"/>
 
