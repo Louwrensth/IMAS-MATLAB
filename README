@@ -1,0 +1,26 @@
+README for the MEX interace for the UAL
+
+1. Working principles
+
+The basic principle of MEX files will not be discussed here, refer to the MATLAB documentation for more information on MEX files.
+
+The code generation of methods for IDSs has been adapted from the one developed for the CPP interface.
+One major difference is the way to get/set fields in complex structures. Since no simple syntax for this is available in MEX files, we assign unique names to all variables containing pointers to structures and arrays of structures, the names are then passed around in the template file when going deeper in the structure. E.g. for simple types, getting the data is always done as
+    data = mxGetField(pointer_name, 0, "field_name");
+where pointer_name is the name of the variable containing the pointer to the parent structure. The second argument is always 0 as one considers scalar structures only (aos are cell arrays containing scalar structures). Similarly setting the data would be done as
+    mxSetField(pointer_name, 0, "field_name", data);
+
+Since MATLAB uses column-major order for arrays (i.e. as in FORTRAN), no re-ordering of the data in arrays is necessary. However trailing singleton dimensions are never shown for multi-dimensional arrays (at least 3-dimensional), hence ones have to be added if needed when dealing with this type of arrays.
+
+
+2. Differences with the MATLAB interface 
+
+Here only the differences with the old lowlevel version of the MATLAB interface are discussed 
+
+  - So far STR_1D are implemented as char matrices with each row corresponding to a different aray element. This causes padding of the smaller strings with spaces. The MATLAB interface uses cell arrays of strings for this purpose which allevaites this padding problem. The documentation specifies 'char array' for STR_1D which is probably not specific enough.
+
+  - For empty array of structures in get methods, empty cell arrays are returned. The MATLAB interface returns a cell array of size 1 with uninitialized fields (EMPTY_INT, EMPTY_FLOAT, empty arrays, except for children aos which follow the same rule), this is in contradiction with the documentation. NB: In the MATLAB interface, this seems to be a choice of the implementation of the java to MATLAB converters, and correcting this would also mean that empty arrays are created in ids_gen.
+
+  - Memory caching support has been added.
+
+  - No ids_gen function has been implemented so far.
