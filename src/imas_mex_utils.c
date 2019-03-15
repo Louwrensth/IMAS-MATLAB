@@ -1,10 +1,15 @@
 
 #include "imas_mex_utils.h"
 
+char *ual_last_errmsg()
+{
+  return "ual_last_errmsg_dummy";
+}
+
 void checkStatus(int status)
 {
     if (status)
-        printf("%s\n", imas_last_errmsg());
+        printf("%s\n", ual_last_errmsg());
 }
 
 void checkObject(void *obj)

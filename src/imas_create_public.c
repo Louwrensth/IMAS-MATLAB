@@ -7,7 +7,9 @@
  * This is a MEX file for MATLAB.
  */
 #include "mex.h"
+#include "imas_mex_utils.h"
 #include "ual_low_level.h"
+#include "ual_lowlevel.h"
 #include <string.h>
 
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
@@ -81,9 +83,17 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 #endif
 
     int idx;
-    int status = imas_create_public("ids", shot, run, refShot, refRun, &idx, expName);
+    int status;
+
+    idx = ual_begin_pulse_action(UDA_BACKEND, shot, run, 
+				 "", "", ""); 
+
+    if (idx < 0)
+      status = idx;
+    else
+      status = ual_open_pulse(idx, FORCE_CREATE_PULSE, "");
     if (status != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_public:Failed", "Error creating imas shot %d, run %d expName %s: %s", shot, run, expName, imas_last_errmsg());
+        mexErrMsgIdAndTxt("IMAS:imas_create_public:Failed", "Error creating imas shot %d, run %d expName %s: %s", shot, run, expName, ual_last_errmsg());
     }
     // Prepare the return argument
     plhs[0] = mxCreateDoubleScalar(idx);

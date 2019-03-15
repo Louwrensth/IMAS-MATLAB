@@ -7,6 +7,7 @@
  * This is a MEX file for MATLAB.
  */
 #include "mex.h"
+#include "imas_mex_utils.h"
 #include "ual_low_level.h"
 #include <string.h>
 
@@ -101,9 +102,9 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 #endif
 
     int idx;
-    int status = imas_create_env("ids", shot, run, refShot, refRun, &idx, user, tokamak, version);
+    int status = ual_create_env("ids", shot, run, refShot, refRun, &idx, user, tokamak, version);
     if (status != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_env:Failed", "Error creating imas shot %d, run %d\n\tuser %s, tokamak %s, version %s: %s", shot, run, user, tokamak, version, imas_last_errmsg());
+        mexErrMsgIdAndTxt("IMAS:imas_create_env:Failed", "Error creating imas shot %d, run %d\n\tuser %s, tokamak %s, version %s: %s", shot, run, user, tokamak, version, ual_last_errmsg());
     }
     // Prepare the return argument
     plhs[0] = mxCreateDoubleScalar(idx);

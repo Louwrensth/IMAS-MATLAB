@@ -9,6 +9,8 @@
 #include <string.h>
 #include <stdio.h>
 
+char *ual_last_errmsg();
+
 void checkStatus(int status);
 
 void checkObject(void *obj);

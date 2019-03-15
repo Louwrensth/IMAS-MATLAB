@@ -7,6 +7,7 @@
  * This is a MEX file for MATLAB.
  */
 #include "mex.h"
+#include "imas_mex_utils.h"
 #include "ual_low_level.h"
 #include <string.h>
 
@@ -51,9 +52,9 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 #endif
 
     int idx;
-    int status = imas_open_hdf5("ids", shot, run, &idx);
+    int status = ual_open_hdf5("ids", shot, run, &idx);
     if (status != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_open_hdf5:Failed", "Error opening imas shot %d, run %d: %s", shot, run, imas_last_errmsg());
+        mexErrMsgIdAndTxt("IMAS:imas_open_hdf5:Failed", "Error opening imas shot %d, run %d: %s", shot, run, ual_last_errmsg());
     }
     // Prepare the return argument
     plhs[0] = mxCreateDoubleScalar(idx);

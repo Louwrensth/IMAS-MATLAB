@@ -31,6 +31,6 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 #endif
 
     if (idx != -1)
-        imas_discard_mem_cache(idx);
+        ual_discard_mem_cache(idx);
 
 }
