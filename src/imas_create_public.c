@@ -46,37 +46,37 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // Get the value of the name
     char *name = mxArrayToString(prhs[0]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
     mexPrintf("The input name is:  %s\n", name);
 #endif
 
     // Get the value of the shot
     int shot = (int) mxGetScalar(prhs[1]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
     mexPrintf("The input shot is:  %d\n", shot);
 #endif
 
     // Get the value of the run
     int run = (int) mxGetScalar(prhs[2]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
     mexPrintf("The input run is:  %d\n", run);
 #endif
 
     // Get the value of the refShot
     int refShot = (int) mxGetScalar(prhs[3]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
     mexPrintf("The input refShot is:  %d\n", refShot);
 #endif
 
     // Get the value of the refRun
     int refRun = (int) mxGetScalar(prhs[4]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
     mexPrintf("The input refRun is:  %d\n", refRun);
 #endif
 
     // Get the value of the expName
     char *expName = mxArrayToString(prhs[5]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
     mexPrintf("The input expName is:  %s\n", expName);
 #endif
 

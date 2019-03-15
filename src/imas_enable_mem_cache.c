@@ -26,7 +26,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // Get the value of the index
     int idx = (int) mxGetScalar(prhs[1]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
     mexPrintf("The input idx is:  %d\n", idx);
 #endif
 

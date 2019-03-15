@@ -82,31 +82,31 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   // Get the value of the idx
   int idx = (int) mxGetScalar(prhs[0]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
   mexPrintf("The input idx is:  %d\n", idx);
 #endif
 
   // Get the value of the name
   char *name = mxArrayToString(prhs[1]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
   mexPrintf("The input name is:  %s\n", name);
 #endif
 
   // Get the value of the occurence
   int occ = (int) mxGetScalar(prhs[2]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
   mexPrintf("The input occurence is:  %d\n", occ);
 #endif
 
   // Get the value of the inTime
   double inTime = mxGetScalar(prhs[3]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
   mexPrintf("The input inTime is:  %f\n", inTime);
 #endif
 
   // Get the value of the occurence
   int interpolMode = (int) mxGetScalar(prhs[4]);
-#ifndef NDEBUG
+#ifdef MEX_DEBUG
   mexPrintf("The input interpolMode is:  %d\n", interpolMode);
 #endif
  

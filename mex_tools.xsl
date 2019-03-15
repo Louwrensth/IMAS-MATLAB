@@ -22,7 +22,7 @@
   <xsl:param name="function_name"/>
   <xsl:param name="function_args"/>
   if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
-  #ifndef NDEBUG
+  #ifdef MEX_DEBUG
   mexPrintf("Matched <xsl:value-of select="@name"/>\n");
   #endif
   int err = <xsl:value-of select="concat($function_name,'_',@name,'(',$function_args,');')"/>
