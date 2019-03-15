@@ -8,7 +8,7 @@
   <xsl:strip-space elements="*"/>
 
   <xsl:template match="IDSs">
-    <exsl:document href="tests/ids_rand.m" method="text">
+    <exsl:document href="ids_rand.m" method="text">
       
       <xsl:text>function ids = ids_rand(idsName, slice)&#10;</xsl:text>
       <xsl:text>&#9;f = sprintf('rand_%s',idsName);&#10;</xsl:text>
@@ -58,7 +58,7 @@
       
       <xsl:apply-templates select="child::IDS" mode="generate"/>
     </exsl:document>
-    <exsl:document href="tests/imas_test.m" method="text">
+    <exsl:document href="imas_test.m" method="text">
       <xsl:text>function tests = imas_test()&#10;</xsl:text>
       <xsl:text>&#9;tests = functiontests(localfunctions);&#10;</xsl:text>
       <xsl:text>end&#10;</xsl:text>

@@ -163,6 +163,7 @@ sources_install: $(SOURCES)
 #              CLEAN
 #################################################
 clean: test-clean pkgconfig_clean
+	$(RM) $(IDS_OBJ_FILES)
 	$(RM) $(OBJ_FILES)
 	$(RM) $(TARGETS)
 
@@ -174,14 +175,14 @@ clean-src: clean
 #################################################
 
 test: all
-	$(MAKE) -C tests/generator test
+	$(MAKE) -C tests test
 
 test-clean:
-	$(MAKE) -C tests/generator clean
+	$(MAKE) -C tests clean
 
 test-clean-src:
-	$(MAKE) -C tests/generator clean-src
+	$(MAKE) -C tests clean-src
 
 PC_FILES = imas-mex.pc
 include ../Makefile.pkgconfig
-endif # IMAS_CPP=no?
+endif # IMAS_MEX=no?
