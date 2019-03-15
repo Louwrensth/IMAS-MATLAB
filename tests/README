@@ -1,0 +1,24 @@
+README for tests of the MEX interace for the UAL
+
+1. Running the tests
+
+The tests use the testing framework from MATLAB. The main file is the imas_test.m file and the tests can be run b the following command (from the MATLAB prompt):
+
+>> results = runtests('imas_test')
+
+2. Tests breakdown
+
+For each IDS, four tests are run. They rely on random (but repeatable) generation of IDSs, see the dedicated section for more details. The four tests are:
+  - PUT+GET recovers the full IDS
+  - PUT+GET_SLICE recovers the sliced IDS
+  - PUT_NON_TIMED+PUT_SLICE+GET recovers the sliced IDS
+  - PUT_NON_TIMED+PUT_SLICE+GET_SLICE recovers the sliced IDS
+A comparator function has been implemented to test that the correct value has been recovered
+
+NB: For the testing framework to work we need each test function to be explicitely defined in the main file, hence it was necessary to generate those using XSLT.
+
+3. Generating IDSs
+
+The random generation of IDSs has been adapted from the one developed for the MATLAB interface (new lowlevel). Each IDS can be generated with several slices or a single time slice. The single time slice is the same as the first time slice when several are generated.
+
+NB: So far IDSs with homogeneous time base only can be generated
