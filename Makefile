@@ -123,7 +123,6 @@ $(IDS_SRC_DIR)/%.h: %.h.in
 #################################################
 #              BUILD
 #################################################
-build: $(OBJ_FILES) $(IDS_OBJ_FILES)
 
 $(LIB_DIR)/ids_get.mexa64:           $(addprefix get_,          $(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_get_slice.mexa64:     $(addprefix get_slice_,    $(addsuffix .o, $(IDSNAMES)))
@@ -152,20 +151,19 @@ $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c
 #              INSTALL
 #################################################
 install: all pkgconfig_install
-	$(mkdir_p) $(libdir) $(includedir)/ids
+	$(mkdir_p) $(libdir)
+	$(INSTALL_DATA) $(filter %.mexa64,$(TARGETS)) $(libdir)	
 	$(foreach sofile,$(filter %.so,$(TARGETS)),\
 		$(INSTALL_DATA) -T $(sofile) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO); \
 		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR) ;\
 		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR) ;\
 		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)) ;\
 	)
-	$(INSTALL_DATA) $(SRC_DIR)/*.h $(includedir)
-	$(INSTALL_DATA) $(IDS_SRC_DIR)/*.h $(includedir)/ids
 
 sources_install: $(SOURCES)
-	$(mkdir_p) $(datadir)/src/cppinterface/ids
-	$(INSTALL_DATA) $(IDS_SRC_DIR)/*.* $(datadir)/src/cppinterface/ids
-	$(INSTALL_DATA) $(SRC_DIR)/*.* $(datadir)/src/cppinterface
+	$(mkdir_p) $(datadir)/src/mexinterface/ids
+	$(INSTALL_DATA) $(IDS_SRC_DIR)/*.c $(IDS_SRC_DIR)/*.h $(datadir)/src/mexinterface/ids
+	$(INSTALL_DATA) $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(datadir)/src/mexinterface
 
 #################################################
 #              CLEAN
@@ -191,6 +189,6 @@ test-clean:
 test-clean-src:
 	$(MAKE) -C tests clean-src
 
-PC_FILES = imas-mex.pc
+PC_FILES =
 include ../Makefile.pkgconfig
 endif # IMAS_MEX=no?
