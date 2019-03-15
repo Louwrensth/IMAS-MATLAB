@@ -9,14 +9,22 @@ all sources sources_install install clean clean-src:
 	$(warning "Ignoring cppinterface (IMAS_MEX=no).")
 else
 
+CFLAGS_DEBUG = -g
+LDFLAGS_DEBUG = -g
+CFLAGS_OPTIM = -O -DNDEBUG
+LDFLAGS_OPTIM =
+
+CFLAGS_EXTRA = $(CFLAGS_DEBUG)
+LDFLAGS_EXTRA = $(LDFLAGS_DEBUG)
+
 ifeq "$(strip $(CC))" "icc"
  CC=icc
- CFLAGS=-g -fPIC -Wno-write-strings -Wno-deprecated -pthread -shared-intel
- LDFLAGS= -g -pthread
+ CFLAGS=-DTARGET_API_VERSION=700  -DUSE_MEX_CMD -D__USE_XOPEN2K8 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread $(CFLAGS_EXTRA)
+ LDFLAGS= $(LDFLAGS_EXTRA) -pthread -fPIC -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lstdc++
 else
  CC=gcc
- CFLAGS=-DTARGET_API_VERSION=700  -DUSE_MEX_CMD -D__USE_XOPEN2K8 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g
- LDFLAGS= -g -pthread -fPIC -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++
+ CFLAGS=-DTARGET_API_VERSION=700  -DUSE_MEX_CMD -D__USE_XOPEN2K8 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread $(CFLAGS_EXTRA)
+ LDFLAGS= $(LDFLAGS_EXTRA) -pthread -fPIC -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++
 endif
 
 BUILD_DIR:=./build
