@@ -14,234 +14,195 @@
 <!--=================================================-->
 
 <xsl:template match="field" mode="GET_SINGLE">
-<xsl:param name="pointer_name"/>
-<xsl:param name="path_format"/>
-<xsl:param name="path_args"/>
 
-<xsl:param name="currentpath_format">
-  <xsl:choose>
-    <xsl:when test="$path_format"><xsl:value-of select="concat($path_format,'/',@name)"/></xsl:when>
-    <xsl:otherwise><xsl:value-of select="@name"/></xsl:otherwise>
-  </xsl:choose>
-</xsl:param>
-
-<xsl:param name="currentpath_expr">
-  <xsl:choose>
-    <xsl:when test="$path_args">
-    snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>"<xsl:value-of select="$path_args"/>);</xsl:when>
-    <xsl:otherwise>
-    snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>");</xsl:otherwise>
-  </xsl:choose>
-</xsl:param>
+<xsl:call-template name="COMMENT_FIELD"/>
 
 // Doc Get <xsl:value-of select="@path_doc"/>
+<xsl:if test="@data_type='str_type'    or @data_type='STR_0D'
+	   or @data_type='str_1d_type' or @data_type='STR_1D'
+	   or @data_type='int_type'    or @data_type='INT_0D'
+	   or @data_type='flt_type'    or @data_type='FLT_0D'
+	   or @data_type='flt_1d_type' or @data_type='FLT_1D'
+	   or @data_type='int_1d_type' or @data_type='INT_1D'
+	   or @data_type='FLT_2D'      or @data_type='INT_2D'
+	   or @data_type='FLT_3D'      or @data_type='INT_3D'
+	   or @data_type='FLT_4D'      or @data_type='INT_4D'
+	   or @data_type='FLT_5D'      or @data_type='INT_5D'
+	   or @data_type='FLT_6D'      or @data_type='INT_6D'">
+  fieldPath = &quot;<xsl:call-template  name="printAosRelativePath"/>&quot;;
+  <xsl:choose>
+    <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
+      if (homogeneousTime == 1) 
+      timebasePath="/time";
+      else
+      timebasePath=&quot;<xsl:value-of select="@timebasepath"/>&quot;;
+    </xsl:when>
+    <xsl:otherwise>
+      timebasePath = "";
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:if>
 <xsl:choose>
   <!--========== Array of structure ===========-->
-    <!-- Type 1 arrays of structure, with potentially multiple time bases -->
-    <xsl:when test = "@data_type = 'struct_array' and @maxoccur!='unbounded' ">
-      /* Type 1 AoS */
-      <xsl:choose>
-	<xsl:when test="$path_args">
-	snprintf(clepath,maxpathsize,"<xsl:value-of select="$currentpath_format"/>/Shape_of"<xsl:value-of select="$path_args"/>);</xsl:when>
-	<xsl:otherwise>
-	snprintf(clepath,maxpathsize,"%s","<xsl:value-of select="$currentpath_format"/>/Shape_of");</xsl:otherwise>
+  <!-- Type 1 arrays of structure, with potentially multiple time bases -->
+  <!-- Type 2 arrays of structure -->
+  <!-- Type 3 arrays of structure, with a unique time base -->
+    <xsl:when test = "@data_type = 'struct_array'">
+      fieldPath = &quot;<xsl:call-template  name="printAosRelativePath"/>&quot;;
+      <xsl:if test="ancestor::field[@data_type='struct_array']">
+	//<xsl:value-of select="ancestor::field[@data_type='struct_array'][1]/@path"/>
+	//<xsl:value-of select="@path"/>
+      </xsl:if>
+      <xsl:choose>	
+	<xsl:when test="@type='dynamic'"> <!-- Type 3 -->
+	  if (homogeneousTime) 
+          timebasePath = "/time";
+       	  else
+	  timebasePath = &quot;<xsl:call-template  name="printAosRelativePath"/>/time&quot;;
+	</xsl:when>
+  	<xsl:otherwise> <!-- Type 1 or 2 -->
+	  timebasePath = "";
+	</xsl:otherwise>
       </xsl:choose>
-      status = getInt(expIdx,path, clepath, &amp;int0d);
-      if (status == 0) {
-      n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=int0d;
-      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,1);
-      for (i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=0; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>&lt;n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>++) {
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-      if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
-      <xsl:apply-templates select="field" mode="GET_SINGLE">
-	<xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
-	<xsl:with-param name="path_format" select="concat($currentpath_format,'/%d')"/>
-	<xsl:with-param name="path_args" select="concat($path_args,',i',@name,'_',generate-id(.),'+1')"/>
-      </xsl:apply-templates>
-      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = NULL;
+      aosCtx = ual_begin_arraystruct_action(ctx, fieldPath, timebasePath, &amp;arraySize);
+      if (aosCtx &lt; 0) {
+      ual_end_action(ctx);
+      return aosCtx;
+      }
+      if (aosCtx &gt; 0 &amp;&amp; arraySize &gt; 0) {
+      aosArray=mxCreateCellMatrix(arraySize,1);
+      for (int i=0; i&lt;arraySize; i++) {
+      aosElement=mxGetCell(aosArray,(mwIndex) i);
+      if (aosElement==NULL)
+      aosElement = mxCreateStructMatrix(1,1,0,NULL);
+      status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, &amp;aosElement);
+      if (status &lt; 0) {	
+      ual_end_action(ctx);
+      return status;
+      }
+      mxSetCell(aosArray,(mwIndex) i,aosElement);
+      aosElement = NULL;
+      status = ual_iterate_over_arraystruct(aosCtx, 1);
+      if (status &lt; 0) {	
+      ual_end_action(aosCtx);
+      ual_end_action(ctx);
+      return status;
+      }
+      }
+      status = ual_end_action(aosCtx);
+      if (status &lt; 0) {
+      ual_end_action(ctx);
+      return status;
       }
       } else {
-      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(0,0);
+      aosArray=mxCreateCellMatrix(0,0);
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
-    </xsl:when>
-    <!-- Type 3 arrays of structure, with a unique time base -->
-    <xsl:when test="@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'">
-      /* Type 3 AoS (maybe nested below a Type 1) */
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getObject(expIdx, path, clepath, &amp;obj_all_times, TIMED); // read the whole non-timed block
-      checkStatus(status);
-      if(!status) {
-      n<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = getObjectDim(expIdx,obj_all_times);
-      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxCreateCellMatrix(n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,1);
-      //if (ual_debug =='yes') write(*,*) &amp; 'Get <xsl:value-of select = "@path"/>, lentime =', lentime
-      for (int i1 = 0; i1 &lt; n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>; i1++) {  // fill every time slice
-      void *obj1;
-      status = getObjectFromObject(expIdx,obj_all_times, "ALLTIMES", i1, &amp;obj1);  // extract a single time
-      checkStatus(status);
-      if (!status) {
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=mxGetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i1);
-      if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
-      <xsl:apply-templates select = "field" mode = "GET_FROM_OBJECT">
-        <xsl:with-param name="level" select="1"/>
-        <xsl:with-param name="objpath" select="@name"/>
-        <xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
-        <xsl:with-param name="timed" select="'yes'"/>
-      </xsl:apply-templates>
-      mxSetCell(pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>,(mwIndex) i1,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = NULL;
-      }
-      }
-      releaseObject(expIdx,obj_all_times);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-      pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
+      ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(*ids,0,ifield,aosArray);
+      aosArray=NULL;
     </xsl:when>
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      if (p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>==NULL)
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/> = mxCreateStructMatrix(1,1,0,NULL);
-      <xsl:apply-templates select="field" mode="GET_SINGLE">
-	<xsl:with-param name="pointer_name" select="concat('p',@name,'_',generate-id(.))"/>
-	<xsl:with-param name="path_format" select="$currentpath_format"/>
-	<xsl:with-param name="path_args" select="$path_args"/>
-      </xsl:apply-templates>
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>);
-      p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
+      if (structure==NULL)
+      structure = mxCreateStructMatrix(1,1,0,NULL);
+      status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, &amp;structure);
+      if (status != 0)
+      return status;
+      ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(*ids,0,ifield,structure);
+      structure=NULL;
     </xsl:when>
 
   <!--========== Simple types ===========-->
     <xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getInt(expIdx, path, clepath, &amp;int0d);
-      checkStatus(status);
+      status = getInt(ctx, fieldPath, timebasePath, &amp;int0d);
       data = mxCreateNumericArray(2,dims_scalar,mxINT32_CLASS,mxREAL);
       if(!status) {
       *(int *)mxGetData(data) = int0d;
       } else {
       *(int *)mxGetData(data) = EMPTY_INT;
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
   
     <xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getDouble(expIdx, path, clepath, &amp;double0d);
+      status = getDouble(ctx, fieldPath, timebasePath, &amp;double0d);
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleScalar(double0d);
       } else {
       data = mxCreateDoubleScalar(EMPTY_DOUBLE);
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
   
     <xsl:when test="@data_type='str_type' or @data_type='STR_0D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getString(expIdx, path, clepath, &amp;str);
+      status = getVect1DChar(ctx, fieldPath, timebasePath, &amp;str, &amp;dim1);
       checkStatus(status);
       if(!status) {
       dstr = strdup(str);
       free(str);
       data = mxCreateString(dstr);
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
 	
   <!--========== Vectors ===========-->
     <xsl:when test = "@data_type='int_1d_type' or @data_type='INT_1D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect1DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1);
+      status = getVect1DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1);
       checkStatus(status);
       if(!status) {
       data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*sizeof(int));
       free(intArray);
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
   
     <xsl:when test = "@data_type='flt_1d_type' or @data_type='FLT_1D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect1DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1);
+      status = getVect1DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1);
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleMatrix(dim1,1,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*sizeof(double));
       free(doubleArray);
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
       
     <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect1DString(expIdx, path, clepath, &amp;stringArray, &amp;dim1);
+      status = getVect2DChar(ctx, fieldPath, timebasePath, &amp;str, &amp;dim1, &amp;dim2);
       checkStatus(status);
       if(!status) {
-      dstringArray = malloc(dim1*sizeof(char*));
-      for (_i = 0; _i &lt; dim1; _i++) {
-      dstringArray[_i] = strdup(stringArray[_i]);
-      free(stringArray[_i]);
+      dims = malloc(2*sizeof(mwSize));
+      dims[0] = dim1;dims[1] = dim2;
+      data = mxCreateCharArray(2,dims);
+      memcpy((char *)mxGetData(data),str,dim1*dim2*sizeof(char));
+      free((char *)str);
+      dims = NULL;
       }
-      free((char *)stringArray);
-      data = mxCreateCharMatrixFromStrings(dim1,dstringArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
 
   <!--========== Matrices ===========-->
     <xsl:when test="@data_type='INT_2D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect2DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2);
+      status = getVect2DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2);
       checkStatus(status);
       if(!status) {
       data = mxCreateNumericMatrix(dim1,dim2,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*dim2*sizeof(int));
       free(intArray);
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_2D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect2DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2);
+      status = getVect2DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2);
       checkStatus(status);
       if(!status) {
       data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*sizeof(double));
       free(doubleArray);
       }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
-      data = NULL;
     </xsl:when>
 
   <!--========== 3D arrays ===========-->
     <xsl:when test="@data_type='INT_3D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect3DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3);
+      status = getVect3DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3);
       checkStatus(status);
       if(!status) {
       dims = malloc(3*sizeof(mwSize));
@@ -249,16 +210,12 @@
       data = mxCreateNumericArray(3,dims,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*sizeof(int));
       free(intArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_3D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect3DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3);
+      status = getVect3DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3);
       checkStatus(status);
       if(!status) {
       dims = malloc(3*sizeof(mwSize));
@@ -266,17 +223,13 @@
       data = mxCreateNumericArray(3,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*sizeof(double));
       free(doubleArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
   <!--========== 4D arrays ===========-->
     <xsl:when test="@data_type='INT_4D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect4DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
+      status = getVect4DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
       checkStatus(status);
       if(!status) {
       dims = malloc(4*sizeof(mwSize));
@@ -284,16 +237,12 @@
       data = mxCreateNumericArray(4,dims,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*dim4*sizeof(int));
       free(intArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_4D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect4DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
+      status = getVect4DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
       checkStatus(status);
       if(!status) {
       dims = malloc(4*sizeof(mwSize));
@@ -301,17 +250,13 @@
       data = mxCreateNumericArray(4,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*dim4*sizeof(double));
       free(doubleArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
   <!--========== 5D arrays ===========-->
     <xsl:when test="@data_type='INT_5D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect5DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
+      status = getVect5DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
       checkStatus(status);
       if(!status) {
       dims = malloc(5*sizeof(mwSize));
@@ -319,16 +264,12 @@
       data = mxCreateNumericArray(5,dims,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*dim4*dim5*sizeof(int));
       free(intArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_5D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect5DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
+      status = getVect5DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
       checkStatus(status);
       if(!status) {
       dims = malloc(5*sizeof(mwSize));
@@ -336,17 +277,13 @@
       data = mxCreateNumericArray(5,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*dim4*dim5*sizeof(double));
       free(doubleArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
   <!--========== 6D arrays ===========-->
     <xsl:when test="@data_type='INT_6D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect6DInt(expIdx, path, clepath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
+      status = getVect6DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
       checkStatus(status);
       if(!status) {
       dims = malloc(6*sizeof(mwSize));
@@ -354,16 +291,12 @@
       data = mxCreateNumericArray(6,dims,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*dim2*dim3*dim4*dim5*dim6*sizeof(int));
       free(intArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_6D'">
-      <xsl:value-of select="$currentpath_expr"/>
-      status = getVect6DDouble(expIdx, path, clepath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
+      status = getVect6DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
       checkStatus(status);
       if(!status) {
       dims = malloc(6*sizeof(mwSize));
@@ -371,11 +304,8 @@
       data = mxCreateNumericArray(6,dims,mxDOUBLE_CLASS,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*dim3*dim4*dim5*dim6*sizeof(double));
       free(doubleArray);
-      }
-      ifield = mxAddField(<xsl:value-of select="$pointer_name"/>,"<xsl:value-of select="@name"/>");
-      mxSetFieldByNumber(<xsl:value-of select="$pointer_name"/>,0,ifield,data);
       dims = NULL;
-      data = NULL;
+      }
     </xsl:when>
 
   <!--========== Unknown type ===========-->
@@ -384,6 +314,25 @@
     </xsl:otherwise>
 </xsl:choose>
 
+<xsl:if test="@data_type='str_type'    or @data_type='STR_0D'
+	   or @data_type='str_1d_type' or @data_type='STR_1D'
+	   or @data_type='int_type'    or @data_type='INT_0D'
+	   or @data_type='flt_type'    or @data_type='FLT_0D'
+	   or @data_type='flt_1d_type' or @data_type='FLT_1D'
+	   or @data_type='int_1d_type' or @data_type='INT_1D'
+	   or @data_type='FLT_2D'      or @data_type='INT_2D'
+	   or @data_type='FLT_3D'      or @data_type='INT_3D'
+	   or @data_type='FLT_4D'      or @data_type='INT_4D'
+	   or @data_type='FLT_5D'      or @data_type='INT_5D'
+	   or @data_type='FLT_6D'      or @data_type='INT_6D'">
+  ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
+  mxSetFieldByNumber(*ids,0,ifield,data);
+  data = NULL;
+  if (status &lt; 0) {	
+  ual_end_action(ctx);
+  return status;
+  }
+</xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>

@@ -54,10 +54,11 @@ GET_SOURCES           = $(addprefix get_,          $(addsuffix .c.in,$(IDSNAMES)
 GET_SLICE_SOURCES     = $(addprefix get_slice_,    $(addsuffix .c.in,$(IDSNAMES))) ids_get_slice.c.in ids_get_slice.h.in
 PUT_SOURCES           = $(addprefix put_,          $(addsuffix .c.in,$(IDSNAMES))) ids_put.c.in ids_put.h.in
 PUT_SLICE_SOURCES     = $(addprefix put_slice_,    $(addsuffix .c.in,$(IDSNAMES))) ids_put_slice.c.in ids_put_slice.h.in
-PUT_NON_TIMED_SOURCES = $(addprefix put_non_timed_,$(addsuffix .c.in,$(IDSNAMES))) ids_put_non_timed.c.in ids_put_non_timed.h.in
-DELETE_SOURCES        = $(addprefix delete_,       $(addsuffix .c.in,$(IDSNAMES)))
+#PUT_NON_TIMED_SOURCES = $(addprefix put_non_timed_,$(addsuffix .c.in,$(IDSNAMES))) ids_put_non_timed.c.in ids_put_non_timed.h.in
+#DELETE_SOURCES        = $(addprefix delete_,       $(addsuffix .c.in,$(IDSNAMES)))
 
-ALL_SOURCES = $(GET_SOURCES) $(GET_SLICE_SOURCES) $(PUT_SOURCES) $(PUT_SLICE_SOURCES) $(PUT_NON_TIMED_SOURCES) $(DELETE_SOURCES)
+ALL_SOURCES = $(GET_SOURCES) $(GET_SLICE_SOURCES) $(PUT_SOURCES) $(PUT_SLICE_SOURCES)
+# TODO/DEPRECATED: $(PUT_NON_TIMED_SOURCES) $(DELETE_SOURCES)
 
 IDS_C_FILES   = $(filter-out ids_%     , $(ALL_SOURCES))
 MEX_IDS_FILES = $(filter     ids_%.c.in, $(ALL_SOURCES))
@@ -71,18 +72,17 @@ GET_SRC_FILES           = $(addprefix $(IDS_SRC_DIR)/,$(GET_SOURCES))
 GET_SLICE_SRC_FILES     = $(addprefix $(IDS_SRC_DIR)/,$(GET_SLICE_SOURCES))
 PUT_SRC_FILES           = $(addprefix $(IDS_SRC_DIR)/,$(PUT_SOURCES))
 PUT_SLICE_SRC_FILES     = $(addprefix $(IDS_SRC_DIR)/,$(PUT_SLICE_SOURCES))
-PUT_NON_TIMED_SRC_FILES = $(addprefix $(IDS_SRC_DIR)/,$(PUT_NON_TIMED_SOURCES))
-DELETE_SRC_FILES        = $(addprefix $(IDS_SRC_DIR)/,$(DELETE_SOURCES))
+#PUT_NON_TIMED_SRC_FILES = $(addprefix $(IDS_SRC_DIR)/,$(PUT_NON_TIMED_SOURCES))
+#DELETE_SRC_FILES        = $(addprefix $(IDS_SRC_DIR)/,$(DELETE_SOURCES))
 
 # Add static sources
 MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
-				imas_open_hdf5 imas_open_public \
+				imas_open_public \
 				imas_create imas_create_env \
-				imas_create_hdf5 imas_create_public \
+				imas_create_public \
 				imas_close \
-				imas_enable_mem_cache imas_disable_mem_cache \
-				imas_flush_mem_cache imas_discard_mem_cache \
 				)
+# TODO/DEPRECATED: imas_open_hdf5 imas_create_hdf5 imas_enable_mem_cache imas_disable_mem_cache imas_flush_mem_cache imas_discard_mem_cache
 SOURCES = $(GENSOURCES)
 SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES) imas_mex_utils.c)
 
@@ -101,14 +101,15 @@ all: $(SOURCES) $(TARGETS)
 #################################################
 #                 INIT: SOURCE GENERATION
 #################################################
+
 sources: $(SOURCES)
 
-$(GET_SRC_FILES): ids_get.xsl mex_tools.xsl get_single.xsl get_from_object.xsl
-$(GET_SLICE_SRC_FILES): ids_get_slice.xsl mex_tools.xsl get_slice.xsl get_single.xsl get_from_object.xsl time_tools.xsl
-$(PUT_SRC_FILES): ids_put.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl time_tools.xsl
-$(PUT_SLICE_SRC_FILES): ids_put_slice.xsl mex_tools.xsl put_slice.xsl put_in_object.xsl time_tools.xsl
-$(PUT_NON_TIMED_SRC_FILES): ids_put_non_timed.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl
-$(DELETE_SRC_FILES): ids_delete.xsl
+$(GET_SRC_FILES): ids_get.xsl mex_tools.xsl get_single.xsl
+$(GET_SLICE_SRC_FILES): ids_get_slice.xsl mex_tools.xsl get_single.xsl
+$(PUT_SRC_FILES): ids_put.xsl mex_tools.xsl put_single.xsl
+$(PUT_SLICE_SRC_FILES): ids_put_slice.xsl mex_tools.xsl put_single.xsl
+#$(PUT_NON_TIMED_SRC_FILES): ids_put_non_timed.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl
+#$(DELETE_SRC_FILES): ids_delete.xsl
 $(GENSOURCES):
 	@$(mkdir_p) $(BUILD_DIR)
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$(filter ids_%.xsl,$^)
@@ -126,9 +127,9 @@ $(IDS_SRC_DIR)/%.h: %.h.in
 
 $(LIB_DIR)/ids_get.mexa64:           $(addprefix get_,          $(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_get_slice.mexa64:     $(addprefix get_slice_,    $(addsuffix .o, $(IDSNAMES)))
-$(LIB_DIR)/ids_put.mexa64:           $(addprefix put_,          $(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/ids_put.mexa64:           $(addprefix put_,          $(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix put_slice_,    $(addsuffix .o, $(IDSNAMES)))
-$(LIB_DIR)/ids_put_non_timed.mexa64: $(addprefix put_non_timed_,$(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))
+#$(LIB_DIR)/ids_put_non_timed.mexa64: $(addprefix put_non_timed_,$(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
 	$(mkdir_p) $(LIB_DIR)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
@@ -143,22 +144,17 @@ $(BUILD_DIR)/ids_get.o:           $(IDS_SRC_DIR)/ids_get.h
 $(BUILD_DIR)/ids_get_slice.o:     $(IDS_SRC_DIR)/ids_get_slice.h
 $(BUILD_DIR)/ids_put.o:           $(IDS_SRC_DIR)/ids_put.h
 $(BUILD_DIR)/ids_put_slice.o:     $(IDS_SRC_DIR)/ids_put_slice.h
-$(BUILD_DIR)/ids_put_non_timed.o: $(IDS_SRC_DIR)/ids_put_non_timed.h
+#$(BUILD_DIR)/ids_put_non_timed.o: $(IDS_SRC_DIR)/ids_put_non_timed.h
 $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(@)
 
 #################################################
 #              INSTALL
 #################################################
+
 install: all pkgconfig_install
 	$(mkdir_p) $(libdir)
 	$(INSTALL_DATA) $(filter %.mexa64,$(TARGETS)) $(libdir)	
-	$(foreach sofile,$(filter %.so,$(TARGETS)),\
-		$(INSTALL_DATA) -T $(sofile) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO); \
-		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR) ;\
-		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR) ;\
-		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)) ;\
-	)
 
 sources_install: $(SOURCES)
 	$(mkdir_p) $(datadir)/src/mexinterface/ids
@@ -168,6 +164,7 @@ sources_install: $(SOURCES)
 #################################################
 #              CLEAN
 #################################################
+
 clean: test-clean pkgconfig_clean
 	$(RM) $(IDS_OBJ_FILES)
 	$(RM) $(OBJ_FILES)

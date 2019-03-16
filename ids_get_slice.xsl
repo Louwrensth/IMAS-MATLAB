@@ -14,10 +14,7 @@
 <!--================================================-->
 
 <xsl:include href="mex_tools.xsl"/>
-<xsl:include href="get_slice.xsl"/>
 <xsl:include href="get_single.xsl"/>
-<xsl:include href="get_from_object.xsl"/>
-<xsl:include href="time_tools.xsl"/>
 
 <!--================================================-->
 <!--         Template for the whole document        -->
@@ -136,63 +133,110 @@ void mexFunction(int nlhs, mxArray *plhs[],
 <!--================================================-->
 
 <xsl:template match="IDS" mode="GET_SLICE">
- <xsl:result-document href="src/ids/get_slice_{@name}.c.in" standalone="yes" method="text">
-   #include "mex.h"
-   #include "ual_low_level.h"
-   #include "imas_mex_utils.h"
-   #include &lt;stdlib.h&gt;
-   #include &lt;string.h&gt;
-   #include &lt;stdio.h&gt;
+  <xsl:result-document href="src/ids/get_slice_{@name}.c.in" standalone="yes" method="text">
+    #include "mex.h"
+    #include "ual_low_level.h"
+    #include "ual_lowlevel.h"
+    #include "imas_mex_utils.h"
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;stdio.h&gt;
 
-   int get_slice_<xsl:value-of select="@name"/>(int expIdx, int idx, double inTime, int interpolMode, mxArray** ids)
-   {
-   int status;
-   int numSamples;
-   void *obj_single_time;
-   int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-   int int0d;
-   double double0d;
-   int *intArray;
-   double *doubleArray;
-   char **stringArray;
-   char *str;
-   // Pointers for duplicating strings
-   const char **dstringArray;
-   char *dstr;
-   // Paths-specific variables
-   int maxpathsize=1024;
-   char clepath[maxpathsize];
-   char timebasepath[maxpathsize];
-   // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
-   int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
-   int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
-   mxArray* pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
-   mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
-   // Structure-specific variables<xsl:for-each select=".//field[@data_type='structure']">
-   mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
-   mxArray* data=NULL;
-   mwIndex ifield;
-   mwSize* dims;
-   mwSize dims_scalar[2] = { 1, 1 };
-   int _i;
-   char *basePath = "<xsl:value-of select="@name"/>";
-   char path[strlen(basePath)+4];
-   if(idx &lt; 1)
-   sprintf(path, "%s", basePath);
-   else
-   sprintf(path, "%s/%d", basePath, idx);
-   double retTime;
-   status = beginIdsGetSlice(expIdx,  path, inTime);
-   checkStatus(status);
-   if(status) return status;
-   *ids = mxCreateStructMatrix(1,1,0,NULL);
-   <xsl:apply-templates select="field" mode="GET_SLICE">
-     <xsl:with-param name="pointer_name" select="'*ids'"/>
-   </xsl:apply-templates>
-   endIdsGetSlice(expIdx, path);
-   return 0;
-   }
- </xsl:result-document>
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
+
+    int get_slice_<xsl:value-of select="@name"/>(int expIdx, int iOccurence, double inTime, int interpolMode, mxArray** ids)
+    {
+    int int0d;
+    double double0d;
+    int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
+    int *intArray;
+    double *doubleArray;
+    char *str;
+    // Pointers for duplicating strings
+    char *dstr;
+    // Paths-specific variables
+    char *fieldPath;
+    char *timebasePath;
+    // AoS-specific variables
+    mxArray* aosArray=NULL;
+    mxArray* aosElement=NULL;
+    // Structure-specific variables
+    mxArray* structure=NULL;
+    mxArray* data=NULL;
+    int ifield;
+    mwSize* dims;
+    mwSize dims_scalar[2] = { 1, 1 };
+    char *idsName = "<xsl:value-of select="@name"/>";
+    char idsFullName[strlen(idsName)+4];
+    int status = -1;
+    int arraySize = -1;
+    int aosCtx = -1;
+    int getSliceOpCtx = -1;
+    int ctx = -1;
+    int homogeneousTime = -1;
+
+    if(iOccurence &lt; 1)
+    sprintf(idsFullName, "%s", idsName);
+    else
+    sprintf(idsFullName, "%s/%d", idsName, iOccurence);
+    // Open getSlice context
+    getSliceOpCtx = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode);
+    if(getSliceOpCtx &lt; 0) 
+    return getSliceOpCtx;
+    ctx = getSliceOpCtx;
+    status = getHomogeneousTime(ctx, &amp;homogeneousTime);
+    if(status) 
+    {	
+    ual_end_action(ctx);
+    return status;
+    }
+    *ids = mxCreateStructMatrix(1,1,0,NULL);
+
+    <xsl:apply-templates select="field" mode="GET_SINGLE"/>
+
+    ual_end_action(ctx);
+    return 0;
+    }
+
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>
+  </xsl:result-document>
+</xsl:template>
+
+<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
+int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, mxArray** ids);</xsl:template>
+
+<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
+  <xsl:call-template name="COMMENT_FIELD"/>
+  int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, mxArray** ids)
+  {
+  int int0d;
+  double double0d;
+  int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
+  int *intArray;
+  double *doubleArray;
+  char *str;
+  // Pointers for duplicating strings
+  char *dstr;
+  // Paths-specific variables
+  char *fieldPath = "";
+  char *timebasePath = "";
+  // AoS-specific variables
+  mxArray* aosArray=NULL;
+  mxArray* aosElement=NULL;
+  // Structure-specific variables
+  mxArray* structure=NULL;
+  mxArray* data=NULL;
+  int ifield;
+  mwSize* dims;
+  mwSize dims_scalar[2] = { 1, 1 };
+  int status = -1;
+  int arraySize = -1;
+  int aosCtx = -1;
+
+  <xsl:apply-templates select="field" mode="GET_SINGLE"/>
+
+  return 0;
+  }
 </xsl:template>
 
 </xsl:stylesheet>

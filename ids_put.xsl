@@ -15,9 +15,6 @@
 
 <xsl:include href="mex_tools.xsl"/>
 <xsl:include href="put_single.xsl"/>
-<xsl:include href="put_in_object.xsl"/>
-<xsl:include href="puttime_single.xsl"/>
-<xsl:include href="time_tools.xsl"/>
 
 <!--================================================-->
 <!--         Template for the whole document        -->
@@ -127,53 +124,44 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/put_{@name}.c.in" standalone="yes" method="text">
     #include "mex.h"
     #include "ual_low_level.h"
+    #include "ual_lowlevel.h"
     #include "imas_mex_utils.h"
     #include &lt;stdlib.h&gt;
     #include &lt;string.h&gt;
     #include &lt;stdio.h&gt;
 
-    int delete_<xsl:value-of select="@name"/>(int expIdx, int idx);
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_H"/>
 
-    int put_<xsl:value-of select="@name"/>(int expIdx, int idx, const mxArray* ids)
+    int put_<xsl:value-of select="@name"/>(int expIdx, int iOccurence, const mxArray* ids)
     {
-    int status;
-    int numSamples;
-    void *obj_all_times;
-    int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-    int dim1In, dim2In, dim3In, dim4In, dim5In, dim6In, dim7In;
     int int0d;
     double double0d;
+    int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
     int *intArray;
     double *doubleArray;
-    char **stringArray;
     char *str;
-    // Pointers for duplicating strings
-    const char **dstringArray;
-    char *dstr;
     // Paths-specific variables
-    int maxpathsize=1024;
-    char clepath[maxpathsize];
-    char fullpath[maxpathsize];
-    char timepath[maxpathsize];
-    char timebasepath[maxpathsize];
-    // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
-    int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
-    int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
-    const mxArray* pa<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;
-    const mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
-    // Structure-specific variables<xsl:for-each select=".//field[@data_type='structure']">
-    const mxArray* p<xsl:value-of select="concat(@name,'_',generate-id(.))"/>=NULL;</xsl:for-each>
-    int ifield;
+    char *fieldPath;
+    char *timebasePath;
+    // AoS-specific variables
+    const mxArray* aosArray=NULL;
+    const mxArray* aosElement=NULL;
+    // Structure-specific variables
+    const mxArray* structure=NULL;
     const mxArray* data=NULL;
-    const mxArray* ptime;
-    double* dtime;
+    int ifield;
+    const mwSize* dims;
+    char *idsName = "<xsl:value-of select="@name"/>";
+    char idsFullName[strlen(idsName)+4];
     const mxArray* pids_props=NULL;
     const mxArray* phomog_time=NULL;
-    int homogeneous_time=EMPTY_INT;
-    const mwSize* dims;
-    int _i, _j;
-    char *basePath = "<xsl:value-of select="@name"/>";
-    char path[strlen(basePath)+4];
+    int status = -1;
+    int arraySize = -1;
+    int aosCtx = -1;
+    int putOpCtx = -1;
+    int ctx = -1;
+    int homogeneousTime = -1;
+
     pids_props = mxGetField(ids, (mwIndex) 0, "ids_properties");
     if (pids_props == NULL)
       mexErrMsgIdAndTxt("IMAS:ids_put:invalid_ids_properties",
@@ -182,33 +170,68 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (phomog_time == NULL)
       mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
       "Unable to retrieve ids%%ids_properties%%homogeneous_time");
-    homogeneous_time = (int) mxGetScalar(phomog_time);
-    if( homogeneous_time == EMPTY_INT )
+    homogeneousTime = (int) mxGetScalar(phomog_time);
+    if( homogeneousTime == EMPTY_INT )
     {
     mexWarnMsgIdAndTxt("IMAS:ids_put:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT quits with no action.");
     return 0;
     }
-    if(idx &lt; 1)
-    sprintf(path, "%s", basePath);
+
+    if(iOccurence &lt; 1)
+    sprintf(idsFullName, "%s", idsName);
     else
-    sprintf(path, "%s/%d", basePath, idx);
-    ptime = mxGetField(ids, (mwIndex) 0, "time");
-    if (ptime == NULL)
-      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_time",
-      "Unable to retrieve ids%%time");
-    dtime = mxGetPr(ptime);
-    delete_<xsl:value-of select="@name"/>(expIdx, idx);
-    status = beginIdsPut(expIdx, path);
-    checkStatus(status);
-    if(status) return status;
+    sprintf(idsFullName, "%s/%d", idsName, iOccurence);
+    // Open put context
+    putOpCtx = ual_begin_global_action(expIdx, idsFullName, WRITE_OP);
+    if(putOpCtx &lt; 0) 
+    return putOpCtx;
+    ctx = putOpCtx;
+
     <xsl:apply-templates select="field" mode="PUT_SINGLE">
-      <xsl:with-param name="pointer_name" select="'ids'"/>
-      <xsl:with-param name="AosParent_name" select="'ids'"/>
+      <xsl:with-param name="dynamic_only" select="'no'"/>
     </xsl:apply-templates>
-    endIdsPut(expIdx, path);
+
+    ual_end_action(ctx);
     return 0;
     }
+
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT"/>
   </xsl:result-document>
+</xsl:template>
+
+<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT_H">
+int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const mxArray* ids);</xsl:template>
+
+<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT">
+int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const mxArray* ids)
+    {
+    int int0d;
+    double double0d;
+    int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
+    int *intArray;
+    double *doubleArray;
+    char *str;
+    // Paths-specific variables
+    char *fieldPath;
+    char *timebasePath;
+    // AoS-specific variables
+    const mxArray* aosArray=NULL;
+    const mxArray* aosElement=NULL;
+    // Structure-specific variables
+    const mxArray* structure=NULL;
+    const mxArray* data=NULL;
+    int ifield;
+    const mwSize* dims;
+    int status = -1;
+    int arraySize = -1;
+    int aosCtx = -1;
+
+    <xsl:apply-templates select="field" mode="PUT_SINGLE">
+      <xsl:with-param name="dynamic_only" select="'no'"/>
+    </xsl:apply-templates>
+
+    return 0;
+    }
 </xsl:template>
 
 </xsl:stylesheet>

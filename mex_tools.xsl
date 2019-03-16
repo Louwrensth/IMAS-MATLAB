@@ -31,4 +31,44 @@
   return;
 }</xsl:template>
 
+<xsl:template name ="printAosRelativePath">
+  <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
+  <xsl:variable name="elementPath" select="@path"/>
+
+  <xsl:choose>
+    <xsl:when test="ancestor::field[@data_type='struct_array']">
+      <xsl:value-of select="replace($elementPath,concat($AoSPath,'/'),'')"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="$elementPath"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+<!--Documentation for a single field-->
+<xsl:template name = "COMMENT_FIELD">
+  <xsl:text>&#xA;</xsl:text>
+  <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
+  <xsl:text>//  </xsl:text><xsl:value-of select="@name"/>:<xsl:value-of select="@path"/>:<xsl:value-of select="@data_type"/>:<xsl:value-of select="@type"/>:<xsl:text>&#xA;</xsl:text>
+  <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
+
+  <xsl:if test="@type='dynamic' and @maxoccur='unbounded' and @data_type='struct_array'">
+    <xsl:text>//  ARRAY of TYPE 3 &#xA;</xsl:text>
+    <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
+
+  </xsl:if>
+  <xsl:if test="(not(@type) or @type!='dynamic') and @maxoccur='unbounded' and @data_type='struct_array'">
+    <xsl:text>//  ARRAY of TYPE 2  &#xA;</xsl:text>
+    <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
+
+  </xsl:if>
+
+  <xsl:if test="@maxoccur!='unbounded' and @data_type='struct_array'">
+    <xsl:text>//  ARRAY of TYPE 1  &#xA;</xsl:text>
+    <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
+
+  </xsl:if>
+</xsl:template>
+
+
 </xsl:stylesheet>
