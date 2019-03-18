@@ -20,15 +20,11 @@
 
 <xsl:template match="IDS" mode="SWITCH">
   <xsl:param name="function_name"/>
-  <xsl:param name="function_args"/>
   if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
   #ifdef MEX_DEBUG
   mexPrintf("Matched <xsl:value-of select="@name"/>\n");
   #endif
-  int err = <xsl:value-of select="concat($function_name,'_',@name,'(',$function_args,');')"/>
-  if (err) 
-  mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$function_name"/>:internal_error","internal error occured in function <xsl:value-of select="concat($function_name,'_',@name)"/> with code err=%d", err);
-  return;
+  <xsl:value-of select="$function_name"/> = &amp;<xsl:value-of select="concat($function_name,'_',@name)"/>;
 }</xsl:template>
 
 <xsl:template name ="printAosRelativePath">

@@ -94,15 +94,21 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mexPrintf("The input ids is:  %s\n", "SKIPPED");
 #endif
 
- 
-  // Call subfunction based on IDS name
+  // Declare Function Pointer
+  int(*put_slice)(int, int, const mxArray*) = NULL;
+  // Assign pointer based on IDS name
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">put_slice</xsl:with-param>
-    <xsl:with-param name="function_args">idx, occ, prhs[3]</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
+  if (put_slice == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_put_slice:unknown_ids",
            "Unknown IDS name: %s", name);
+  // Call function
+  int err = put_slice(idx, occ, prhs[3]);
+  if (err) 
+  mexErrMsgIdAndTxt("IMAS:ids_put_slice:internal_error","internal error occured in function put_slice_<xsl:value-of select="@name"/> with code err=%d", err);
+  return;
 
 }
  </xsl:result-document>

@@ -107,14 +107,21 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mexPrintf("The input interpolMode is:  %d\n", interpolMode);
 #endif
  
-  // Call subfunction based on IDS name
+  // Declare Function Pointer
+  int(*get_slice)(int, int, double, int, mxArray**) = NULL;
+  // Assign pointer based on IDS name
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">get_slice</xsl:with-param>
-    <xsl:with-param name="function_args">idx,occ,inTime,interpolMode,&amp;plhs[0]</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
+  if (get_slice == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_get_slice:unknown_ids",
            "Unknown IDS name: %s", name);
+  // Call function
+  int err = get_slice(idx, occ, inTime, interpolMode, &amp;plhs[0]);
+  if (err) 
+  mexErrMsgIdAndTxt("IMAS:ids_get_slice:internal_error","internal error occured in function get_slice_<xsl:value-of select="@name"/> with code err=%d", err);
+  return;
 
 }
  </xsl:result-document>
