@@ -134,12 +134,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     int put_<xsl:value-of select="@name"/>(int expIdx, int iOccurence, const mxArray* ids)
     {
-    int int0d;
-    double double0d;
-    int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-    int *intArray;
-    double *doubleArray;
-    char *str;
     // Paths-specific variables
     char *fieldPath;
     char *timebasePath;
@@ -150,7 +144,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     const mxArray* structure=NULL;
     const mxArray* data=NULL;
     int ifield;
-    const mwSize* dims;
     char *idsName = "<xsl:value-of select="@name"/>";
     char idsFullName[strlen(idsName)+4];
     const mxArray* pids_props=NULL;
@@ -205,12 +198,6 @@ int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int h
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT">
 int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const mxArray* ids)
     {
-    int int0d;
-    double double0d;
-    int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-    int *intArray;
-    double *doubleArray;
-    char *str;
     // Paths-specific variables
     char *fieldPath;
     char *timebasePath;
@@ -221,7 +208,6 @@ int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int h
     const mxArray* structure=NULL;
     const mxArray* data=NULL;
     int ifield;
-    const mwSize* dims;
     int status = -1;
     int arraySize = -1;
     int aosCtx = -1;
