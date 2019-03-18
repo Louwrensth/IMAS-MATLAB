@@ -15,10 +15,4 @@ const double EMPTY_DOUBLE;
 
 char *ual_last_errmsg();
 
-void checkStatus(int status);
-
-void checkObject(void *obj);
-
-const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char *path);
-
 int getHomogeneousTime(int ctx, int *homogeneousTime);

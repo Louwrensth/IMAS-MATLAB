@@ -18,17 +18,17 @@
 <xsl:call-template name="COMMENT_FIELD"/>
 
 // Doc Get <xsl:value-of select="@path_doc"/>
-<xsl:if test="@data_type='str_type'    or @data_type='STR_0D'
-	   or @data_type='str_1d_type' or @data_type='STR_1D'
-	   or @data_type='int_type'    or @data_type='INT_0D'
-	   or @data_type='flt_type'    or @data_type='FLT_0D'
-	   or @data_type='flt_1d_type' or @data_type='FLT_1D'
-	   or @data_type='int_1d_type' or @data_type='INT_1D'
-	   or @data_type='FLT_2D'      or @data_type='INT_2D'
-	   or @data_type='FLT_3D'      or @data_type='INT_3D'
-	   or @data_type='FLT_4D'      or @data_type='INT_4D'
-	   or @data_type='FLT_5D'      or @data_type='INT_5D'
-	   or @data_type='FLT_6D'      or @data_type='INT_6D'">
+<xsl:if test="@data_type='str_type'    or @data_type='STR_0D' or
+	      @data_type='str_1d_type' or @data_type='STR_1D' or
+	      @data_type='int_type'    or @data_type='INT_0D' or
+	      @data_type='flt_type'    or @data_type='FLT_0D' or
+	      @data_type='flt_1d_type' or @data_type='FLT_1D' or
+	      @data_type='int_1d_type' or @data_type='INT_1D' or
+	      @data_type='FLT_2D'      or @data_type='INT_2D' or
+	      @data_type='FLT_3D'      or @data_type='INT_3D' or
+	      @data_type='FLT_4D'      or @data_type='INT_4D' or
+	      @data_type='FLT_5D'      or @data_type='INT_5D' or
+	      @data_type='FLT_6D'      or @data_type='INT_6D'">
   fieldPath = &quot;<xsl:call-template  name="printAosRelativePath"/>&quot;;
   <xsl:choose>
     <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
@@ -127,7 +127,6 @@
   
     <xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
       status = getDouble(ctx, fieldPath, timebasePath, &amp;double0d);
-      checkStatus(status);
       if(!status) {
       data = mxCreateDoubleScalar(double0d);
       } else {
@@ -137,7 +136,6 @@
   
     <xsl:when test="@data_type='str_type' or @data_type='STR_0D'">
       status = getVect1DChar(ctx, fieldPath, timebasePath, &amp;str, &amp;dim1);
-      checkStatus(status);
       if(!status) {
       dstr = strdup(str);
       free(str);
@@ -148,7 +146,6 @@
   <!--========== Vectors ===========-->
     <xsl:when test = "@data_type='int_1d_type' or @data_type='INT_1D'">
       status = getVect1DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1);
-      checkStatus(status);
       if(!status) {
       data = mxCreateNumericMatrix(dim1,1,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*sizeof(int));
@@ -158,7 +155,6 @@
   
     <xsl:when test = "@data_type='flt_1d_type' or @data_type='FLT_1D'">
       status = getVect1DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1);
-      checkStatus(status);
       if(!status) {
       data = mxCreateDoubleMatrix(dim1,1,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*sizeof(double));
@@ -168,7 +164,6 @@
       
     <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
       status = getVect2DChar(ctx, fieldPath, timebasePath, &amp;str, &amp;dim1, &amp;dim2);
-      checkStatus(status);
       if(!status) {
       dims = malloc(2*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;
@@ -182,7 +177,6 @@
   <!--========== Matrices ===========-->
     <xsl:when test="@data_type='INT_2D'">
       status = getVect2DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2);
-      checkStatus(status);
       if(!status) {
       data = mxCreateNumericMatrix(dim1,dim2,mxINT32_CLASS,mxREAL);
       memcpy((int *)mxGetData(data),intArray,dim1*dim2*sizeof(int));
@@ -192,7 +186,6 @@
 
     <xsl:when test="@data_type='FLT_2D'">
       status = getVect2DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2);
-      checkStatus(status);
       if(!status) {
       data = mxCreateDoubleMatrix(dim1,dim2,mxREAL);
       memcpy((double *)mxGetData(data),doubleArray,dim1*dim2*sizeof(double));
@@ -203,7 +196,6 @@
   <!--========== 3D arrays ===========-->
     <xsl:when test="@data_type='INT_3D'">
       status = getVect3DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3);
-      checkStatus(status);
       if(!status) {
       dims = malloc(3*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
@@ -216,7 +208,6 @@
 
     <xsl:when test="@data_type='FLT_3D'">
       status = getVect3DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3);
-      checkStatus(status);
       if(!status) {
       dims = malloc(3*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;
@@ -230,7 +221,6 @@
   <!--========== 4D arrays ===========-->
     <xsl:when test="@data_type='INT_4D'">
       status = getVect4DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
-      checkStatus(status);
       if(!status) {
       dims = malloc(4*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;
@@ -243,7 +233,6 @@
 
     <xsl:when test="@data_type='FLT_4D'">
       status = getVect4DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4);
-      checkStatus(status);
       if(!status) {
       dims = malloc(4*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;
@@ -257,7 +246,6 @@
   <!--========== 5D arrays ===========-->
     <xsl:when test="@data_type='INT_5D'">
       status = getVect5DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
-      checkStatus(status);
       if(!status) {
       dims = malloc(5*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
@@ -270,7 +258,6 @@
 
     <xsl:when test="@data_type='FLT_5D'">
       status = getVect5DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5);
-      checkStatus(status);
       if(!status) {
       dims = malloc(5*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;
@@ -284,7 +271,6 @@
   <!--========== 6D arrays ===========-->
     <xsl:when test="@data_type='INT_6D'">
       status = getVect6DInt(ctx, fieldPath, timebasePath, &amp;intArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
-      checkStatus(status);
       if(!status) {
       dims = malloc(6*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;dims[5] = dim6;
@@ -297,7 +283,6 @@
 
     <xsl:when test="@data_type='FLT_6D'">
       status = getVect6DDouble(ctx, fieldPath, timebasePath, &amp;doubleArray, &amp;dim1, &amp;dim2, &amp;dim3, &amp;dim4, &amp;dim5, &amp;dim6);
-      checkStatus(status);
       if(!status) {
       dims = malloc(6*sizeof(mwSize));
       dims[0] = dim1;dims[1] = dim2;dims[2] = dim3;dims[3] = dim4;dims[4] = dim5;dims[5] = dim6;
