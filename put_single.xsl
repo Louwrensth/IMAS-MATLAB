@@ -15,9 +15,7 @@
 
 <xsl:template match="field" mode="PUT_SINGLE">
 <xsl:param name="dynamic_only"/>
-
 <xsl:call-template name="COMMENT_FIELD"/>
-
 <xsl:variable name="methodName">
   <xsl:choose>
     <xsl:when test="$dynamic_only !='yes'" >
@@ -29,7 +27,6 @@
   </xsl:choose>
 </xsl:variable>
 
-// Doc <xsl:value-of select="concat($methodName,' ',@path_doc)"/>
 <xsl:if test="$dynamic_only !='yes' or descendant-or-self::field[@type='dynamic'] or ancestor::field[@type='dynamic' and @data_type='struct_array']">
 <xsl:choose>
   <!--========== Array of structure ===========-->

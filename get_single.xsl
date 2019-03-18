@@ -14,10 +14,7 @@
 <!--=================================================-->
 
 <xsl:template match="field" mode="GET_SINGLE">
-
 <xsl:call-template name="COMMENT_FIELD"/>
-
-// Doc Get <xsl:value-of select="@path_doc"/>
 <xsl:choose>
   <!--========== Array of structure ===========-->
   <!-- Type 1 arrays of structure, with potentially multiple time bases -->
