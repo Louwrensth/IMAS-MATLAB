@@ -18,4 +18,6 @@ char *ual_last_errmsg();
 
 int read_data_to_mxArray(int ctx, const char *fieldpath, const char *timebasepath, int datatype, int dim, mxArray * data);
 
+int write_data_from_mxArray(int ctx, const char *fieldPath, const char *timebasePath, int datatype, int dim, const mxArray *data);
+
 int getHomogeneousTime(int ctx, int *homogeneousTime);

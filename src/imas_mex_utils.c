@@ -24,18 +24,20 @@ int get_data_info(int datatype, mxClassID * classid, mxComplexity * ComplexFlag,
         *dsize = sizeof(double);
         return 0;
     }
-    if (datatype == COMPLEX_DATA) {
-        *classid = mxDOUBLE_CLASS;
-        *ComplexFlag = mxCOMPLEX;
-        *dsize = sizeof(double);
-        return 0;
-    }
     if (datatype == CHAR_DATA) {
         *classid = mxCHAR_CLASS;
         *ComplexFlag = mxREAL;
         *dsize = 2*sizeof(char);
         return 0;
     }
+    /*
+    if (datatype == COMPLEX_DATA) {
+        *classid = mxDOUBLE_CLASS;
+        *ComplexFlag = mxCOMPLEX;
+        *dsize = sizeof(double);
+        return 0;
+    }
+    */
     return -1;
 }
 
@@ -74,6 +76,38 @@ int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePat
         chararray[i] = (mxChar) ((char *) array)[i];
     }
     free(array);
+    return status;
+}
+
+int write_data_from_mxArray(int ctx, const char *fieldPath, const char *timebasePath, int datatype, int dim, const mxArray *data)
+{
+    int status;
+    void *array;
+    mxChar *chararray;
+    int ndims;
+    const mwSize *dims;
+    mwSize numel;
+    int size[MAXDIM];
+    int i;
+
+    ndims = mxGetNumberOfDimensions(data);
+    dims = mxGetDimensions(data);
+    // cases with ndims=0 (empty array) should not land here
+    for (i = 0; i < dim; i++) {
+      size[i] = ndims > i ? (int) dims[i] : 1;
+      numel = numel * size[i];
+    }
+    if (datatype != CHAR_DATA) {
+      // integer and double data map directly to MATLAB types
+      array = mxGetData(data);
+    } else {
+      // MATLAB uses mxChar (uint16) to represent char arrays
+      chararray = (mxChar *) mxGetChars(data);
+      array = malloc(numel*sizeof(char));
+      for (i = 0; i < dim; i++)
+	((char *)array)[i] = (char) chararray[i];
+    }
+    status = ual_write_data(ctx, fieldPath, timebasePath, array, datatype, dim, size);
     return status;
 }
 

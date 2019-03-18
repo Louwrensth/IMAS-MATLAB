@@ -102,46 +102,6 @@
 		    @data_type='FLT_4D'      or @data_type='INT_4D' or
 		    @data_type='FLT_5D'      or @data_type='INT_5D' or
 		    @data_type='FLT_6D'      or @data_type='INT_6D'">
-      <!-- datatype argument to ual_read_data -->
-      <xsl:variable name="datatype">
-	<xsl:choose>
-	  <xsl:when test="@data_type='int_type'    or @data_type='INT_0D' or
-			  @data_type='int_1d_type' or @data_type='INT_1D' or
-			  @data_type='INT_2D'      or @data_type='INT_3D' or
-			  @data_type='INT_4D'      or @data_type='INT_5D' or
-			  @data_type='INT_6D'">INTEGER_DATA</xsl:when>
-	  <xsl:when test="@data_type='flt_type'    or @data_type='FLT_0D' or
-			  @data_type='flt_1d_type' or @data_type='FLT_1D' or
-			  @data_type='FLT_2D'      or @data_type='FLT_3D' or
-			  @data_type='FLT_4D'      or @data_type='FLT_5D' or
-			  @data_type='FLT_6D'">DOUBLE_DATA</xsl:when>
-	  <xsl:when test="@data_type='str_type'    or @data_type='STR_0D' or
-			  @data_type='str_1d_type' or @data_type='STR_1D'">CHAR_DATA</xsl:when>
-	</xsl:choose>    
-      </xsl:variable>
-      <!-- dim argument to ual_read_data -->
-      <xsl:variable name="dim">
-	<xsl:choose>
-	  <xsl:when test="@data_type='int_type' or @data_type='INT_0D' or
-			  @data_type='flt_type' or @data_type='FLT_0D'">
-	  0</xsl:when>
-	  <xsl:when test="@data_type='str_type'    or @data_type='STR_0D' or
-			  @data_type='int_1d_type' or @data_type='INT_1D' or
-			  @data_type='flt_1d_type' or @data_type='FLT_1D'">
-	  1</xsl:when>
-	  <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D' or
-			  @data_type='INT_2D' or @data_type='FLT_2D'">
-	  2</xsl:when>
-	  <xsl:when test="@data_type='INT_3D' or @data_type='FLT_3D'">
-	  3</xsl:when>
-	  <xsl:when test="@data_type='INT_4D' or @data_type='FLT_4D'">
-	  4</xsl:when>
-	  <xsl:when test="@data_type='INT_5D' or @data_type='FLT_5D'">
-	  5</xsl:when>
-	  <xsl:when test="@data_type='INT_6D' or @data_type='FLT_6D'">
-	  6</xsl:when>
-	</xsl:choose>
-      </xsl:variable>
       fieldPath = &quot;<xsl:call-template  name="printAosRelativePath"/>&quot;;
       <xsl:choose>
 	<xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
@@ -149,19 +109,19 @@
 	  timebasePath="/time";
 	  else
 	  timebasePath=&quot;<xsl:value-of select="@timebasepath"/>&quot;;
-    </xsl:when>
-    <xsl:otherwise>
+	</xsl:when>
+	<xsl:otherwise>
 	  timebasePath = "";
-    </xsl:otherwise>
-</xsl:choose>
-      status = read_data_to_mxArray(ctx, fieldPath, timebasePath, <xsl:value-of select="concat($datatype,', ',$dim)"/>, data);
-  ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
-  mxSetFieldByNumber(*ids,0,ifield,data);
-  data = NULL;
-  if (status &lt; 0) {	
-  ual_end_action(ctx);
-  return status;
-  }
+	</xsl:otherwise>
+      </xsl:choose>
+      status = read_data_to_mxArray(ctx, fieldPath, timebasePath, <xsl:call-template name="DATATYPE_AND_DIM"/>, data);
+      ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
+      mxSetFieldByNumber(*ids,0,ifield,data);
+      data = NULL;
+      if (status &lt; 0) {	
+      ual_end_action(ctx);
+      return status;
+      }
     </xsl:when>
 
   <!--========== Unknown type ===========-->
