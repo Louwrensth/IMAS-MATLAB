@@ -79,7 +79,7 @@
     <xsl:when test="@data_type='structure'">
       if (structure==NULL)
       structure = mxCreateStructMatrix(1,1,0,NULL);
-      status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, &amp;structure);
+      status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(ctx, homogeneousTime, &amp;structure);
       if (status != 0)
       return status;
       ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");

@@ -93,7 +93,7 @@
       if (structure==NULL)
       mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_field",
       "Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
-      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, structure);
+      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, structure);
       if (status != 0)
       return status;
     </xsl:when>
