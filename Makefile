@@ -55,10 +55,10 @@ GET_SLICE_SOURCES     = $(addprefix get_slice_,    $(addsuffix .c.in,$(IDSNAMES)
 PUT_SOURCES           = $(addprefix put_,          $(addsuffix .c.in,$(IDSNAMES))) ids_put.c.in ids_put.h.in
 PUT_SLICE_SOURCES     = $(addprefix put_slice_,    $(addsuffix .c.in,$(IDSNAMES))) ids_put_slice.c.in ids_put_slice.h.in
 #PUT_NON_TIMED_SOURCES = $(addprefix put_non_timed_,$(addsuffix .c.in,$(IDSNAMES))) ids_put_non_timed.c.in ids_put_non_timed.h.in
-#DELETE_SOURCES        = $(addprefix delete_,       $(addsuffix .c.in,$(IDSNAMES)))
+DELETE_SOURCES        = $(addprefix delete_,       $(addsuffix .c.in,$(IDSNAMES))) ids_delete.c.in ids_delete.h.in
 
-ALL_SOURCES = $(GET_SOURCES) $(GET_SLICE_SOURCES) $(PUT_SOURCES) $(PUT_SLICE_SOURCES)
-# TODO/DEPRECATED: $(PUT_NON_TIMED_SOURCES) $(DELETE_SOURCES)
+ALL_SOURCES = $(GET_SOURCES) $(GET_SLICE_SOURCES) $(PUT_SOURCES) $(PUT_SLICE_SOURCES) $(DELETE_SOURCES)
+# TODO/DEPRECATED: $(PUT_NON_TIMED_SOURCES)
 
 IDS_C_FILES   = $(filter-out ids_%     , $(ALL_SOURCES))
 MEX_IDS_FILES = $(filter     ids_%.c.in, $(ALL_SOURCES))
@@ -73,7 +73,7 @@ GET_SLICE_SRC_FILES     = $(addprefix $(IDS_SRC_DIR)/,$(GET_SLICE_SOURCES))
 PUT_SRC_FILES           = $(addprefix $(IDS_SRC_DIR)/,$(PUT_SOURCES))
 PUT_SLICE_SRC_FILES     = $(addprefix $(IDS_SRC_DIR)/,$(PUT_SLICE_SOURCES))
 #PUT_NON_TIMED_SRC_FILES = $(addprefix $(IDS_SRC_DIR)/,$(PUT_NON_TIMED_SOURCES))
-#DELETE_SRC_FILES        = $(addprefix $(IDS_SRC_DIR)/,$(DELETE_SOURCES))
+DELETE_SRC_FILES        = $(addprefix $(IDS_SRC_DIR)/,$(DELETE_SOURCES))
 
 # Add static sources
 MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
@@ -109,7 +109,7 @@ $(GET_SLICE_SRC_FILES): ids_get_slice.xsl mex_tools.xsl get_single.xsl
 $(PUT_SRC_FILES): ids_put.xsl mex_tools.xsl put_single.xsl
 $(PUT_SLICE_SRC_FILES): ids_put_slice.xsl mex_tools.xsl put_single.xsl
 #$(PUT_NON_TIMED_SRC_FILES): ids_put_non_timed.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl
-#$(DELETE_SRC_FILES): ids_delete.xsl
+$(DELETE_SRC_FILES): ids_delete.xsl delete.xsl
 $(GENSOURCES):
 	@$(mkdir_p) $(BUILD_DIR)
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$(filter ids_%.xsl,$^)
@@ -129,6 +129,7 @@ $(LIB_DIR)/ids_get.mexa64:           $(addprefix get_,          $(addsuffix .o, 
 $(LIB_DIR)/ids_get_slice.mexa64:     $(addprefix get_slice_,    $(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_put.mexa64:           $(addprefix put_,          $(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix put_slice_,    $(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/ids_delete.mexa64:        $(addprefix delete_,       $(addsuffix .o, $(IDSNAMES)))
 #$(LIB_DIR)/ids_put_non_timed.mexa64: $(addprefix put_non_timed_,$(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o $(BUILD_DIR)/imas_mex_utils.o
 	$(mkdir_p) $(LIB_DIR)
@@ -144,6 +145,7 @@ $(BUILD_DIR)/ids_get.o:           $(IDS_SRC_DIR)/ids_get.h
 $(BUILD_DIR)/ids_get_slice.o:     $(IDS_SRC_DIR)/ids_get_slice.h
 $(BUILD_DIR)/ids_put.o:           $(IDS_SRC_DIR)/ids_put.h
 $(BUILD_DIR)/ids_put_slice.o:     $(IDS_SRC_DIR)/ids_put_slice.h
+$(BUILD_DIR)/ids_delete.o:        $(IDS_SRC_DIR)/ids_delete.h
 #$(BUILD_DIR)/ids_put_non_timed.o: $(IDS_SRC_DIR)/ids_put_non_timed.h
 $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(@)
