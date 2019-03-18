@@ -122,14 +122,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     int get_<xsl:value-of select="@name"/>(int expIdx, int iOccurence, mxArray** ids)
     {
-    int int0d;
-    double double0d;
-    int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-    int *intArray;
-    double *doubleArray;
-    char *str;
-    // Pointers for duplicating strings
-    char *dstr;
     // Paths-specific variables
     char *fieldPath;
     char *timebasePath;
@@ -140,8 +132,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mxArray* structure=NULL;
     mxArray* data=NULL;
     int ifield;
-    mwSize* dims;
-    mwSize dims_scalar[2] = { 1, 1 };
     char *idsName = "<xsl:value-of select="@name"/>";
     char idsFullName[strlen(idsName)+4];
     int status = -1;
@@ -185,14 +175,6 @@ int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int h
   <xsl:call-template name="COMMENT_FIELD"/>
   int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, mxArray** ids)
   {
-  int int0d;
-  double double0d;
-  int numDims, dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-  int *intArray;
-  double *doubleArray;
-  char *str;
-  // Pointers for duplicating strings
-  char *dstr;
   // Paths-specific variables
   char *fieldPath = "";
   char *timebasePath = "";
@@ -203,8 +185,6 @@ int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int h
   mxArray* structure=NULL;
   mxArray* data=NULL;
   int ifield;
-  mwSize* dims;
-  mwSize dims_scalar[2] = { 1, 1 };
   int status = -1;
   int arraySize = -1;
   int aosCtx = -1;
