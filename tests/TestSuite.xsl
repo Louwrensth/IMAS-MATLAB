@@ -65,14 +65,14 @@
     <xsl:text>&#10;</xsl:text>
     <xsl:text>function setupOnce(testCase)&#10;</xsl:text>
     <xsl:text>&#9;idx = imas_create('ids',9999,9999,0,0);&#10;</xsl:text>
-    <xsl:text>&#9;imas_enable_mem_cache(idx);&#10;</xsl:text>
+    <xsl:text>&#9;% imas_enable_mem_cache(idx);&#10;</xsl:text>
     <xsl:text>&#9;testCase.TestData.idx = idx;&#10;</xsl:text>
     <xsl:text>end&#10;</xsl:text>
     <xsl:text>&#10;</xsl:text>
     <xsl:text>function teardownOnce(testCase)&#10;</xsl:text>
     <xsl:text>&#9;idx = testCase.TestData.idx;&#10;</xsl:text>
-    <xsl:text>&#9;imas_discard_mem_cache(idx);&#10;</xsl:text>
-    <xsl:text>&#9;imas_disable_mem_cache(idx);&#10;</xsl:text>
+    <xsl:text>&#9;% imas_discard_mem_cache(idx);&#10;</xsl:text>
+    <xsl:text>&#9;% imas_disable_mem_cache(idx);&#10;</xsl:text>
     <xsl:text>&#9;imas_close(idx);&#10;</xsl:text>
     <xsl:text>end&#10;</xsl:text>
     <xsl:text>&#10;</xsl:text>
