@@ -127,7 +127,7 @@ $(IDS_SRC_DIR)/%.h: %.h.in
 
 $(LIB_DIR)/ids_get.mexa64:           $(addprefix get_,          $(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_get_slice.mexa64:     $(addprefix get_slice_,    $(addsuffix .o, $(IDSNAMES)))
-$(LIB_DIR)/ids_put.mexa64:           $(addprefix put_,          $(addsuffix .o, $(IDSNAMES)))
+$(LIB_DIR)/ids_put.mexa64:           $(addprefix put_,          $(addsuffix .o, $(IDSNAMES)))  $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix put_slice_,    $(addsuffix .o, $(IDSNAMES)))
 $(LIB_DIR)/ids_delete.mexa64:        $(addprefix delete_,       $(addsuffix .o, $(IDSNAMES)))
 #$(LIB_DIR)/ids_put_non_timed.mexa64: $(addprefix put_non_timed_,$(addsuffix .o, $(IDSNAMES))) $(addprefix delete_,$(addsuffix .o, $(IDSNAMES)))

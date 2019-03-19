@@ -136,6 +136,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include &lt;string.h&gt;
     #include &lt;stdio.h&gt;
 
+    int delete_<xsl:value-of select="@name"/>(int expIdx, int iOccurence);
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_H"/>
 
     int put_<xsl:value-of select="@name"/>(int expIdx, int iOccurence, const mxArray* ids)
@@ -180,6 +181,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
     sprintf(idsFullName, "%s", idsName);
     else
     sprintf(idsFullName, "%s/%d", idsName, iOccurence);
+
+    // Delete existing IDS if any
+    delete_<xsl:value-of select="@name"/>(expIdx, iOccurence);
     // Open put context
     putOpCtx = ual_begin_global_action(expIdx, idsFullName, WRITE_OP);
     if(putOpCtx &lt; 0) 
