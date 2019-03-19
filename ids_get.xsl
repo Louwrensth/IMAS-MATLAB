@@ -158,7 +158,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return getOpCtx;
     ctx = getOpCtx;
     status = getHomogeneousTime(ctx, &amp;homogeneousTime);
-    if(status) 
+    if(status &lt; 0) 
     {	
     ual_end_action(ctx);
     return status;
@@ -168,7 +168,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:apply-templates select="field" mode="GET_SINGLE"/>
 
     ual_end_action(ctx);
-    return 0;
+    return 0; // TODO: Should we return status of ual_end_action?
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>

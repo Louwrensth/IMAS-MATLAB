@@ -42,14 +42,15 @@
       ual_end_action(ctx);
       return aosCtx;
       }
-      if (aosCtx &gt; 0 &amp;&amp; arraySize &gt; 0) {
+      if (arraySize &gt; 0) {
       aosArray=mxCreateCellMatrix(arraySize,1);
       for (int i=0; i&lt;arraySize; i++) {
       aosElement=mxGetCell(aosArray,(mwIndex) i);
       if (aosElement==NULL)
       aosElement = mxCreateStructMatrix(1,1,0,NULL);
       status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, &amp;aosElement);
-      if (status &lt; 0) {	
+      if (status &lt; 0) {
+      <!-- ual_end_action(aosCtx) is taken care of in get_... -->
       ual_end_action(ctx);
       return status;
       }
@@ -67,7 +68,7 @@
       ual_end_action(ctx);
       return status;
       }
-      } else {
+      } else { // arraySize == 0
       aosArray=mxCreateCellMatrix(0,0);
       }
       ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
@@ -80,8 +81,11 @@
       if (structure==NULL)
       structure = mxCreateStructMatrix(1,1,0,NULL);
       status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(ctx, homogeneousTime, &amp;structure);
-      if (status != 0)
+      if (status &lt; 0) {
+      <!-- ual_end_action(aosCtx) is taken care of in get_... -->
+      ual_end_action(ctx);
       return status;
+      }
       ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(*ids,0,ifield,structure);
       structure=NULL;

@@ -38,7 +38,7 @@ int get_data_info(int datatype, mxClassID * classid, mxComplexity * ComplexFlag,
         return 0;
     }
     */
-    return -1;
+    return -1; // Should we use a unique status ID?
 }
 
 int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePath, int datatype, int dim, mxArray * data)

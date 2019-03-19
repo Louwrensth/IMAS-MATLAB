@@ -205,7 +205,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     </xsl:apply-templates>
 
     ual_end_action(ctx);
-    return 0;
+    return 0; // TODO: Should we return status of ual_end_action?
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE"/>

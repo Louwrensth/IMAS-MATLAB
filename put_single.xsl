@@ -68,7 +68,8 @@
       mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_AoS_element",
       "Unable to retrieve element %d in %s (in PUT_SINGLE)", i, "<xsl:value-of select="@path"/>");
       status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, aosElement);
-      if (status &lt; 0) {	
+      if (status &lt; 0) {
+      <!-- ual_end_action(aosCtx) is taken care of in get_... -->	
       ual_end_action(ctx);
       return status;
       }
@@ -94,8 +95,11 @@
       mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_field",
       "Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
       status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, structure);
-      if (status != 0)
+      if (status &lt; 0) {
+      <!-- ual_end_action(aosCtx) is taken care of in get_... -->
+      ual_end_action(ctx);
       return status;
+      }
     </xsl:when>
 
   <!--========== Simple types ===========-->
