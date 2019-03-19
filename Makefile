@@ -91,6 +91,7 @@ IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c.in=.o))
 IDS_OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_IDS_FILES:.c.in=.o))
 OBJ_FILES = $(addprefix $(BUILD_DIR)/,imas_mex_utils.o)
 OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_SRC_FILES:.c=.o))
+OBJ_FILES = $(addprefix $(BUILD_DIR)/,c_mexapi_version.o)
 
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c.in=.mexa64))
@@ -173,7 +174,7 @@ clean: test-clean pkgconfig_clean
 	$(RM) $(TARGETS)
 
 clean-src: clean
-	$(RM) $(GENSOURCES)
+	$(RM) $(GENSOURCES) $(GENSOURCES:.in=)
 
 #################################################
 #                 TESTS
