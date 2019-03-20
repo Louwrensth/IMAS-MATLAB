@@ -86,7 +86,7 @@ int write_data_from_mxArray(int ctx, const char *fieldPath, const char *timebase
     mxChar *chararray;
     int ndims;
     const mwSize *dims;
-    mwSize numel;
+    mwSize numel = 1;
     int size[MAXDIM];
     int i;
 
@@ -104,7 +104,7 @@ int write_data_from_mxArray(int ctx, const char *fieldPath, const char *timebase
       // MATLAB uses mxChar (uint16) to represent char arrays
       chararray = (mxChar *) mxGetChars(data);
       array = malloc(numel*sizeof(char));
-      for (i = 0; i < dim; i++)
+      for (i = 0; i < numel; i++)
 	((char *)array)[i] = (char) chararray[i];
     }
     status = ual_write_data(ctx, fieldPath, timebasePath, array, datatype, dim, size);
