@@ -29,7 +29,7 @@
     <xsl:text>&#10;</xsl:text>
 
     <xsl:text>function s = rand_string()&#10;</xsl:text>
-    <xsl:text>&#9;s= '12 34 56 78 90';&#10;</xsl:text>
+    <xsl:text>&#9;s= '12 34 56 78 90'.';&#10;</xsl:text>
     <xsl:text>&#10;</xsl:text>
 
     <xsl:text>function a = rand_array(type, ndim, dynamic, slice)&#10;</xsl:text>
@@ -42,7 +42,7 @@
     <xsl:text>&#9;&#9;a = int32(randi([-2^30, 2^30],s));&#10;</xsl:text>
     <xsl:text>&#9;elseif (strcmp(type,'string'))&#10;</xsl:text>
     <xsl:text>&#9;&#9;assert(ndim == 1,'Only 1D array of strings are supported');&#10;</xsl:text>
-    <xsl:text>&#9;&#9;a = char(arrayfun(@(i) sprintf('label%d',i),1:s(1),'UniformOutput',false));&#10;</xsl:text>
+    <xsl:text>&#9;&#9;a = char(arrayfun(@(i) sprintf('label%d',i),1:s(1),'UniformOutput',false)).';&#10;</xsl:text>
     <xsl:text>&#9;end&#10;</xsl:text>
     <xsl:text>&#9;if (dynamic &amp;&amp; slice)&#10;</xsl:text>
     <xsl:text>&#9;&#9;if (strcmp(type,'string') &amp;&amp; ndim == 1)&#10;</xsl:text>
