@@ -1,4 +1,3 @@
-- Initialise pointers in read_data_to_mxArray
 - Print context info on error
 - Decide on returning 0 (success) or status of ual_end_action
 - Decide on action when single field fails (no data): before: assign default value, now: error

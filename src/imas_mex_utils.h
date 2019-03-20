@@ -3,8 +3,8 @@
 #define TIMED       1
 #define TIMED_CLEAR 2
 
+const char EMPTY_CHAR;
 const int EMPTY_INT;
-const float EMPTY_FLOAT;
 const double EMPTY_DOUBLE;
 
 #include "mex.h"

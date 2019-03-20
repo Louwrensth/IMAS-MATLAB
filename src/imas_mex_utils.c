@@ -1,8 +1,8 @@
 
 #include "imas_mex_utils.h"
 
+const char EMPTY_CHAR = '\0';
 const int EMPTY_INT = -999999999;
-const float EMPTY_FLOAT = -9.0E35;
 const double EMPTY_DOUBLE = -9.0E40;
 
 char *ual_last_errmsg()
@@ -10,24 +10,42 @@ char *ual_last_errmsg()
     return "ual_last_errmsg_dummy";
 }
 
-int get_data_info(int datatype, mxClassID * classid, mxComplexity * ComplexFlag, size_t * dsize)
+int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * ComplexFlag, size_t * dsize, void ** pdefault)
 {
     if (datatype == INTEGER_DATA) {
         *classid = mxINT32_CLASS;
         *ComplexFlag = mxREAL;
         *dsize = sizeof(int);
+	if (dim > 0) {
+	    *pdefault = NULL;
+	} else {
+	    *pdefault = malloc(sizeof(int));
+	    *(int *)*pdefault = EMPTY_INT;
+	}
         return 0;
     }
     if (datatype == DOUBLE_DATA) {
         *classid = mxDOUBLE_CLASS;
         *ComplexFlag = mxREAL;
         *dsize = sizeof(double);
+	if (dim > 0) {
+	    *pdefault = NULL;
+	} else {
+	    *pdefault = malloc(sizeof(double));
+	    *(double *)*pdefault = EMPTY_DOUBLE;
+	}
         return 0;
     }
     if (datatype == CHAR_DATA) {
         *classid = mxCHAR_CLASS;
         *ComplexFlag = mxREAL;
         *dsize = 2*sizeof(char);
+	if (dim > 0) {
+	    *pdefault = NULL;
+	} else {
+	    *pdefault = malloc(sizeof(char));
+	    *(char *)*pdefault = EMPTY_CHAR;
+	}
         return 0;
     }
     /*
@@ -36,9 +54,15 @@ int get_data_info(int datatype, mxClassID * classid, mxComplexity * ComplexFlag,
         *ComplexFlag = mxCOMPLEX;
         *dsize = sizeof(double);
         return 0;
+	if (dim > 0) {
+	    *pdefault = NULL;
+	} else {
+	    *pdefault = malloc(sizeof(Complex));
+	    *(char *)*pdefault = EMPTY_COMPLEX;
+	}
     }
     */
-    return -1; // Should we use a unique status ID?
+    return -1; // TODO: Should we use a unique status ID?
 }
 
 int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePath, int datatype, int dim, mxArray ** data)
@@ -50,30 +74,26 @@ int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePat
     mxClassID classid;
     mxComplexity ComplexFlag;
     size_t dsize;
-    mwSize size[MAXDIM];
+    mwSize ndims;
+    mwSize dims[MAXDIM];
     mwSize numel = 1;
     int i;
 
-    status = get_data_info(datatype, &classid, &ComplexFlag, &dsize);
+    status = get_data_info(datatype, dim, &classid, &ComplexFlag, &dsize, &array);
     if (status < 0)
         return status;
-    // Handle special case of scalar elements
-    if (dim == 0) 
-      array = malloc(dsize);
     status = ual_read_data(ctx, fieldPath, timebasePath, &array, datatype, dim, &retSize[0]);
     if (status < 0)
         return status;
-    // Handle special case of scalar elements
-    if (dim == 0) {
-      dim = 1;
-      retSize[0] = 1;
-    }
+    // Avoid creating emptw arrays for scalars
+    ndims = (dim > 0) ? dim : 1;
+    dims[0] = 1;
     // Convert array size and compute total number of elements
     for (i = 0; i < dim; i++) {
-        size[i] = (mwSize) retSize[i];
-        numel = numel * size[i];
+        dims[i] = (mwSize) retSize[i];
+        numel = numel * dims[i];
     }
-    *data = mxCreateNumericArray((mwSize) dim, size, classid, ComplexFlag);
+    *data = mxCreateNumericArray(ndims, dims, classid, ComplexFlag);
     if (datatype != CHAR_DATA) {
       // integer and double data map directly to MATLAB types
       memcpy(mxGetData(*data), array, numel * dsize);
@@ -100,7 +120,7 @@ int write_data_from_mxArray(int ctx, const char *fieldPath, const char *timebase
 
     ndims = mxGetNumberOfDimensions(data);
     dims = mxGetDimensions(data);
-    // cases with ndims=0 (empty array) should not land here
+    // Convert array size and compute total number of elements
     for (i = 0; i < dim; i++) {
       size[i] = ndims > i ? (int) dims[i] : 1;
       numel = numel * size[i];
