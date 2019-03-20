@@ -6,7 +6,7 @@ include ../Makefile.classpath
 
 ifeq ("no","$(strip $(IMAS_MEX))")
 all sources sources_install install clean clean-src:
-	$(warning "Ignoring cppinterface (IMAS_MEX=no).")
+	$(warning "Ignoring mexinterface (IMAS_MEX=no).")
 else
 
 CFLAGS_DEBUG = -g
