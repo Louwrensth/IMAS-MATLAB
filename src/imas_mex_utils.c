@@ -41,7 +41,7 @@ int get_data_info(int datatype, mxClassID * classid, mxComplexity * ComplexFlag,
     return -1; // Should we use a unique status ID?
 }
 
-int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePath, int datatype, int dim, mxArray * data)
+int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePath, int datatype, int dim, mxArray ** data)
 {
     int status;
     int retSize[MAXDIM];
@@ -65,13 +65,13 @@ int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePat
         size[i] = (mwSize) retSize[i];
         numel = numel * size[i];
     }
-    data = mxCreateNumericArray((mwSize) dim, size, classid, ComplexFlag);
+    *data = mxCreateNumericArray((mwSize) dim, size, classid, ComplexFlag);
     if (datatype != CHAR_DATA) {
       // integer and double data map directly to MATLAB types
-      memcpy(mxGetData(data), array, numel * dsize);
+      memcpy(mxGetData(*data), array, numel * dsize);
     } else {
       // MATLAB uses mxChar (uint16) to represent char arrays
-      chararray = mxGetData(data);
+      chararray = mxGetData(*data);
       for (i = 0; i < numel; i++) 
         chararray[i] = (mxChar) ((char *) array)[i];
     }

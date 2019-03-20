@@ -115,7 +115,7 @@
 	  timebasePath = "";
 	</xsl:otherwise>
       </xsl:choose>
-      status = read_data_to_mxArray(ctx, fieldPath, timebasePath, <xsl:call-template name="DATATYPE_AND_DIM"/>, data);
+      status = read_data_to_mxArray(ctx, fieldPath, timebasePath, <xsl:call-template name="DATATYPE_AND_DIM"/>, &amp;data);
       ifield = mxAddField(*ids,"<xsl:value-of select="@name"/>");
       mxSetFieldByNumber(*ids,0,ifield,data);
       data = NULL;
