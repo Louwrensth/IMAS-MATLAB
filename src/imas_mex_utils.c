@@ -50,16 +50,24 @@ int read_data_to_mxArray(int ctx, const char *fieldPath, const char *timebasePat
     mxClassID classid;
     mxComplexity ComplexFlag;
     size_t dsize;
-    mwSize size[dim];
+    mwSize size[MAXDIM];
     mwSize numel = 1;
     int i;
 
-    status = ual_read_data(ctx, fieldPath, timebasePath, &array, datatype, dim, &retSize[0]);
-    if (status < 0)
-        return status;
     status = get_data_info(datatype, &classid, &ComplexFlag, &dsize);
     if (status < 0)
         return status;
+    // Handle special case of scalar elements
+    if (dim == 0) 
+      array = malloc(dsize);
+    status = ual_read_data(ctx, fieldPath, timebasePath, &array, datatype, dim, &retSize[0]);
+    if (status < 0)
+        return status;
+    // Handle special case of scalar elements
+    if (dim == 0) {
+      dim = 1;
+      retSize[0] = 1;
+    }
     // Convert array size and compute total number of elements
     for (i = 0; i < dim; i++) {
         size[i] = (mwSize) retSize[i];
