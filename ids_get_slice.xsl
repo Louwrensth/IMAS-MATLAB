@@ -30,8 +30,7 @@
  * This is a MEX file for MATLAB.
 */
 #include "ids_get_slice.h"
-#include "mex.h"
-#include &lt;string.h&gt;
+#include "imas_mex_utils.h"
 
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
@@ -141,13 +140,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 <xsl:template match="IDS" mode="GET_SLICE">
   <xsl:result-document href="src/ids/get_slice_{@name}.c.in" standalone="yes" method="text">
-    #include "mex.h"
-    #include "ual_low_level.h"
-    #include "ual_lowlevel.h"
     #include "imas_mex_utils.h"
-    #include &lt;stdlib.h&gt;
-    #include &lt;string.h&gt;
-    #include &lt;stdio.h&gt;
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
 

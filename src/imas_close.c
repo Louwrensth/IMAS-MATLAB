@@ -6,9 +6,7 @@
  *
  * This is a MEX file for MATLAB.
  */
-#include "mex.h"
-#include "ual_low_level.h"
-#include <string.h>
+#include "imas_mex_utils.h"
 
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {

@@ -30,8 +30,7 @@
  * This is a MEX file for MATLAB.
 */
 #include "ids_put.h"
-#include "mex.h"
-#include &lt;string.h&gt;
+#include "imas_mex_utils.h"
 
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
@@ -128,13 +127,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 <xsl:template match="IDS" mode="PUT">
   <xsl:result-document href="src/ids/put_{@name}.c.in" standalone="yes" method="text">
-    #include "mex.h"
-    #include "ual_low_level.h"
-    #include "ual_lowlevel.h"
     #include "imas_mex_utils.h"
-    #include &lt;stdlib.h&gt;
-    #include &lt;string.h&gt;
-    #include &lt;stdio.h&gt;
 
     int delete_<xsl:value-of select="@name"/>(int expIdx, int iOccurence);
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_H"/>
