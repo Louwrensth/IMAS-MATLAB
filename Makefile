@@ -81,6 +81,7 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
 				imas_create imas_create_env \
 				imas_create_public \
 				imas_close \
+				imas_get_backendID \
 				)
 # TODO/DEPRECATED: imas_open_hdf5 imas_create_hdf5 imas_enable_mem_cache imas_disable_mem_cache imas_flush_mem_cache imas_discard_mem_cache
 SOURCES = $(GENSOURCES)

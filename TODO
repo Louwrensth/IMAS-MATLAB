@@ -2,7 +2,6 @@
 - Decide on returning 0 (success) or status of ual_end_action
 - Decide on action when single field fails (no data): before: assign default value, now: error
 - Decide on how to assign error codes for local (mexinterface) functions
-- Add imas_get_backendID
 - Minimize use of memcpy in get methods (check that no error appears when mex are cleared)
 - Enable/Disable memcache from MATLAB
 - Decide on STR_0D and STR_1D representation
