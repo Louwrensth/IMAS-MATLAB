@@ -25,7 +25,7 @@
 /*
  * ids_get.c - read IDS in MATLAB External Interfaces
  *
- *		ids = ids_get(idx, name, occ)
+ *		ids = ids_get(idx, IDSpath[, occ])
  *
  * This is a MEX file for MATLAB.
 */
@@ -35,27 +35,54 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for three input arguments  
-  if(nrhs != 3) {
-    mexErrMsgIdAndTxt("IMAS:ids_get:nargin",
-                      "Three inputs required.");
+  // Check for two or three input arguments  
+  if(nrhs != 3 &amp;&amp; nrhs != 2) {
+    mexErrMsgIdAndTxt("IMAS:ids_put:nargin",
+                      "Two or three inputs required.");
   }
-  // make sure the 1st input argument is scalar
+
+  // make sure idx is scalar
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
                         "Input idx must be a scalar.");
   }
-  // make sure the 2nd input argument is a string
+  // Get the value of idx
+  int idx = (int) mxGetScalar(prhs[0]);
+#ifdef MEX_DEBUG
+  mexPrintf("The input idx is:  %d\n", idx);
+#endif
+
+  // make sure IDSpath is a string
   if( !mxIsChar(prhs[1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_get:notChar",
-                        "Input name must be a string.");
+      mexErrMsgIdAndTxt("IMAS:ids_put:notChar",
+                        "Input IDSpath must be a string.");
   }
-  // make sure the 3rd input argument is scalar
+  // Get the value of IDSpath
+  char *IDSpath = mxArrayToString(prhs[1]);
+#ifdef MEX_DEBUG
+  mexPrintf("The input IDSpath is:  %s\n", IDSpath);
+#endif
+
+  if(nrhs == 3) {
+  int occ;
+  size_t pathlen;
+  // make sure occ is scalar
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
                         "Input occurence must be a scalar.");
+  }
+  // Get the value of occ
+  occ = (int) mxGetScalar(prhs[2]);
+#ifdef MEX_DEBUG
+  mexPrintf("The input occurence is:  %d\n", occ);
+#endif
+  if (occ &gt; 0) {
+  pathlen = strlen(IDSpath);
+  IDSpath = mxRealloc(IDSpath, (pathlen+5)*sizeof(char));
+  snprintf(&amp;IDSpath[pathlen], 5, "/%d", occ);
+  }
   }
 
   // Check for one output argument
@@ -63,27 +90,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mexErrMsgIdAndTxt("IMAS:ids_get:nargout",
                       "One output required.");
   }
-
-  // Get the value of the idx
-  int idx = (int) mxGetScalar(prhs[0]);
-#ifdef MEX_DEBUG
-  mexPrintf("The input idx is:  %d\n", idx);
-#endif
-
-  // Get the value of the name
-  char *name = mxArrayToString(prhs[1]);
-#ifdef MEX_DEBUG
-  mexPrintf("The input name is:  %s\n", name);
-#endif
-
-  // Get the value of the occurence
-  int occ = (int) mxGetScalar(prhs[2]);
-#ifdef MEX_DEBUG
-  mexPrintf("The input occurence is:  %d\n", occ);
-#endif
+  
+  // Extract IDS name
+  char* name = strtok(strdup(IDSpath), "/");
  
   // Declare Function Pointer
-  int(*get)(int, int, mxArray**) = NULL;
+  int(*get)(int, char*, mxArray**) = NULL;
   // Assign pointer based on IDS name
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">get</xsl:with-param>
@@ -93,7 +105,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mexErrMsgIdAndTxt("IMAS:ids_get:unknown_ids",
            "Unknown IDS name: %s", name);
   // Call function
-  int err = get(idx, occ, &amp;plhs[0]);
+  int err = get(idx, IDSpath, &amp;plhs[0]);
   if (err) 
   mexErrMsgIdAndTxt("IMAS:ids_get:internal_error","internal error occured in function get_<xsl:value-of select="@name"/> with code err=%d", err);
   return;
@@ -104,7 +116,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include "mex.h"
     <xsl:apply-templates select = "IDS" mode="LIST">
       <xsl:with-param name="prefix" select="'int get_'"/>
-      <xsl:with-param name="suffix" select="'(int expIdx, int occ, mxArray** ids);'"/>
+      <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, mxArray** ids);'"/>
     </xsl:apply-templates>
   </xsl:result-document>
   <xsl:apply-templates select = "IDS" mode="GET"/>
@@ -120,7 +132,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
 
-    int get_<xsl:value-of select="@name"/>(int expIdx, int iOccurence, mxArray** ids)
+    int get_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids)
     {
     // Paths-specific variables
     char *fieldPath;
@@ -133,7 +145,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mxArray* data=NULL;
     int ifield;
     char *idsName = "<xsl:value-of select="@name"/>";
-    char idsFullName[strlen(idsName)+4];
     int status = -1;
     int arraySize = -1;
     int aosCtx = -1;
@@ -141,10 +152,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int ctx = -1;
     int homogeneousTime = -1;
 
-    if(iOccurence &lt; 1)
-    sprintf(idsFullName, "%s", idsName);
-    else
-    sprintf(idsFullName, "%s/%d", idsName, iOccurence);
     // Open get context
     getOpCtx = ual_begin_global_action(expIdx, idsFullName, READ_OP);
     if(getOpCtx &lt; 0) 

@@ -25,7 +25,7 @@
 /*
  * ids_put.c - write IDS in MATLAB External Interfaces
  *
- *		ids = ids_put(idx, name, occ, ids)
+ *		ids = ids_put(idx, IDSpath[, occ], ids)
  *
  * This is a MEX file for MATLAB.
 */
@@ -35,66 +35,78 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for three input arguments  
-  if(nrhs != 4) {
+  // Check for three or four input arguments  
+  if(nrhs != 4 &amp;&amp; nrhs != 3) {
     mexErrMsgIdAndTxt("IMAS:ids_put:nargin",
-                      "Four inputs required.");
+                      "Three or four inputs required.");
   }
-  // make sure the 1st input argument is scalar
+
+  // make sure idx is scalar
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
                         "Input idx must be a scalar.");
   }
-  // make sure the 2nd input argument is a string
+  // Get the value of idx
+  int idx = (int) mxGetScalar(prhs[0]);
+#ifdef MEX_DEBUG
+  mexPrintf("The input idx is:  %d\n", idx);
+#endif
+
+  // make sure IDSpath is a string
   if( !mxIsChar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put:notChar",
-                        "Input name must be a string.");
+                        "Input IDSpath must be a string.");
   }
-  // make sure the 3rd input argument is scalar
+  // Get the value of IDSpath
+  char *IDSpath = mxArrayToString(prhs[1]);
+#ifdef MEX_DEBUG
+  mexPrintf("The input IDSpath is:  %s\n", IDSpath);
+#endif
+
+  if(nrhs == 4) {
+  int occ;
+  size_t pathlen;
+  // make sure occ is scalar
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
                         "Input occurence must be a scalar.");
   }
-  // make sure the 4th input argument is scalar
-  if( !mxIsStruct(prhs[3]) ||
-      !mxIsScalar(prhs[3]) ) {
+  // Get the value of occ
+  occ = (int) mxGetScalar(prhs[2]);
+#ifdef MEX_DEBUG
+  mexPrintf("The input occurence is:  %d\n", occ);
+#endif
+  if (occ &gt; 0) {
+  pathlen = strlen(IDSpath);
+  IDSpath = mxRealloc(IDSpath, (pathlen+5)*sizeof(char));
+  snprintf(&amp;IDSpath[pathlen], 5, "/%d", occ);
+  }
+  }
+
+  // make sure ids is scalar struct
+  if( !mxIsStruct(prhs[nrhs-1]) ||
+      !mxIsScalar(prhs[nrhs-1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
                         "Input ids must be a scalar structure.");
   }
+  // Get the value of ids
+#ifdef MEX_DEBUG
+  mexPrintf("The input ids is:  %s\n", "SKIPPED");
+#endif
 
   // Check for no output argument
   if(nlhs != 0) {
     mexErrMsgIdAndTxt("IMAS:ids_put:nargout",
                       "No output required.");
   }
+  
+  // Extract IDS name
+  char* name = strtok(strdup(IDSpath), "/");
 
-  // Get the value of the idx
-  int idx = (int) mxGetScalar(prhs[0]);
-#ifdef MEX_DEBUG
-  mexPrintf("The input idx is:  %d\n", idx);
-#endif
-
-  // Get the value of the name
-  char *name = mxArrayToString(prhs[1]);
-#ifdef MEX_DEBUG
-  mexPrintf("The input name is:  %s\n", name);
-#endif
-
-  // Get the value of the occurence
-  int occ = (int) mxGetScalar(prhs[2]);
-#ifdef MEX_DEBUG
-  mexPrintf("The input occurence is:  %d\n", occ);
-#endif
-
-  // Get the value of the ids
-#ifdef MEX_DEBUG
-  mexPrintf("The input ids is:  %s\n", "SKIPPED");
-#endif
- 
   // Declare Function Pointer
-  int(*put)(int, int, const mxArray*) = NULL;
+  int(*put)(int, char*, const mxArray*) = NULL;
   // Assign pointer based on IDS name
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">put</xsl:with-param>
@@ -104,7 +116,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mexErrMsgIdAndTxt("IMAS:ids_put:unknown_ids",
            "Unknown IDS name: %s", name);
   // Call function
-  int err = put(idx, occ, prhs[3]);
+  int err = put(idx, IDSpath, prhs[nrhs-1]);
   if (err) 
   mexErrMsgIdAndTxt("IMAS:ids_put:internal_error","internal error occured in function put_<xsl:value-of select="@name"/> with code err=%d", err);
   return;
@@ -115,7 +127,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   #include "mex.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
     <xsl:with-param name="prefix" select="'int put_'"/>
-    <xsl:with-param name="suffix" select="'(int expIdx, int occ, const mxArray* ids);'"/>
+    <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, const mxArray* ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
  <xsl:apply-templates select = "IDS" mode="PUT"/>
@@ -129,10 +141,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/put_{@name}.c.in" standalone="yes" method="text">
     #include "imas_mex_utils.h"
 
-    int delete_<xsl:value-of select="@name"/>(int expIdx, int iOccurence);
+    int delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName);
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_H"/>
 
-    int put_<xsl:value-of select="@name"/>(int expIdx, int iOccurence, const mxArray* ids)
+    int put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
     {
     // Paths-specific variables
     char *fieldPath;
@@ -145,7 +157,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     const mxArray* data=NULL;
     int ifield;
     char *idsName = "<xsl:value-of select="@name"/>";
-    char idsFullName[strlen(idsName)+4];
     const mxArray* pids_props=NULL;
     const mxArray* phomog_time=NULL;
     int status = -1;
@@ -170,13 +181,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return 0;
     }
 
-    if(iOccurence &lt; 1)
-    sprintf(idsFullName, "%s", idsName);
-    else
-    sprintf(idsFullName, "%s/%d", idsName, iOccurence);
-
     // Delete existing IDS if any
-    delete_<xsl:value-of select="@name"/>(expIdx, iOccurence);
+    delete_<xsl:value-of select="@name"/>(expIdx, idsFullName);
     // Open put context
     putOpCtx = ual_begin_global_action(expIdx, idsFullName, WRITE_OP);
     if(putOpCtx &lt; 0) 
