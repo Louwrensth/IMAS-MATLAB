@@ -146,7 +146,6 @@
       if (mxIsNumeric(data) &amp;&amp; mxIsDouble(data)) {
       cast_status = castDoubleToInt32(&amp;data);
       if (cast_status &lt; 0) {
-      endIds<xsl:value-of select="$action"/>(expIdx, path);
       mexErrMsgIdAndTxt("IMAS:ids_put:cast_failed",
       "Unable to cast field %s to int32 (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
       }
@@ -157,7 +156,6 @@
       if (mxIsCell(data)) {
       cast_status = castCellToChar(&amp;data);
       if (cast_status &lt; 0) {
-      endIds<xsl:value-of select="$action"/>(expIdx, path);
       mexErrMsgIdAndTxt("IMAS:ids_put:cast_failed",
       "Unable to cast field %s to char (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
       }
