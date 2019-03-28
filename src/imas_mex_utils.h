@@ -25,3 +25,6 @@ int getHomogeneousTime(int ctx, int *homogeneousTime);
 const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char* path);
 
 int getHomogeneousTime2(const mxArray * ids, int *homogeneousTime);
+
+int castDoubleToInt32(const mxArray ** data);
+

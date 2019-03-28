@@ -137,7 +137,33 @@
     "Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
     data = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
     if (data != NULL &amp;&amp; mxGetNumberOfElements(data) &gt; 0) {
+    <xsl:if test="
+		  @data_type='int_type' or @data_type='INT_0D' or
+		  @data_type='int_1d_type' or @data_type='INT_1D' or
+		  @data_type='INT_2D' or @data_type='INT_3D' or
+		  @data_type='INT_4D' or @data_type='INT_5D' or
+		  @data_type='INT_6D'"> 
+      if (mxIsNumeric(data) &amp;&amp; mxIsDouble(data)) {
+      cast_status = castDoubleToInt32(&amp;data);
+      if (cast_status &lt; 0) {
+      endIds<xsl:value-of select="$action"/>(expIdx, path);
+      mexErrMsgIdAndTxt("IMAS:ids_put:cast_failed",
+      "Unable to cast field %s to int32 (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
+      }
+      }
+    </xsl:if>
     status = write_data_from_mxArray(ctx, fieldPath, timebasePath, <xsl:call-template name="DATATYPE_AND_DIM"/>, data);
+    <xsl:if test="
+		  @data_type='int_type' or @data_type='INT_0D' or
+		  @data_type='int_1d_type' or @data_type='INT_1D' or
+		  @data_type='INT_2D' or @data_type='INT_3D' or
+		  @data_type='INT_4D' or @data_type='INT_5D' or
+		  @data_type='INT_6D'"> 
+      if (cast_status == 0) {
+      mxDestroyArray((mxArray *) data);
+      cast_status = -1;
+      }
+    </xsl:if>
     if (status &lt; 0) {	
     ual_end_action(ctx);
     return status;

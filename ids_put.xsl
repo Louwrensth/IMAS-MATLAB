@@ -160,6 +160,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     const mxArray* structure=NULL;
     const mxArray* data=NULL;
     int ifield;
+    int cast_status = -1;
     int status = -1;
     int arraySize = -1;
     int aosCtx = -1;
@@ -212,6 +213,7 @@ int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int h
     const mxArray* structure=NULL;
     const mxArray* data=NULL;
     int ifield;
+    int cast_status = -1;
     int status = -1;
     int arraySize = -1;
     int aosCtx = -1;

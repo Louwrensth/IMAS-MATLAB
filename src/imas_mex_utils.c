@@ -185,6 +185,7 @@ const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char* path)
 
 int getHomogeneousTime2(const mxArray * ids, int * homogeneousTime)
 {
+    int cast_status = -1;
     const mxArray *data = NULL;
     data = getSimpleFieldStruct(ids, "ids_properties/homogeneous_time");
     if (data == NULL) {
@@ -195,6 +196,32 @@ int getHomogeneousTime2(const mxArray * ids, int * homogeneousTime)
         puts("ERROR: ids_properties%homogeneous_time is not a scalar");
         return -1;
     }
+    if (mxIsDouble(data)) {
+      cast_status = castDoubleToInt32(&data);
+      if (cast_status < 0)
+	return cast_status;
+    }
     *homogeneousTime = *(int *) mxGetData(data);
+    if (cast_status == 0)
+      mxDestroyArray((mxArray *) data);
+    return 0;
+}
+
+int castDoubleToInt32(const mxArray ** data)
+{
+    mxArray * doubleData = (mxArray *) *data;
+    mxArray * intData = NULL;
+    mxArray * exception = NULL;
+
+    if (!mxIsNumeric(*data) || !mxIsDouble(*data))
+        return -1;
+
+    exception = mexCallMATLABWithTrap(1, &intData, 1, &doubleData, "int32");
+
+    if(exception != NULL) {
+        return -1;
+    }
+
+    *data = intData;
     return 0;
 }
