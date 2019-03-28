@@ -103,7 +103,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   
   // Extract IDS name
-  char* name = strtok(strdup(IDSpath), "/");
+  char* IDSpathcopy = strdup(IDSpath);
+  char* name = strtok(IDSpathcopy, "/");
 
   // Declare Function Pointer
   int(*put)(int, char*, const mxArray*) = NULL;
@@ -120,6 +121,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if (err) 
   mexErrMsgIdAndTxt("IMAS:ids_put:internal_error","internal error occured in function put_<xsl:value-of select="@name"/> with code err=%d", err);
   return;
+
+  // free now as name uses the same memory
+  free(IDSpathcopy);
 
 }
  </xsl:result-document>

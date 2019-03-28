@@ -92,7 +92,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   
   // Extract IDS name
-  char* name = strtok(strdup(IDSpath), "/");
+  char* IDSpathcopy = strdup(IDSpath);
+  char* name = strtok(IDSpathcopy, "/");
  
   // Declare Function Pointer
   int(*delete)(int, char*) = NULL;
@@ -107,6 +108,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   // Call function
   plhs[0] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
   *(int *)mxGetData(plhs[0]) = delete(idx, IDSpath);
+
+  // free now as name uses the same memory
+  free(IDSpathcopy);
 
 }
   </xsl:result-document>
