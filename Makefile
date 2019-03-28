@@ -109,7 +109,7 @@ $(GET_SLICE_SRC_FILES): ids_get_slice.xsl mex_tools.xsl get_single.xsl
 $(PUT_SRC_FILES): ids_put.xsl mex_tools.xsl put_single.xsl
 $(PUT_SLICE_SRC_FILES): ids_put_slice.xsl mex_tools.xsl put_single.xsl
 #$(PUT_NON_TIMED_SRC_FILES): ids_put_non_timed.xsl mex_tools.xsl put_single.xsl put_in_object.xsl puttime_single.xsl
-$(DELETE_SRC_FILES): ids_delete.xsl delete.xsl
+$(DELETE_SRC_FILES): ids_delete.xsl mex_tools.xsl delete.xsl
 $(GENSOURCES):
 	@$(mkdir_p) $(BUILD_DIR)
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$(filter ids_%.xsl,$^)
