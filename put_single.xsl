@@ -90,10 +90,15 @@
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      structure = mxGetField(ids, (mwIndex) 0, "<xsl:value-of select="@name"/>");
-      if (structure==NULL)
-      mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_field",
+      ifield = mxGetFieldNumber(ids, "<xsl:value-of select="@name"/>");
+      if (ifield &lt; 0) {
+      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
       "Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
+      }
+      structure = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
+      if (!mxIsStruct(structure) || !mxIsScalar(structure))
+      mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_field",
+      "Field %s is not a scalar structure (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
       status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, structure);
       if (status &lt; 0) {
       <!-- ual_end_action(aosCtx) is taken care of in get_... -->

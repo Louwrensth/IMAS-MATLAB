@@ -183,10 +183,15 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT_SLICE quits with no action.");
     return 0;
     }
-    ptime = mxGetField(ids, (mwIndex) 0, "time");
+    // Top-level ids_put_slice functions check that ids is a scalar struct
+    ifield = mxGetFieldNumber(ids, "time");
+    ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
     if (ptime == NULL)
       mexErrMsgIdAndTxt("IMAS:ids_put_slice:invalid_time",
       "Unable to retrieve ids%%time");
+    if (mxGetNumberOfElements(ptime) &lt; 1)
+    mexErrMsgIdAndTxt("IMAS:ids_put:empty_time",
+    "ids%%time must have at least one element");
     sliceTime = mxGetScalar(ptime);
 
     // Open put context

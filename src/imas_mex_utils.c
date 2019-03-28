@@ -153,6 +153,7 @@ int getHomogeneousTime(int ctx, int *homogeneousTime)
 const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char* path)
 {
     /* Extracts field from structure AosParent following '/'-separated path */
+    int ifield = -1;
     char *token;
     char *relative_path;
     const mxArray *data = AosParent;
@@ -166,7 +167,16 @@ const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char* path)
     // Structure unroll
     token = strtok(relative_path, "/");
     while (token != NULL && data != NULL) {
-        data = mxGetField(data, (mwIndex) 0, token);
+        if (!mxIsStruct(data) || !mxIsScalar(data)) {
+	    data = NULL;
+	    break;
+	}
+        ifield = mxGetFieldNumber(data, token);
+        if (ifield < 0) {
+	    data = NULL;
+	    break;
+	}
+        data = mxGetFieldByNumber(data, (mwIndex) 0, ifield);
         token = strtok(NULL, "/");
     }
     free(pathcopy);
