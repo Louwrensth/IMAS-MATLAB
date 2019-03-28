@@ -28,3 +28,5 @@ int getHomogeneousTime2(const mxArray * ids, int *homogeneousTime);
 
 int castDoubleToInt32(const mxArray ** data);
 
+int castCellToChar(const mxArray ** data);
+

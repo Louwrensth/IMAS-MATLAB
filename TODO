@@ -7,3 +7,7 @@
 - Enable/Disable memcache from MATLAB
 - Decide on STR_0D and STR_1D representation
 - Decide on how to allocate arrays of structures
+
+- Call ual_end_action before throwing MEX error and before soft errors (return)
+- Remove uncritical error messages for get methods
+- Move cast to write_data_from_mxArray

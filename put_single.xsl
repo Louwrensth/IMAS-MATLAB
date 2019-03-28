@@ -152,8 +152,20 @@
       }
       }
     </xsl:if>
+    <xsl:if test="
+		  @data_type='str_1d_type' or @data_type='STR_1D'"> 
+      if (mxIsCell(data)) {
+      cast_status = castCellToChar(&amp;data);
+      if (cast_status &lt; 0) {
+      endIds<xsl:value-of select="$action"/>(expIdx, path);
+      mexErrMsgIdAndTxt("IMAS:ids_put:cast_failed",
+      "Unable to cast field %s to char (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
+      }
+      }
+    </xsl:if>
     status = write_data_from_mxArray(ctx, fieldPath, timebasePath, <xsl:call-template name="DATATYPE_AND_DIM"/>, data);
     <xsl:if test="
+		  @data_type='str_1d_type' or @data_type='STR_1D' or
 		  @data_type='int_type' or @data_type='INT_0D' or
 		  @data_type='int_1d_type' or @data_type='INT_1D' or
 		  @data_type='INT_2D' or @data_type='INT_3D' or

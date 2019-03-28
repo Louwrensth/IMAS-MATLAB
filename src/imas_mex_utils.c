@@ -225,3 +225,23 @@ int castDoubleToInt32(const mxArray ** data)
     *data = intData;
     return 0;
 }
+
+int castCellToChar(const mxArray ** data)
+{
+    mxArray * cellData = (mxArray *) *data;
+    mxArray * charData = NULL;
+    mxArray * exception = NULL;
+
+    if (!mxIsCell(*data))
+        return -1;
+
+    exception = mexCallMATLABWithTrap(1, &charData, 1, &cellData, "char");
+
+    if(exception != NULL) {
+        return -1;
+    }
+
+    *data = charData;
+    return 0;
+}
+
