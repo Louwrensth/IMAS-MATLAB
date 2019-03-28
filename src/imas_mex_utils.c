@@ -172,3 +172,19 @@ const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char* path)
     free(pathcopy);
     return data;
 }
+
+int getHomogeneousTime2(const mxArray * ids, int * homogeneousTime)
+{
+    const mxArray *data = NULL;
+    data = getSimpleFieldStruct(ids, "ids_properties/homogeneous_time");
+    if (data == NULL) {
+        puts("ERROR: ids_properties%homogeneous_time is not filled");
+        return -1;
+    }
+    if (!mxIsScalar(data)) {
+        puts("ERROR: ids_properties%homogeneous_time is not a scalar");
+        return -1;
+    }
+    *homogeneousTime = *(int *) mxGetData(data);
+    return 0;
+}

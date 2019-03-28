@@ -167,26 +167,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int ifield;
     const mwSize* dims;
     char *idsName = "<xsl:value-of select="@name"/>";
-    const mxArray* pids_props=NULL;
-    const mxArray* phomog_time=NULL;
     const mxArray* ptime=NULL;
     int status = -1;
     int arraySize = -1;
     int aosCtx = -1;
     int putSliceOpCtx = -1;
     int ctx = -1;
-    int homogeneousTime = -1;
+    int homogeneousTime = EMPTY_INT;
     double sliceTime = -1.0;
 
-    pids_props = mxGetField(ids, (mwIndex) 0, "ids_properties");
-    if (pids_props == NULL)
-      mexErrMsgIdAndTxt("IMAS:ids_put_slice:invalid_ids_properties",
-      "Unable to retrieve ids%%ids_properties");
-    phomog_time = mxGetField(pids_props, (mwIndex) 0, "homogeneous_time");
-    if (phomog_time == NULL)
-      mexErrMsgIdAndTxt("IMAS:ids_put_slice:invalid_homogeneous_time",
+    if (getHomogeneousTime2(ids, &amp;homogeneousTime) &lt; 0) 
+      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
       "Unable to retrieve ids%%ids_properties%%homogeneous_time");
-    homogeneousTime = (int) mxGetScalar(phomog_time);
     if( homogeneousTime == EMPTY_INT )
     {
     mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT_SLICE quits with no action.");

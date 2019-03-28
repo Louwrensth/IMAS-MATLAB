@@ -23,3 +23,5 @@ int write_data_from_mxArray(int ctx, const char *fieldPath, const char *timebase
 int getHomogeneousTime(int ctx, int *homogeneousTime);
 
 const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char* path);
+
+int getHomogeneousTime2(const mxArray * ids, int *homogeneousTime);
