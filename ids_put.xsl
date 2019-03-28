@@ -160,7 +160,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     const mxArray* structure=NULL;
     const mxArray* data=NULL;
     int ifield;
-    char *idsName = "<xsl:value-of select="@name"/>";
     int status = -1;
     int arraySize = -1;
     int aosCtx = -1;

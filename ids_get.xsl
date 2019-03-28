@@ -148,13 +148,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mxArray* structure=NULL;
     mxArray* data=NULL;
     int ifield;
-    char *idsName = "<xsl:value-of select="@name"/>";
     int status = -1;
     int arraySize = -1;
     int aosCtx = -1;
     int getOpCtx = -1;
     int ctx = -1;
-    int homogeneousTime = -1;
+    int homogeneousTime = EMPTY_INT;
 
     // Open get context
     getOpCtx = ual_begin_global_action(expIdx, idsFullName, READ_OP);
