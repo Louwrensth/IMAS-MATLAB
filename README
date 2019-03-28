@@ -13,9 +13,11 @@ Since MATLAB uses column-major order for arrays (i.e. as in FORTRAN), no re-orde
 
 Here only the differences with the new lowlevel version of the MATLAB interface are discussed
 
-  - So far STR_1D are implemented as char matrices with each column corresponding to a different aray element. This causes padding of the smaller strings with spaces. The MATLAB interface uses cell arrays of strings for this purpose which allevaites this padding problem. The documentation specifies 'char array' for STR_1D which is probably not specific enough.
+  - So far STR_1D are implemented as char matrices with each column corresponding to a different array element. This causes padding of the smaller strings with spaces. The MATLAB interface uses cell arrays of strings for this purpose which allevaites this padding problem. The documentation specifies 'char array' for STR_1D which is probably not specific enough.
 
   - STR_0D are represented as column vectors of char to reflect the C representation in the lowlevel library. This however is in contradiction with MATLAB common use where row vectors are used (this is also true for STR_1D where common use would have row vectors as the basic elements. The MATLAB interface uses the more classic MATLAB representation. [This can be easily changed by calling transpose on such elements.]
+
+  - INT scalars or arrays are implemented as int32 arrays. The MATLAB interface uses double arrays. This is in contradiction with the documentation which specifies 'int or int array' (which does not correspond to any built-in MATLAB class).
 
   - For empty array of structures in get methods, empty cell arrays are returned. The MATLAB interface returns a cell array of size 1 with uninitialized fields (EMPTY_INT, EMPTY_FLOAT, empty arrays, except for children aos which follow the same rule), this is in contradiction with the documentation. NB: In the MATLAB interface, this seems to be a choice of the implementation of the java to MATLAB converters, and correcting this would also mean that empty arrays are created in ids_gen.
 
