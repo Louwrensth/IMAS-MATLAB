@@ -1,4 +1,8 @@
 
+#ifndef IMAS_MEX_UTILS_H
+
+#define IMAS_MEX_UTILS_H
+
 #define NON_TIMED   0
 #define TIMED       1
 #define TIMED_CLEAR 2
@@ -8,25 +12,44 @@ const int EMPTY_INT;
 const double EMPTY_DOUBLE;
 
 #include "mex.h"
-#include "ual_low_level.h"
+#include "imas_mex_params.h"
+#include "imas_mex_casts.h"
+#include "imas_mex_structs.h"
 #include "ual_lowlevel.h"
+#include "ual_low_level.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
+#define MAXPATHSIZE 1025
+#define MAXERRMSGIDSIZE 129
+#define MAXERRMSGTXTSIZE 1025
+
+struct imas_mex_actionInfo {
+  int context;
+};
+
+struct imas_mex_fieldInfo {
+  char fieldPath[MAXPATHSIZE];
+  char timebasePath[MAXPATHSIZE];
+  int datatype;
+  int dim;
+};
+
+extern char mex_errmsgid[MAXERRMSGIDSIZE];
+extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
+extern int msglen;
+
 char *ual_last_errmsg();
 
-int read_data_to_mxArray(int ctx, const char *fieldpath, const char *timebasepath, int datatype, int dim, mxArray ** data);
+void my_mexErrMsgIdAndTxt(int status, const char * prefix);
 
-int write_data_from_mxArray(int ctx, const char *fieldPath, const char *timebasePath, int datatype, int dim, const mxArray *data);
+void my_exceptionGetReport(mxArray* exception);
 
-int getHomogeneousTime(int ctx, int *homogeneousTime);
+int getHomogeneousTime2(int ctx, int *homogeneousTime);
 
-const mxArray *getSimpleFieldStruct(const mxArray * AosParent, char* path);
+int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data);
 
-int getHomogeneousTime2(const mxArray * ids, int *homogeneousTime);
+int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data);
 
-int castDoubleToInt32(const mxArray ** data);
-
-int castCellToChar(const mxArray ** data);
-
+#endif

@@ -5,7 +5,8 @@
 <!-- -->
 <xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 		xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exsl="http://exslt.org/common" version="1.0" extension-element-prefixes="yaslt exsl"
-		xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+		xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+		xmlns:my="dummy">
 
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
@@ -15,7 +16,6 @@
 
 <xsl:template match="field" mode="PUT_SINGLE">
 <xsl:param name="dynamic_only"/>
-<xsl:call-template name="COMMENT_FIELD"/>
 <xsl:variable name="methodName">
   <xsl:choose>
     <xsl:when test="$dynamic_only !='yes'" >
@@ -27,14 +27,19 @@
   </xsl:choose>
 </xsl:variable>
 
+<xsl:variable name="AosRelativePath">
+  <xsl:call-template name="printAosRelativePath"/>
+</xsl:variable>
+
 <xsl:if test="$dynamic_only !='yes' or descendant-or-self::field[@type='dynamic'] or ancestor::field[@type='dynamic' and @data_type='struct_array']">
+<xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
   <!--========== Array of structure ===========-->
   <!-- Type 1 arrays of structure, with potentially multiple time bases -->
   <!-- Type 2 arrays of structure -->
   <!-- Type 3 arrays of structure, with a unique time base -->
     <xsl:when test = "@data_type = 'struct_array'">
-      fieldPath = &quot;<xsl:call-template  name="printAosRelativePath"/>&quot;;
+      strncpy(field.fieldPath, &quot;<xsl:value-of select="$AosRelativePath"/>&quot;, <xsl:value-of select="string-length($AosRelativePath)+1"/>);
       <xsl:if test="ancestor::field[@data_type='struct_array']">
 	//<xsl:value-of select="ancestor::field[@data_type='struct_array'][1]/@path"/>
 	//<xsl:value-of select="@path"/>
@@ -42,32 +47,31 @@
       <xsl:choose>	
 	<xsl:when test="@type='dynamic'"> <!-- Type 3 -->
 	  if (homogeneousTime) 
-          timebasePath = "/time";
+          strncpy(field.timebasePath, "/time", 6);
        	  else
-	  timebasePath = &quot;<xsl:call-template  name="printAosRelativePath"/>/time&quot;;
+	  strncpy(field.timebasePath, &quot;<xsl:value-of select="$AosRelativePath"/>/time&quot;, <xsl:value-of select="string-length($AosRelativePath)+6"/>);
 	</xsl:when>
   	<xsl:otherwise> <!-- Type 1 or 2 -->
-	  timebasePath = "";
+	  strncpy(field.timebasePath, "", 1);
 	</xsl:otherwise>
       </xsl:choose>
-      ifield = mxGetFieldNumber(ids, "<xsl:value-of select="@name"/>");
-      if (ifield &lt; 0)
-      mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_field",
-      "Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
-      aosArray = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-      arraySize = (aosArray == NULL) ? 0 : mxGetNumberOfElements(aosArray);
-      if (arraySize &gt; 0) {
-      aosCtx = ual_begin_arraystruct_action(ctx, fieldPath, timebasePath, &amp;arraySize);
+      if (begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize) &lt; 0) {
+      ual_end_action(ctx);
+      return -1;
+      }
+      if (aosArraySize &gt; 0) {
+      aosCtx = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize);
       if (aosCtx &lt; 0) {
       ual_end_action(ctx);
       return aosCtx;
       }
-      for (int i=0; i&lt;arraySize; i++) {
-      aosElement=mxGetCell(aosArray,(mwIndex) i);
-      if (aosElement==NULL)
-      mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_AoS_element",
-      "Unable to retrieve element %d in %s (in PUT_SINGLE)", i, "<xsl:value-of select="@path"/>");
-      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, aosElement);
+      for (int i=0; i&lt;aosArraySize; i++) {
+      if (iterate_dataTree_array(i) &lt; 0) {	
+      ual_end_action(aosCtx);
+      ual_end_action(ctx);
+      return -1;
+      }
+      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
       if (status &lt; 0) {
       <!-- ual_end_action(aosCtx) is taken care of in get_... -->	
       ual_end_action(ctx);
@@ -86,94 +90,58 @@
       return status; 
       }
       }
+      // Finished processing array of structure <xsl:value-of select="@name"/>
+      if (end_dataTree_array_action() &lt; 0) {
+      ual_end_action(ctx);
+      return -1;
+      }
     </xsl:when>
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      ifield = mxGetFieldNumber(ids, "<xsl:value-of select="@name"/>");
-      if (ifield &lt; 0) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_field",
-      "Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
+      if (begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty) &lt; 0) {
+      ual_end_action(ctx);
+      return -1;
       }
-      structure = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-      if (!mxIsStruct(structure) || !mxIsScalar(structure))
-      mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_field",
-      "Field %s is not a scalar structure (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
-      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, structure);
+      if (!isEmpty) {
+      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
       if (status &lt; 0) {
       <!-- ual_end_action(aosCtx) is taken care of in get_... -->
       ual_end_action(ctx);
       return status;
       }
+      }
+      // Finished processing structure <xsl:value-of select="@name"/>
+      if (end_dataTree_action() &lt; 0) {
+      ual_end_action(ctx);
+      return -1;
+      }
     </xsl:when>
 
   <!--========== Simple types ===========-->
-  <xsl:when test="@data_type='str_type'    or @data_type='STR_0D' or
-		  @data_type='str_1d_type' or @data_type='STR_1D' or
-		  @data_type='int_type'    or @data_type='INT_0D' or
-		  @data_type='flt_type'    or @data_type='FLT_0D' or
-		  @data_type='flt_1d_type' or @data_type='FLT_1D' or
-		  @data_type='int_1d_type' or @data_type='INT_1D' or
-		  @data_type='FLT_2D'      or @data_type='INT_2D' or
-		  @data_type='FLT_3D'      or @data_type='INT_3D' or
-		  @data_type='FLT_4D'      or @data_type='INT_4D' or
-		  @data_type='FLT_5D'      or @data_type='INT_5D' or
-		  @data_type='FLT_6D'      or @data_type='INT_6D'">
-    fieldPath = &quot;<xsl:call-template  name="printAosRelativePath"/>&quot;;
+  <xsl:when test="my:get_datatype(@data_type)='CHAR_DATA' or 
+		  my:get_datatype(@data_type)='INTEGER_DATA' or 
+		  my:get_datatype(@data_type)='DOUBLE_DATA'">
+    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data) &lt; 0) {
+    ual_end_action(ctx);
+    return -1;
+    }
+    if  (data != NULL &amp;&amp; !mxIsEmpty(data)) {
+    strncpy(field.fieldPath, &quot;<xsl:value-of select="$AosRelativePath"/>&quot;, <xsl:value-of select="string-length($AosRelativePath)+1"/>);
     <xsl:choose>
       <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
 	if (homogeneousTime == 1) 
-	timebasePath="/time";
-	else
-	timebasePath=&quot;<xsl:value-of select="@timebasepath"/>&quot;;
+        strncpy(field.timebasePath, "/time", 6);
+       	else
+	strncpy(field.timebasePath, &quot;<xsl:value-of select="@timebasepath"/>&quot;, <xsl:value-of select="string-length(@timebasepath)+1"/>);
       </xsl:when>
       <xsl:otherwise>
-	timebasePath = "";
+	strncpy(field.timebasePath, "", 1);
       </xsl:otherwise>
     </xsl:choose>
-    ifield = mxGetFieldNumber(ids, "<xsl:value-of select="@name"/>");
-    if (ifield &lt; 0)
-    mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$methodName"/>:invalid_field",
-    "Unable to retrieve field %s (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
-    data = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-    if (data != NULL &amp;&amp; mxGetNumberOfElements(data) &gt; 0) {
-    <xsl:if test="
-		  @data_type='int_type' or @data_type='INT_0D' or
-		  @data_type='int_1d_type' or @data_type='INT_1D' or
-		  @data_type='INT_2D' or @data_type='INT_3D' or
-		  @data_type='INT_4D' or @data_type='INT_5D' or
-		  @data_type='INT_6D'"> 
-      if (mxIsNumeric(data) &amp;&amp; mxIsDouble(data)) {
-      cast_status = castDoubleToInt32(&amp;data);
-      if (cast_status &lt; 0) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:cast_failed",
-      "Unable to cast field %s to int32 (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
-      }
-      }
-    </xsl:if>
-    <xsl:if test="
-		  @data_type='str_1d_type' or @data_type='STR_1D'"> 
-      if (mxIsCell(data)) {
-      cast_status = castCellToChar(&amp;data);
-      if (cast_status &lt; 0) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:cast_failed",
-      "Unable to cast field %s to char (in PUT_SINGLE)", "<xsl:value-of select="@path"/>");
-      }
-      }
-    </xsl:if>
-    status = write_data_from_mxArray(ctx, fieldPath, timebasePath, <xsl:call-template name="DATATYPE_AND_DIM"/>, data);
-    <xsl:if test="
-		  @data_type='str_1d_type' or @data_type='STR_1D' or
-		  @data_type='int_type' or @data_type='INT_0D' or
-		  @data_type='int_1d_type' or @data_type='INT_1D' or
-		  @data_type='INT_2D' or @data_type='INT_3D' or
-		  @data_type='INT_4D' or @data_type='INT_5D' or
-		  @data_type='INT_6D'"> 
-      if (cast_status == 0) {
-      mxDestroyArray((mxArray *) data);
-      cast_status = -1;
-      }
-    </xsl:if>
+    field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
+    field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;
+    status = my_ual_write_data(&amp;action, &amp;field, data);
     if (status &lt; 0) {	
     ual_end_action(ctx);
     return status;

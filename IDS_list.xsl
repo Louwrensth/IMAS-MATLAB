@@ -9,7 +9,7 @@
   <xsl:output method="text"/>
 
   <xsl:template match = "/IDSs">
-    <exsl:document href="tests/IDS_list.m" method="text">
+    <xsl:result-document href="matlab/IDS_list.m" method="text">
       <xsl:text>function out = IDS_list&#xA;</xsl:text>
       <xsl:text>% Return the list of existing IDSs&#xA;</xsl:text>
       <xsl:text>% This file was generated automatically&#xA;</xsl:text>
@@ -17,7 +17,7 @@
       <xsl:text>out = {&#xA;</xsl:text>
       <xsl:apply-templates select = "IDS"/>
       <xsl:text>};&#xA;</xsl:text>
-    </exsl:document>
+    </xsl:result-document>
   </xsl:template>
 
   <xsl:template match = "IDS">

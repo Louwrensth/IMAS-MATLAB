@@ -5,7 +5,8 @@
 <!-- -->
 <xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exsl="http://exslt.org/common" version="1.0" extension-element-prefixes="yaslt exsl"
-  xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+  xmlns:my="dummy">
 
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
@@ -105,14 +106,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if (get == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_get:unknown_ids",
            "Unknown IDS name: %s", name);
-  // Call function
-  int err = get(idx, IDSpath, &amp;plhs[0]);
-  if (err) 
-  mexErrMsgIdAndTxt("IMAS:ids_get:internal_error","internal error occured in function get_<xsl:value-of select="@name"/> with code err=%d", err);
-  return;
 
   // free now as name uses the same memory
   free(IDSpathcopy);
+
+  // Clean-up previous errors
+  mex_errmsgid[0] = '\000';
+  mex_errmsgtxt[0] = '\000';
+  // Call function
+  int err = get(idx, IDSpath, &amp;plhs[0]);
+  if (err &lt; 0 )
+  my_mexErrMsgIdAndTxt(err, "IMAS:ids_get:");
+  return;
 
 }
   </xsl:result-document>
@@ -123,33 +128,26 @@ void mexFunction(int nlhs, mxArray *plhs[],
       <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, mxArray** ids);'"/>
     </xsl:apply-templates>
   </xsl:result-document>
-  <xsl:apply-templates select = "IDS" mode="GET"/>
-</xsl:template>
-
-<!--================================================-->
-<!--                Template for IDSs               -->
-<!--================================================-->
-
-<xsl:template match="IDS" mode="GET">
-  <xsl:result-document href="src/ids/get_{@name}.c.in" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/get_ids.c.in" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+    <xsl:for-each select="IDS">
+#ifndef NO_GLOBAL_CONVERSION
+     int int_to_double_<xsl:value-of select="@name"/>(mxArray* ids);
+     int empty_to_nan_<xsl:value-of select="@name"/>(mxArray* ids);
+#endif
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
 
     int get_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids)
     {
+    struct imas_mex_actionInfo action;
+    struct imas_mex_fieldInfo field;
     // Paths-specific variables
-    char *fieldPath;
-    char *timebasePath;
-    // AoS-specific variables
-    mxArray* aosArray=NULL;
-    mxArray* aosElement=NULL;
-    // Structure-specific variables
-    mxArray* structure=NULL;
+    int maxpathsize=MAXPATHSIZE;
     mxArray* data=NULL;
     int ifield;
     int status = -1;
-    int arraySize = -1;
+    int aosArraySize = -1;
     int aosCtx = -1;
     int getOpCtx = -1;
     int ctx = -1;
@@ -160,44 +158,60 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if(getOpCtx &lt; 0) 
     return getOpCtx;
     ctx = getOpCtx;
-    status = getHomogeneousTime(ctx, &amp;homogeneousTime);
+    status = getHomogeneousTime2(ctx, &amp;homogeneousTime);
     if(status &lt; 0) 
-    {	
+    {
     ual_end_action(ctx);
     return status;
     }
-    *ids = mxCreateStructMatrix(1,1,0,NULL);
+    action.context = ctx;
+    if (init_dataTree_read(ids) &lt; 0) {
+    ual_end_action(ctx);
+    return -1;
+    }
 
     <xsl:apply-templates select="field" mode="GET_SINGLE"/>
 
     ual_end_action(ctx);
+#ifndef NO_GLOBAL_CONVERSION
+    if (params.convert_whole_ids == 1) {
+    // Conversion of INT fields to double
+    if (params.get_int_as_double) {
+    if (int_to_double_<xsl:value-of select="@name"/>(*ids) &lt; 0)
+    return -1;
+    }
+    // Conversion of EMPTY_FLOAT values for FLT fields to NaN
+    if (params.get_empty_as_nan) {
+    if (empty_to_nan_<xsl:value-of select="@name"/>(*ids) &lt; 0)
+    return -1;
+    }
+    }
+#endif
     return 0; // TODO: Should we return status of ual_end_action?
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>
+    </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
-int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, mxArray** ids);</xsl:template>
+int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
   <xsl:call-template name="COMMENT_FIELD"/>
-  int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, mxArray** ids)
+  int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
   {
+  struct imas_mex_actionInfo action;
+  struct imas_mex_fieldInfo field;
   // Paths-specific variables
-  char *fieldPath = "";
-  char *timebasePath = "";
-  // AoS-specific variables
-  mxArray* aosArray=NULL;
-  mxArray* aosElement=NULL;
-  // Structure-specific variables
-  mxArray* structure=NULL;
+  int maxpathsize=MAXPATHSIZE;
   mxArray* data=NULL;
   int ifield;
   int status = -1;
-  int arraySize = -1;
+  int aosArraySize = -1;
   int aosCtx = -1;
+  action.context = ctx;
 
   <xsl:apply-templates select="field" mode="GET_SINGLE"/>
 

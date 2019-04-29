@@ -1,117 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?modxslt-stylesheet type="text/xsl" media="fuffa, screen and $GET[stylesheet]" href="./%24GET%5Bstylesheet%5D" alternate="no" title="Translation using provided stylesheet" charset="ISO-8859-1" ?>
+<?modxslt-stylesheet type="text/xsl" media="screen" alternate="no" title="Show raw source of the XML file" charset="ISO-8859-1" ?>
+<!-- Generating MEX access layer code from Data Dictionary IDSDef.xml -->
+<!-- -->
 <xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
-		xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
-		xmlns:exsl="http://exslt.org/common"
-                extension-element-prefixes="yaslt exsl">
-<xsl:param name="imaspkgname"/>
-<xsl:output method="text"/>
-<xsl:strip-space elements="*"/>
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exsl="http://exslt.org/common" version="1.0" extension-element-prefixes="yaslt exsl"
+  xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+
+<xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
 <xsl:template match="IDSs">
-  <exsl:document href="ids_rand.m" method="text">
-    
-    <xsl:text>function ids = ids_rand(idsName, slice)&#10;</xsl:text>
-    <xsl:text>&#9;f = sprintf('rand_%s',idsName);&#10;</xsl:text>
-    <xsl:text>&#9;ids = feval(f,slice);&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-    
-    <xsl:text>function t = rand_time(slice)&#10;</xsl:text>
-    <xsl:text>&#9;t=[1.0:3.0].';&#10;</xsl:text>
-    <xsl:text>&#9;if slice, t=t(1);end&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-
-    <xsl:text>function f = rand_float()&#10;</xsl:text>
-    <xsl:text>&#9;f = randn(1);&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-
-    <xsl:text>function i = rand_integer()&#10;</xsl:text>
-    <xsl:text>&#9;i = int32(randi([-2^30, 2^30],1));&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-
-    <xsl:text>function s = rand_string()&#10;</xsl:text>
-    <xsl:text>&#9;s= '12 34 56 78 90'.';&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-
-    <xsl:text>function a = rand_array(type, ndim, dynamic, slice)&#10;</xsl:text>
-    <xsl:text>&#9;s = 2.^(randi([0, 4], [1,ndim]));&#10;</xsl:text>
-    <xsl:text>&#9;if (dynamic) s(end) = 3; end&#10;</xsl:text>
-    <xsl:text>&#9;if (ndim == 1) s(2) = 1; end&#10;</xsl:text>
-    <xsl:text>&#9;if (strcmp(type,'float'))&#10;</xsl:text>
-    <xsl:text>&#9;&#9;a = randn(s);&#10;</xsl:text>
-    <xsl:text>&#9;elseif (strcmp(type,'integer'))&#10;</xsl:text>
-    <xsl:text>&#9;&#9;a = int32(randi([-2^30, 2^30],s));&#10;</xsl:text>
-    <xsl:text>&#9;elseif (strcmp(type,'string'))&#10;</xsl:text>
-    <xsl:text>&#9;&#9;assert(ndim == 1,'Only 1D array of strings are supported');&#10;</xsl:text>
-    <xsl:text>&#9;&#9;a = char(arrayfun(@(i) sprintf('label%d',i),1:s(1),'UniformOutput',false)).';&#10;</xsl:text>
-    <xsl:text>&#9;end&#10;</xsl:text>
-    <xsl:text>&#9;if (dynamic &amp;&amp; slice)&#10;</xsl:text>
-    <xsl:text>&#9;&#9;if (strcmp(type,'string') &amp;&amp; ndim == 1)&#10;</xsl:text>
-    <xsl:text>&#9;&#9;&#9;a = a(1,:);&#10;</xsl:text>
-    <xsl:text>&#9;&#9;else&#10;</xsl:text>
-    <xsl:text>&#9;&#9;&#9;s = cell(1,ndim);&#10;</xsl:text>
-    <xsl:text>&#9;&#9;&#9;s(1:ndim-1) = {':'};&#10;</xsl:text>
-    <xsl:text>&#9;&#9;&#9;s(ndim)     = {1};&#10;</xsl:text>
-    <xsl:text>&#9;&#9;&#9;a = subsref(a,substruct('()',s));&#10;</xsl:text>
-    <xsl:text>&#9;&#9;end&#10;</xsl:text>
-    <xsl:text>&#9;end&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-    
-    <xsl:apply-templates select="child::IDS" mode="generate"/>
-  </exsl:document>
-  <exsl:document href="imas_test.m" method="text">
-    <xsl:text>function tests = imas_test()&#10;</xsl:text>
-    <xsl:text>&#9;tests = functiontests(localfunctions);&#10;</xsl:text>
-    <xsl:text>end&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-    <xsl:text>function setupOnce(testCase)&#10;</xsl:text>
-    <xsl:text>&#9;idx = imas_create('ids',9999,9999,0,0);&#10;</xsl:text>
-    <xsl:text>&#9;% imas_enable_mem_cache(idx);&#10;</xsl:text>
-    <xsl:text>&#9;testCase.TestData.idx = idx;&#10;</xsl:text>
-    <xsl:text>end&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-    <xsl:text>function teardownOnce(testCase)&#10;</xsl:text>
-    <xsl:text>&#9;idx = testCase.TestData.idx;&#10;</xsl:text>
-    <xsl:text>&#9;% imas_discard_mem_cache(idx);&#10;</xsl:text>
-    <xsl:text>&#9;% imas_disable_mem_cache(idx);&#10;</xsl:text>
-    <xsl:text>&#9;imas_close(idx);&#10;</xsl:text>
-    <xsl:text>end&#10;</xsl:text>
-    <xsl:text>&#10;</xsl:text>
-    <xsl:apply-templates select="child::IDS" mode="test"/>
-  </exsl:document>
-</xsl:template>
-
-<xsl:template match="IDS" mode="test">
-  <xsl:text>%% </xsl:text><xsl:value-of select="@name"/><xsl:text> tests&#10;</xsl:text>
-  <xsl:text>&#10;</xsl:text>
-  <xsl:text>function testPutGet_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
-  <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
-  <xsl:text>&#9;testPutGet(testCase, path);&#10;</xsl:text>
-  <xsl:text>end&#10;</xsl:text>
-  <xsl:text>&#10;</xsl:text>
-  <xsl:text>function testPutGetSlice_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
-  <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
-  <xsl:text>&#9;testPutGetSlice(testCase, path);&#10;</xsl:text>
-  <xsl:text>end&#10;</xsl:text>
-  <xsl:text>&#10;</xsl:text>
-  <xsl:text>function testPutSliceGet_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
-  <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
-  <xsl:text>&#9;testPutSliceGet(testCase, path);&#10;</xsl:text>
-  <xsl:text>end&#10;</xsl:text>
-  <xsl:text>&#10;</xsl:text>
-  <xsl:text>function testPutSliceGetSlice_</xsl:text><xsl:value-of select="@name"/><xsl:text>(testCase)&#10;</xsl:text>
-  <xsl:text>&#9;path = '</xsl:text><xsl:value-of select="@name"/><xsl:text>';&#10;</xsl:text>
-  <xsl:text>&#9;testPutSliceGetSlice(testCase, path);&#10;</xsl:text>
-  <xsl:text>end&#10;</xsl:text>
-  <xsl:text>&#10;</xsl:text>
+  <xsl:apply-templates select="child::IDS" mode="generate"/>
 </xsl:template>
 
 <xsl:template match="IDS" mode="generate">
-  <xsl:text>function ids = rand_</xsl:text><xsl:value-of select="@name"/><xsl:text>(slice);&#10;</xsl:text>
-  <xsl:text>&#9;rng('default');&#10;</xsl:text>
+  <xsl:result-document href="private/rand_{@name}.m" standalone="yes" method="text">
+  function ids = rand_<xsl:value-of select="@name"/>(slice);
+  rng('default');
   <xsl:apply-templates select="field" mode="generate">
     <xsl:with-param name="Aoslevel" select="1"/>
   </xsl:apply-templates>
-  <xsl:text>&#10;</xsl:text>
+end
+</xsl:result-document>
+
 </xsl:template>
 
 <xsl:template match="field" mode="generate">
@@ -269,9 +180,9 @@
 
   <!--========== Unknown type ===========-->
     <xsl:otherwise>
-      % PROBLEM : UNIDENTIFIED TYPE !!!
-      % path_doc: <xsl:value-of select="@path_doc"/>
-      % data_type: <xsl:value-of select="@data_type"/>
+      <xsl:message terminate="yes">ERROR: Unidentified type!
+      TYPE: <xsl:value-of select="@data_type"/>
+      PATH: <xsl:value-of select="@path_doc"/></xsl:message>
     </xsl:otherwise>
 </xsl:choose>
 

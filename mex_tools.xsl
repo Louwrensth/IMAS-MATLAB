@@ -5,7 +5,8 @@
 <!-- -->
 <xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exsl="http://exslt.org/common" version="1.0" extension-element-prefixes="yaslt exsl"
-  xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+  xmlns:my="dummy">
 
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
@@ -21,9 +22,8 @@
 <xsl:template match="IDS" mode="SWITCH">
   <xsl:param name="function_name"/>
   if (!strcmp(name, "<xsl:value-of select="@name"/>")) {
-  #ifdef MEX_DEBUG
-  mexPrintf("Matched <xsl:value-of select="@name"/>\n");
-  #endif
+  if (params.verbosity >= 4)
+    mexPrintf("Matched <xsl:value-of select="@name"/>\n");
   <xsl:value-of select="$function_name"/> = &amp;<xsl:value-of select="concat($function_name,'_',@name)"/>;
 }</xsl:template>
 
@@ -44,72 +44,94 @@
 <!--Documentation for a single field-->
 <xsl:template name = "COMMENT_FIELD">
   <xsl:text>&#xA;</xsl:text>
-  <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
-  <xsl:text>//  </xsl:text><xsl:value-of select="@name"/>:<xsl:value-of select="@path"/>:<xsl:value-of select="@data_type"/>:<xsl:value-of select="@type"/>:<xsl:text>&#xA;</xsl:text>
-  <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
+  <xsl:text>/*-----------------------------------------------------------------------------------------&#xA;</xsl:text>
+  <xsl:text>    </xsl:text><xsl:value-of select="@name"/>:<xsl:value-of select="@path"/>:<xsl:value-of select="@data_type"/>:<xsl:value-of select="@type"/>:<xsl:text>&#xA;</xsl:text>
 
-  <xsl:if test="@type='dynamic' and @maxoccur='unbounded' and @data_type='struct_array'">
-    <xsl:text>//  ARRAY of TYPE 3 &#xA;</xsl:text>
-    <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
+  <xsl:if test="@data_type='struct_array'">
+    <xsl:text>  -----------------------------------------------------------------------------------------&#xA;</xsl:text>
 
+    <xsl:if test="@type='dynamic' and @maxoccur='unbounded'">
+      <xsl:text>    ARRAY of TYPE 3 &#xA;</xsl:text>
+    </xsl:if>
+
+    <xsl:if test="(not(@type) or @type!='dynamic') and @maxoccur='unbounded'">
+      <xsl:text>    ARRAY of TYPE 2  &#xA;</xsl:text>
+    </xsl:if>
+
+    <xsl:if test="@maxoccur!='unbounded'">
+      <xsl:text>    ARRAY of TYPE 1  &#xA;</xsl:text>
+    </xsl:if>
   </xsl:if>
-  <xsl:if test="(not(@type) or @type!='dynamic') and @maxoccur='unbounded' and @data_type='struct_array'">
-    <xsl:text>//  ARRAY of TYPE 2  &#xA;</xsl:text>
-    <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
 
-  </xsl:if>
-
-  <xsl:if test="@maxoccur!='unbounded' and @data_type='struct_array'">
-    <xsl:text>//  ARRAY of TYPE 1  &#xA;</xsl:text>
-    <xsl:text>/*-----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
-
-  </xsl:if>
+  <xsl:text>  -----------------------------------------------------------------------------------------*/&#xA;</xsl:text>
 </xsl:template>
 
+<xsl:function name="my:get_datatype" as="xs:string">
+  <xsl:param name="data_type" as="xs:string"/>
+  <xsl:choose>
+    <xsl:when test="$data_type='str_type' or $data_type='STR_0D' or
+		    $data_type='str_1d_type' or $data_type='STR_1D'">
+      <xsl:sequence select="'CHAR_DATA'"/>
+    </xsl:when>
+    <xsl:when test="$data_type='int_type' or $data_type='INT_0D' or
+		    $data_type='int_1d_type' or $data_type='INT_1D' or
+		    $data_type='INT_2D' or $data_type='INT_3D' or
+		    $data_type='INT_4D' or $data_type='INT_5D' or
+		    $data_type='INT_6D'">
+      <xsl:sequence select="'INTEGER_DATA'"/>
+    </xsl:when>
+    <xsl:when test="$data_type='flt_type' or $data_type='FLT_0D' or
+		    $data_type='flt_1d_type' or $data_type='FLT_1D' or
+		    $data_type='FLT_2D' or $data_type='FLT_3D' or
+		    $data_type='FLT_4D' or $data_type='FLT_5D' or
+		    $data_type='FLT_6D'">
+      <xsl:sequence select="'DOUBLE_DATA'"/>
+    </xsl:when>
+    <xsl:when test="$data_type='structure' or $data_type='struct_array'">
+      <xsl:sequence select="'UNKNOWN_DATA'"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:message terminate="yes">ERROR: Unidentified type: <xsl:value-of select="$data_type"/> !</xsl:message>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:function>
 
-<xsl:template name = "DATATYPE_AND_DIM">
-  <!-- datatype argument to ual_read_data -->
-  <xsl:variable name="datatype">
-    <xsl:choose>
-      <xsl:when test="@data_type='int_type'    or @data_type='INT_0D' or
-		      @data_type='int_1d_type' or @data_type='INT_1D' or
-		      @data_type='INT_2D'      or @data_type='INT_3D' or
-		      @data_type='INT_4D'      or @data_type='INT_5D' or
-		      @data_type='INT_6D'">INTEGER_DATA</xsl:when>
-      <xsl:when test="@data_type='flt_type'    or @data_type='FLT_0D' or
-		      @data_type='flt_1d_type' or @data_type='FLT_1D' or
-		      @data_type='FLT_2D'      or @data_type='FLT_3D' or
-		      @data_type='FLT_4D'      or @data_type='FLT_5D' or
-		      @data_type='FLT_6D'">DOUBLE_DATA</xsl:when>
-      <xsl:when test="@data_type='str_type'    or @data_type='STR_0D' or
-		      @data_type='str_1d_type' or @data_type='STR_1D'">CHAR_DATA</xsl:when>
-    </xsl:choose>    
-  </xsl:variable>
-  <!-- dim argument to ual_read_data -->
-  <xsl:variable name="dim">
-    <xsl:choose>
-      <xsl:when test="@data_type='int_type' or @data_type='INT_0D' or
-		      @data_type='flt_type' or @data_type='FLT_0D'">
-      0</xsl:when>
-      <xsl:when test="@data_type='str_type'    or @data_type='STR_0D' or
-		      @data_type='int_1d_type' or @data_type='INT_1D' or
-		      @data_type='flt_1d_type' or @data_type='FLT_1D'">
-      1</xsl:when>
-      <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D' or
-		      @data_type='INT_2D' or @data_type='FLT_2D'">
-      2</xsl:when>
-      <xsl:when test="@data_type='INT_3D' or @data_type='FLT_3D'">
-      3</xsl:when>
-      <xsl:when test="@data_type='INT_4D' or @data_type='FLT_4D'">
-      4</xsl:when>
-      <xsl:when test="@data_type='INT_5D' or @data_type='FLT_5D'">
-      5</xsl:when>
-      <xsl:when test="@data_type='INT_6D' or @data_type='FLT_6D'">
-      6</xsl:when>
-    </xsl:choose>
-  </xsl:variable>
-  <xsl:value-of select="concat($datatype,', ',$dim)"/>
-</xsl:template>
+<xsl:function name="my:get_dim" as="xs:integer">
+  <xsl:param name="data_type" as="xs:string"/>
+  <xsl:choose>
+    <xsl:when test="$data_type='int_type' or $data_type='INT_0D' or
+		    $data_type='flt_type' or $data_type='FLT_0D'">
+      <xsl:sequence select="0"/>
+    </xsl:when>
+    <xsl:when test="$data_type='str_type' or $data_type='STR_0D' or
+		    $data_type='flt_1d_type' or $data_type='FLT_1D' or
+		    $data_type='int_1d_type' or $data_type='INT_1D'">
+      <xsl:sequence select="1"/>
+    </xsl:when>
+    <xsl:when test="$data_type='str_1d_type' or $data_type='STR_1D' or
+		    $data_type='FLT_2D' or $data_type='INT_2D'">
+      <xsl:sequence select="2"/>
+    </xsl:when>
+    <xsl:when test="$data_type='FLT_3D' or $data_type='INT_3D'">
+      <xsl:sequence select="3"/>
+    </xsl:when>
+    <xsl:when test="$data_type='FLT_4D' or $data_type='INT_4D'">
+      <xsl:sequence select="4"/>
+    </xsl:when>
+    <xsl:when test="$data_type='FLT_5D' or $data_type='INT_5D'">
+      <xsl:sequence select="5"/>
+    </xsl:when>
+    <xsl:when test="$data_type='FLT_6D' or $data_type='INT_6D'">
+      <xsl:sequence select="6"/>
+    </xsl:when>
+    <xsl:when test="$data_type='structure' or $data_type='struct_array'">
+      <xsl:sequence select="-1"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:message terminate="yes">ERROR: Unidentified type: <xsl:value-of select="$data_type"/> !</xsl:message>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:function>
 
 
 </xsl:stylesheet>

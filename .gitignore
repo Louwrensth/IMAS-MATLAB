@@ -1,8 +1,6 @@
 build
 lib
 src/ids
-src/ids_*.c
-tests/IDS_list.m
-tests/ids_rand.m
-tests/imas_test.m
+matlab/IDS_list.m
+tests/private/rand_*.m
 

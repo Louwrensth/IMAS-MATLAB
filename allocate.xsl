@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?modxslt-stylesheet type="text/xsl" media="fuffa, screen and $GET[stylesheet]" href="./%24GET%5Bstylesheet%5D" alternate="no" title="Translation using provided stylesheet" charset="ISO-8859-1" ?>
+<?modxslt-stylesheet type="text/xsl" media="screen" alternate="no" title="Show raw source of the XML file" charset="ISO-8859-1" ?>
+<!-- Generating MEX access layer code from Data Dictionary IDSDef.xml -->
+<!-- -->
+<xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+		xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exsl="http://exslt.org/common" version="1.0" extension-element-prefixes="yaslt exsl"
+		xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+		xmlns:my="dummy">
+
+<xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
+
+<!--=================================================-->
+<!--          Allocate an array of structure         -->
+<!--=================================================-->
+
+<xsl:template match="field" mode="ALLOCATE">
+<xsl:param name="pointer_name"/>
+
+<xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
+
+<xsl:call-template name="COMMENT_FIELD"/>
+<xsl:choose>
+  <!--========== Array of structure ===========-->
+    <xsl:when test = "@data_type = 'struct_array'">
+      if (begin_dataTree_array_read("<xsl:value-of select="@name"/>",0) &lt; 0)
+      return -1;
+      // Finished processing array of structure <xsl:value-of select="@name"/>
+      if (end_dataTree_array_action() &lt; 0)
+      return -1;
+    </xsl:when>
+
+  <!--========== Regular structure ===========-->
+    <xsl:when test="@data_type='structure'">
+      if (begin_dataTree_read("<xsl:value-of select="@name"/>") &lt; 0)
+      return -1;
+      <xsl:apply-templates select="field" mode="ALLOCATE">
+	<xsl:with-param name="pointer_name" select="concat('p',$unique_name)"/>
+      </xsl:apply-templates>
+      // Finished processing structure <xsl:value-of select="@name"/>
+      if (end_dataTree_action() &lt; 0)
+      return -1;
+    </xsl:when>
+
+  <!--========== Simple types ===========-->
+    <xsl:when test="my:get_datatype(@data_type)='CHAR_DATA' or 
+		    my:get_datatype(@data_type)='INTEGER_DATA' or 
+		    my:get_datatype(@data_type)='DOUBLE_DATA'">
+      <xsl:choose>
+	<xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
+	array = malloc(sizeof(int));</xsl:when>
+	<xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
+	array = malloc(sizeof(double));</xsl:when>
+	<xsl:otherwise>
+	array = NULL;</xsl:otherwise>
+      </xsl:choose>
+      status = data_to_mxArray(-1, <xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, array, NULL, &amp;data);
+      if (array != NULL)
+      free(array);
+      if (status) {
+      return status;
+      }
+      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
+      return -1;
+    </xsl:when>
+
+  <!--========== Unknown type ===========-->
+    <xsl:otherwise>
+      <xsl:message terminate="yes">ERROR: Unidentified type: <xsl:value-of select="@data_type"/> !</xsl:message>
+    </xsl:otherwise>
+</xsl:choose>
+
+</xsl:template>
+
+</xsl:stylesheet>

@@ -5,7 +5,8 @@
 <!-- -->
 <xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exsl="http://exslt.org/common" version="1.0" extension-element-prefixes="yaslt exsl"
-  xmlns:fn="http://www.w3.org/2005/02/xpath-functions">
+  xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+  xmlns:my="dummy">
 
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
@@ -116,14 +117,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if (put == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_put:unknown_ids",
            "Unknown IDS name: %s", name);
-  // Call function
-  int err = put(idx, IDSpath, prhs[nrhs-1]);
-  if (err) 
-  mexErrMsgIdAndTxt("IMAS:ids_put:internal_error","internal error occured in function put_<xsl:value-of select="@name"/> with code err=%d", err);
-  return;
 
   // free now as name uses the same memory
   free(IDSpathcopy);
+
+  // Clean-up previous errors
+  mex_errmsgid[0] = '\000';
+  mex_errmsgtxt[0] = '\000';
+  // Call function
+  int err = put(idx, IDSpath, prhs[nrhs-1]);
+  if (err) 
+  my_mexErrMsgIdAndTxt(err, "IMAS:ids_put:");
+  return;
 
 }
  </xsl:result-document>
@@ -134,41 +139,60 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, const mxArray* ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
- <xsl:apply-templates select = "IDS" mode="PUT"/>
-</xsl:template>
-
-<!--================================================-->
-<!--                Template for IDSs               -->
-<!--================================================-->
-
-<xsl:template match="IDS" mode="PUT">
-  <xsl:result-document href="src/ids/put_{@name}.c.in" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/put_ids.c.in" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+    <xsl:for-each select="IDS">
 
     int delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName);
+#ifndef NO_GLOBAL_CONVERSION
+     int double_to_int_<xsl:value-of select="@name"/>(mxArray* ids);
+     int nan_to_empty_<xsl:value-of select="@name"/>(mxArray* ids);
+#endif
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_H"/>
 
     int put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
     {
+    struct imas_mex_actionInfo action;
+    struct imas_mex_fieldInfo field;
     // Paths-specific variables
-    char *fieldPath;
-    char *timebasePath;
-    // AoS-specific variables
-    const mxArray* aosArray=NULL;
-    const mxArray* aosElement=NULL;
-    // Structure-specific variables
-    const mxArray* structure=NULL;
+    int maxpathsize = MAXPATHSIZE;
     const mxArray* data=NULL;
+#ifndef NO_GLOBAL_CONVERSION
+     mxArray* ids_conv=NULL;
+#endif
     int ifield;
     int cast_status = -1;
     int status = -1;
-    int arraySize = -1;
+    int aosArraySize = -1;
     int aosCtx = -1;
     int putOpCtx = -1;
     int ctx = -1;
     int homogeneousTime = EMPTY_INT;
+    int isEmpty;
 
-    if (getHomogeneousTime2(ids, &amp;homogeneousTime) &lt; 0) 
+#ifndef NO_GLOBAL_CONVERSION
+     if (params.convert_whole_ids == 1) {
+     // Conversion of INT fields from double
+     if (params.put_int_from_double) {
+     ids_conv = mxDuplicateArray(ids);
+     if (double_to_int_<xsl:value-of select="@name"/>(ids_conv) &lt; 0)
+     return -1;
+     ids = ids_conv;
+     }
+     // Conversion of NaN values for FLT fields to EMPTY_FLOAT
+     if (params.put_empty_from_nan) {
+     if (ids_conv == NULL) // if input was not already duplicated
+     ids_conv = mxDuplicateArray(ids);
+     if (nan_to_empty_<xsl:value-of select="@name"/>(ids_conv) &lt; 0)
+     return -1;
+     ids = ids_conv;
+     }
+     }
+#endif
+
+    if (init_dataTree_write((mxArray *) ids) &lt; 0)
+    return -1;
+    if (getHomogeneousTime(&amp;homogeneousTime) &lt; 0) 
       mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
       "Unable to retrieve ids%%ids_properties%%homogeneous_time");
     if( homogeneousTime == EMPTY_INT )
@@ -184,6 +208,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if(putOpCtx &lt; 0) 
     return putOpCtx;
     ctx = putOpCtx;
+    action.context = ctx;
 
     <xsl:apply-templates select="field" mode="PUT_SINGLE">
       <xsl:with-param name="dynamic_only" select="'no'"/>
@@ -194,29 +219,29 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT"/>
+    </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT_H">
-int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const mxArray* ids);</xsl:template>
+int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT">
-int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const mxArray* ids)
+int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
     {
+    struct imas_mex_actionInfo action;
+    struct imas_mex_fieldInfo field;
     // Paths-specific variables
-    char *fieldPath;
-    char *timebasePath;
-    // AoS-specific variables
-    const mxArray* aosArray=NULL;
-    const mxArray* aosElement=NULL;
-    // Structure-specific variables
-    const mxArray* structure=NULL;
+    int maxpathsize = MAXPATHSIZE;
     const mxArray* data=NULL;
     int ifield;
     int cast_status = -1;
     int status = -1;
-    int arraySize = -1;
+    int aosArraySize = -1;
     int aosCtx = -1;
+    int isEmpty;
+
+    action.context = ctx;
 
     <xsl:apply-templates select="field" mode="PUT_SINGLE">
       <xsl:with-param name="dynamic_only" select="'no'"/>

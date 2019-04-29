@@ -121,16 +121,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
       <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName);'"/>
     </xsl:apply-templates>
   </xsl:result-document>
-  <xsl:apply-templates select = "IDS" mode="DELETE"/>
-</xsl:template>
-
-<!--================================================-->
-<!--                Template for IDSs               -->
-<!--================================================-->
-
-<xsl:template match="IDS" mode="DELETE">
-  <xsl:result-document href="src/ids/delete_{@name}.c.in" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/delete_ids.c.in" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+   <xsl:for-each select="IDS">
 
     <xsl:apply-templates select=".//field[@data_type='structure']" mode="METHOD_DELETE_H"/>
 
@@ -155,6 +148,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure']" mode="METHOD_DELETE"/>
+   </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
