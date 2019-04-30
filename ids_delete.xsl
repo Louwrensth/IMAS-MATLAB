@@ -25,7 +25,7 @@
 /*
  * ids_delete.c - delete IDS in MATLAB External Interfaces
  *
- *		ids = ids_delete(idx, IDSpath[, occ])
+ *		status = ids_delete(idx, IDSpath[, occ])
  *
  * This is a MEX file for MATLAB.
 */
@@ -86,9 +86,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
 
   // Check for one output argument
-  if(nlhs != 1) {
+  if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_delete:nargout",
-                      "One output required.");
+                      "One output maximum required.");
   }
   
   // Extract IDS name

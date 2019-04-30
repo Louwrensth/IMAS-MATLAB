@@ -2,7 +2,7 @@
 /*
  * imas_close.c - close IMAS database in MATLAB External Interfaces
  *
- *              idx = imas_close(idx)
+ *              imas_close(idx)
  *
  * This is a MEX file for MATLAB.
  */
@@ -19,8 +19,8 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         mexErrMsgIdAndTxt("IMAS:imas_close:notScalar", "Input idx must be a scalar.");
     }
     // Check for no output argument
-    if (nlhs != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_create:nargout", "Zero output required.");
+    if (nlhs > 0) {
+        mexErrMsgIdAndTxt("IMAS:imas_create:nargout", "No output required.");
     }
     // Get the value of the index
     int idx = (int) mxGetScalar(prhs[0]);

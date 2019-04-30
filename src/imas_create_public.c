@@ -39,8 +39,8 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         mexErrMsgIdAndTxt("IMAS:imas_create_public:notChar", "Input expName must be a string.");
     }
     // Check for one output argument
-    if (nlhs != 1) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_public:nargout", "One output required.");
+    if (nlhs > 1) {
+        mexErrMsgIdAndTxt("IMAS:imas_create_public:nargout", "One output maximum required.");
     }
     // Get the value of the name
     char *name = mxArrayToString(prhs[0]);

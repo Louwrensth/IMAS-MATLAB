@@ -104,9 +104,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mexPrintf("The input ids is:  %s\n", "SKIPPED");
 
   // Check for one output argument
-  if(nlhs != 1) {
+  if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:nargout",
-                      "One output required.");
+                      "One output maximum required.");
   }
   
   // Extract IDS name

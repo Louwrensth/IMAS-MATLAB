@@ -27,8 +27,8 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         mexErrMsgIdAndTxt("IMAS:imas_open:notScalar", "Input run must be a scalar.");
     }
     // Check for one output argument
-    if (nlhs != 1) {
-        mexErrMsgIdAndTxt("IMAS:imas_open:nargout", "One output required.");
+    if (nlhs > 1) {
+        mexErrMsgIdAndTxt("IMAS:imas_open:nargout", "One output maximum required.");
     }
     // Get the value of the name
     char *name = mxArrayToString(prhs[0]);

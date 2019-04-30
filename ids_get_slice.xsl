@@ -110,9 +110,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #endif
 
   // Check for one output argument
-  if(nlhs != 1) {
+  if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_get_slice:nargout",
-                      "One output required.");
+                      "One output maximum required.");
   }
   
   // Extract IDS name

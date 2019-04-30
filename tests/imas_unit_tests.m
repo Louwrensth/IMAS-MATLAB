@@ -24,8 +24,8 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       testCase.TestData.idx = idx;
       %
       for name = IDS_list.'
-        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},false);
-        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},true );
+        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},false,true);
+        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},true ,true);
       end
       %
     end
@@ -43,7 +43,7 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       idx = testCase.TestData.idx;
       ids = testCase.TestData.IDS.(IDSname);
       ids_put(idx,IDSname,ids);
-      sdi = ids_get(idx,IDSname,0);
+      sdi = ids_get(idx,IDSname);
       comparator(ids,sdi,IDSname);
     end
     

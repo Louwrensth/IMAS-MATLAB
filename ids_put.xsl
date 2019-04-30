@@ -98,7 +98,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #endif
 
   // Check for no output argument
-  if(nlhs != 0) {
+  if(nlhs > 0) {
     mexErrMsgIdAndTxt("IMAS:ids_put:nargout",
                       "No output required.");
   }

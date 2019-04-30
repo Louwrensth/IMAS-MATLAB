@@ -19,7 +19,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   }
   // Check for one output argument
   if (nlhs > 1) {
-    mexErrMsgIdAndTxt("IMAS:imas_mex_get_params:nargout", "Only one output required.");
+    mexErrMsgIdAndTxt("IMAS:imas_mex_get_params:nargout", "One output maximum required.");
   }
 
   // Prepare the return argument

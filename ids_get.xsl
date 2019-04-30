@@ -87,9 +87,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
 
   // Check for one output argument
-  if(nlhs != 1) {
+  if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_get:nargout",
-                      "One output required.");
+                      "One output maximum required.");
   }
   
   // Extract IDS name
