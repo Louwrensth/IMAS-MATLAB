@@ -15,7 +15,6 @@
 <!--=================================================-->
 
 <xsl:template match="field" mode="ALLOCATE">
-<xsl:param name="pointer_name"/>
 
 <xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
 
@@ -34,9 +33,7 @@
     <xsl:when test="@data_type='structure'">
       if (begin_dataTree_read("<xsl:value-of select="@name"/>") &lt; 0)
       return -1;
-      <xsl:apply-templates select="field" mode="ALLOCATE">
-	<xsl:with-param name="pointer_name" select="concat('p',$unique_name)"/>
-      </xsl:apply-templates>
+      <xsl:apply-templates select="field" mode="ALLOCATE"/>
       // Finished processing structure <xsl:value-of select="@name"/>
       if (end_dataTree_action() &lt; 0)
       return -1;
