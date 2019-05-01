@@ -48,6 +48,10 @@ void my_exceptionGetReport(mxArray* exception);
 
 int getHomogeneousTime2(int ctx, int *homogeneousTime);
 
+int data_to_mxArray(int read_status, int datatype, int dim, void *array, int *size, mxArray **data);
+
+int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size);
+
 int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data);
 
 int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data);
