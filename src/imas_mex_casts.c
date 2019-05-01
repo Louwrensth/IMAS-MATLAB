@@ -5,6 +5,7 @@ int castDoubleToInt32(mxArray ** data)
 {
   mxArray * doubleData = (mxArray *) *data;
   mxArray * intData = NULL;
+#ifndef DO_NOT_CALL_MATLAB
   mxArray * exception = NULL;
 
   if (!mxIsNumeric(*data) || !mxIsDouble(*data))
@@ -16,6 +17,28 @@ int castDoubleToInt32(mxArray ** data)
     my_exceptionGetReport(exception);
     return -1;
   }
+#else
+  size_t numel;
+  mwSize ndims;
+  const mwSize * dims;
+  int * intArray;
+  double * doubleArray;
+  int i;
+  
+  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
+    return -1;
+
+  numel = mxGetNumberOfElements(doubleData);
+  ndims = mxGetNumberOfDimensions(doubleData);
+  dims = mxGetDimensions(doubleData);
+
+  intData = mxCreateNumericArray(ndims, dims, mxINT32_CLASS, mxREAL);
+  doubleArray = mxGetData(doubleData);
+  intArray = mxGetData(intData);
+
+  for (i = 0; i < numel; i++)
+    intArray[i] = (int) doubleArray[i];
+#endif
 
   *data = intData;
   return 0;
@@ -25,6 +48,7 @@ int castInt32ToDouble(mxArray ** data)
 {
   mxArray *intData = (mxArray *) * data;
   mxArray *doubleData = NULL;
+#ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
   if (!mxIsNumeric(*data) || !mxIsInt32(*data))
@@ -36,6 +60,28 @@ int castInt32ToDouble(mxArray ** data)
     my_exceptionGetReport(exception);
     return -1;
   }
+#else
+  size_t numel;
+  mwSize ndims;
+  const mwSize * dims;
+  double * doubleArray;
+  int * intArray;
+  int i;
+  
+  if (!mxIsNumeric(*data) || !mxIsInt32(*data))
+    return -1;
+
+  numel = mxGetNumberOfElements(intData);
+  ndims = mxGetNumberOfDimensions(intData);
+  dims = mxGetDimensions(intData);
+
+  doubleData = mxCreateNumericArray(ndims, dims, mxDOUBLE_CLASS, mxREAL);
+  intArray = mxGetData(intData);
+  doubleArray = mxGetData(doubleData);
+
+  for (i = 0; i < numel; i++)
+    doubleArray[i] = (double) intArray[i];
+#endif
 
   *data = doubleData;
   return 0;
@@ -45,6 +91,7 @@ int castNaNToEmpty(mxArray ** data)
 {
   mxArray *inData = (mxArray *) * data;
   mxArray *outData = NULL;
+#ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
   if (!mxIsNumeric(*data) || !mxIsDouble(*data))
@@ -56,6 +103,26 @@ int castNaNToEmpty(mxArray ** data)
     my_exceptionGetReport(exception);
     return -1;
   }
+#else
+  size_t numel;
+  double * inArray;
+  double * outArray;
+  int i;
+  
+  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
+    return -1;
+
+  numel = mxGetNumberOfElements(inData);
+
+
+  outData = mxDuplicateArray(inData);
+  inArray = mxGetData(inData);
+  outArray = mxGetData(outData);
+
+  for (i = 0; i < numel; i++)
+    if (mxIsNaN(inArray[i]))
+      outArray[i] = EMPTY_DOUBLE;
+#endif
 
   *data = outData;
   return 0;
@@ -65,6 +132,7 @@ int castEmptyToNaN(mxArray ** data)
 {
   mxArray *inData = (mxArray *) * data;
   mxArray *outData = NULL;
+#ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
   if (!mxIsNumeric(*data) || !mxIsDouble(*data))
@@ -76,6 +144,25 @@ int castEmptyToNaN(mxArray ** data)
     my_exceptionGetReport(exception);
     return -1;
   }
+#else
+  size_t numel;
+  double * inArray;
+  double * outArray;
+  int i;
+  
+  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
+    return -1;
+
+  numel = mxGetNumberOfElements(inData);
+
+  outData = mxDuplicateArray(inData);
+  inArray = mxGetData(inData);
+  outArray = mxGetData(outData);
+
+  for (i = 0; i < numel; i++)
+    if (inArray[i] == EMPTY_DOUBLE)
+      outArray[i] = mxGetNaN();
+#endif
 
   *data = outData;
   return 0;
@@ -85,6 +172,7 @@ int castCellToChar(mxArray ** data)
 {
   mxArray * cellData = (mxArray *) *data;
   mxArray * charData = NULL;
+#ifndef DO_NOT_CALL_MATLAB
   mxArray * exception = NULL;
 
   if (!mxIsCell(*data))
@@ -96,6 +184,27 @@ int castCellToChar(mxArray ** data)
     my_exceptionGetReport(exception);
     return -1;
   }
+#else
+  size_t numel;
+  mxArray * cell;
+  char ** strings;
+  int i;
+
+  if (!mxIsCell(*data))
+    return -1;
+
+  numel = mxGetNumberOfElements(cellData);
+
+  strings = malloc(numel*sizeof(char *));
+  for (i = 0; i < numel; i++) {
+    cell = mxGetCell(*data, (mwIndex) i);
+    if (!mxIsChar(cell))
+      return -1;
+    strings[i] = mxArrayToString(mxGetCell(*data, (mwIndex) i));
+  }
+
+  charData = mxCreateCharMatrixFromStrings((mwSize) numel, (const char **) strings);
+#endif
 
   *data = charData;
   return 0;
@@ -105,6 +214,7 @@ int castCharToCell(mxArray ** data)
 {
   mxArray *charData = (mxArray *) * data;
   mxArray *cellData = NULL;
+#ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
   if (!mxIsChar(*data))
@@ -116,6 +226,42 @@ int castCharToCell(mxArray ** data)
     my_exceptionGetReport(exception);
     return -1;
   }
+#else
+  size_t numel;
+  size_t m, n;
+  mxArray * cell;
+  mxChar * inChars;
+  char * outChars;
+  int length;
+  int i, j;
+
+  if (!mxIsChar(*data))
+    return -1;
+
+  numel = mxGetNumberOfElements(charData);
+  m = mxGetM(*data);
+  n = mxGetN(*data);
+  inChars = mxGetChars(*data);
+  outChars = malloc((n+1)*sizeof(char));
+
+  cellData = mxCreateCellMatrix(m, 1);
+  for (i=0; i<m; i++) {
+    for (j=n-1; j>0; j--)
+      if (!(inChars[j*m+i] > 8 && inChars[j*m+i] < 14) // TAB LF VT FF CR
+	  && inChars[j*m+i] != 32 // SPACE
+//	  && inChars[j*m+i] != 133 // ???
+//	  && inChars[j*m+i] != 160 // NO-BREAK SPACE
+	  ) {
+	length = j+1;
+	break;
+      }
+    for (j=0; j<length; j++)
+      outChars[j] = (char) inChars[j*m+i];
+    outChars[length] = '\000';
+    cell = mxCreateString(outChars);
+    mxSetCell(cellData, (mwIndex) i, cell);
+  }
+#endif
 
   *data = cellData;
   return 0;
