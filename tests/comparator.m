@@ -1,4 +1,8 @@
-function comparator(ids1,ids2,path)
+function comparator(ids1,ids2,path,strict)
+  
+  if nargin < 4,
+    strict = true;
+  end
   
   if nargin < 3,
     path = '';
@@ -6,7 +10,7 @@ function comparator(ids1,ids2,path)
   
   c1 = class(ids1);
   c2 = class(ids2);
-  assert(strcmp(c1,c2),'%s: Incompatible class: %s/%s', path, c1, c2);
+  assert(strcmp(c1,c2) || (~strict && isnumeric(ids1) && isnumeric(ids2)),'%s: Incompatible class: %s/%s', path, c1, c2);
   n1 = numel(ids1);
   n2 = numel(ids2);
   assert(n1 == n2,'%s: Incompatible number of elements : %d/%d', path, n1, n2);
