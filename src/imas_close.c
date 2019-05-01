@@ -20,7 +20,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // Check for no output argument
     if (nlhs > 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_create:nargout", "No output required.");
+        mexErrMsgIdAndTxt("IMAS:imas_close:nargout", "No output required.");
     }
     // Get the value of the index
     int idx = (int) mxGetScalar(prhs[0]);

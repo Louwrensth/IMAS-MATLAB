@@ -28,11 +28,11 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // make sure the 4th input argument is scalar
     if (!mxIsNumeric(prhs[3]) || !mxIsScalar(prhs[3])) {
-        mexErrMsgIdAndTxt("IMAS:imas_create:notScalar", "Input refShot must be a scalar.");
+        mexErrMsgIdAndTxt("IMAS:imas_create_public:notScalar", "Input refShot must be a scalar.");
     }
     // make sure the 5th input argument is scalar
     if (!mxIsNumeric(prhs[4]) || !mxIsScalar(prhs[4])) {
-        mexErrMsgIdAndTxt("IMAS:imas_create:notScalar", "Input refRun must be a scalar.");
+        mexErrMsgIdAndTxt("IMAS:imas_create_public:notScalar", "Input refRun must be a scalar.");
     }
     // make sure the 6th input argument is a string
     if (!mxIsChar(prhs[5])) {

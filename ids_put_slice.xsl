@@ -38,14 +38,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
 {
   // Check for three or four input arguments  
   if(nrhs != 4 &amp;&amp; nrhs != 3) {
-    mexErrMsgIdAndTxt("IMAS:ids_put:nargin",
+    mexErrMsgIdAndTxt("IMAS:ids_put_slice:nargin",
                       "Three or four inputs required.");
   }
 
   // make sure idx is scalar
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
                         "Input idx must be a scalar.");
   }
   // Get the value of idx
@@ -56,7 +56,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   // make sure IDSpath is a string
   if( !mxIsChar(prhs[1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notChar",
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notChar",
                         "Input IDSpath must be a string.");
   }
   // Get the value of IDSpath
@@ -71,7 +71,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   // make sure occ is scalar
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
                         "Input occurence must be a scalar.");
   }
   // Get the value of occ
@@ -89,7 +89,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   // make sure ids is scalar struct
   if( !mxIsStruct(prhs[nrhs-1]) ||
       !mxIsScalar(prhs[nrhs-1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
                         "Input ids must be a scalar structure.");
   }
   // Get the value of ids
@@ -99,7 +99,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   // Check for no output argument
   if(nlhs > 0) {
-    mexErrMsgIdAndTxt("IMAS:ids_put:nargout",
+    mexErrMsgIdAndTxt("IMAS:ids_put_slice:nargout",
                       "No output required.");
   }
   
@@ -195,7 +195,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (init_dataTree_write((mxArray *) ids) &lt; 0)
     return -1;
     if (getHomogeneousTime(&amp;homogeneousTime) &lt; 0) 
-      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
+      mexErrMsgIdAndTxt("IMAS:ids_put_slice:invalid_homogeneous_time",
       "Unable to retrieve ids%%ids_properties%%homogeneous_time");
     if( homogeneousTime == EMPTY_INT )
     {
@@ -209,7 +209,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       mexErrMsgIdAndTxt("IMAS:ids_put_slice:invalid_time",
       "Unable to retrieve ids%%time");
     if (mxGetNumberOfElements(ptime) &lt; 1)
-    mexErrMsgIdAndTxt("IMAS:ids_put:empty_time",
+    mexErrMsgIdAndTxt("IMAS:ids_put_slice:empty_time",
     "ids%%time must have at least one element");
     sliceTime = mxGetScalar(ptime);
 

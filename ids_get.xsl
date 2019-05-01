@@ -38,14 +38,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
 {
   // Check for two or three input arguments  
   if(nrhs != 3 &amp;&amp; nrhs != 2) {
-    mexErrMsgIdAndTxt("IMAS:ids_put:nargin",
+    mexErrMsgIdAndTxt("IMAS:ids_get:nargin",
                       "Two or three inputs required.");
   }
 
   // make sure idx is scalar
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
                         "Input idx must be a scalar.");
   }
   // Get the value of idx
@@ -56,7 +56,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   // make sure IDSpath is a string
   if( !mxIsChar(prhs[1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notChar",
+      mexErrMsgIdAndTxt("IMAS:ids_get:notChar",
                         "Input IDSpath must be a string.");
   }
   // Get the value of IDSpath
@@ -71,7 +71,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   // make sure occ is scalar
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
                         "Input occurence must be a scalar.");
   }
   // Get the value of occ

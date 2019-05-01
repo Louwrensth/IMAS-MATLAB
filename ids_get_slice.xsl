@@ -55,7 +55,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   
   // make sure IDSpath is a string
   if( !mxIsChar(prhs[1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notChar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_slice:notChar",
                         "Input IDSpath must be a string.");
   }
   // Get the value of IDSpath
@@ -70,7 +70,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   // make sure occ is scalar
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_put:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_slice:notScalar",
                         "Input occurence must be a scalar.");
   }
   // Get the value of occ

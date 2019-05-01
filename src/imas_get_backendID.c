@@ -12,15 +12,15 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
     // Check for three input arguments  
     if (nrhs != 1) {
-        mexErrMsgIdAndTxt("IMAS:imas_close:nargin", "One input required.");
+        mexErrMsgIdAndTxt("IMAS:imas_get_backendID:nargin", "One input required.");
     }
     // make sure the 1st input argument is scalar
     if (!mxIsNumeric(prhs[0]) || !mxIsScalar(prhs[0])) {
-        mexErrMsgIdAndTxt("IMAS:imas_close:notScalar", "Input idx must be a scalar.");
+        mexErrMsgIdAndTxt("IMAS:imas_get_backendID:notScalar", "Input idx must be a scalar.");
     }
     // Check for one output argument
     if (nlhs > 1) {
-        mexErrMsgIdAndTxt("IMAS:imas_create:nargout", "One output maximum required.");
+        mexErrMsgIdAndTxt("IMAS:imas_get_backendID:nargout", "One output maximum required.");
     }
     // Get the value of the index
     int idx = (int) mxGetScalar(prhs[0]);
