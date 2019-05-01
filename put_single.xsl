@@ -106,8 +106,7 @@
       if (!isEmpty) {
       status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
       if (status &lt; 0) {
-      <!-- ual_end_action(aosCtx) is taken care of in get_... -->
-      ual_end_action(ctx);
+      <!-- ual_end_action(ctx) is taken care of in get_... -->
       return status;
       }
       }
