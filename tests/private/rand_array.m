@@ -1,6 +1,6 @@
-function a = rand_array(type, ndim, dynamic, slice)
+function a = rand_array(type, ndim, dynamic, ntime, slice)
   s = 2.^(randi([0, 4], [1,ndim]));
-  if (dynamic) s(end) = 3; end
+  if (dynamic) s(end) = ntime; end
   if (ndim == 1) s(2) = 1; end
   if (strcmp(type,'float'))
     a = randn(s);

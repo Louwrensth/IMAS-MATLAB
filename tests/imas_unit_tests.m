@@ -7,8 +7,7 @@ classdef imas_unit_tests < matlab.unittest.TestCase
   end
 
   properties (ClassSetupParameter)
-    %useCache = struct('yes',true,'no',false);
-    useCache = struct('no',false);
+    useCache = struct('yes',true,'no',false);
   end
 
   %% Class-level setup
@@ -23,9 +22,10 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       end
       testCase.TestData.idx = idx;
       %
+      ntime = 3;
       for name = IDS_list.'
-        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},false,true);
-        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},true ,true);
+        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},ntime,false);
+        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},ntime,true );
       end
       %
     end

@@ -15,7 +15,7 @@
 
 <xsl:template match="IDS" mode="generate">
   <xsl:result-document href="private/rand_{@name}.m" standalone="yes" method="text">
-  function ids = rand_<xsl:value-of select="@name"/>(slice);
+  function ids = rand_<xsl:value-of select="@name"/>(ntime, slice);
   rng('default');
   <xsl:apply-templates select="field" mode="generate">
     <xsl:with-param name="Aoslevel" select="1"/>
@@ -59,7 +59,6 @@ end
     </xsl:when>
     <!-- Type 3 arrays of structure, with a unique time base -->
     <xsl:when test="@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'">
-      ntime=3;
       <xsl:value-of select="$currentpath"/>=cell(ntime,1);
       for itime=1:ntime
       <xsl:apply-templates select="field" mode="generate">
@@ -104,7 +103,7 @@ end
     </xsl:when>
   
     <xsl:when test = "@name='time' and (@data_type='flt_type' or @data_type='FLT_0D')">
-      time = rand_time(false);
+      time = rand_time(ntime, false);
       <xsl:value-of select="$currentpath"/> = time(itime);
     </xsl:when>
   
@@ -118,64 +117,64 @@ end
 	
   <!--========== Vectors ===========-->
     <xsl:when test = "@data_type='int_1d_type' or @data_type='INT_1D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('integer', 1, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('integer', 1, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
   
     <xsl:when test = "@name='time' and (@data_type='flt_1d_type' or @data_type='FLT_1D')">
-      <xsl:value-of select="$currentpath"/> = rand_time(slice);
+      <xsl:value-of select="$currentpath"/> = rand_time(ntime, slice);
     </xsl:when>
   
     <xsl:when test = "@data_type='flt_1d_type' or @data_type='FLT_1D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('float', 1, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('float', 1, <xsl:value-of select="$dynamic"/>,ntime, slice);
     </xsl:when>
       
     <xsl:when test="@data_type='str_1d_type' or @data_type='STR_1D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('string', 1, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('string', 1, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
   <!--========== Matrices ===========-->
     <xsl:when test="@data_type='INT_2D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('integer', 2, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('integer', 2, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_2D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('float', 2, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('float', 2, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
   <!--========== 3D arrays ===========-->
     <xsl:when test="@data_type='INT_3D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('integer', 3, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('integer', 3, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_3D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('float', 3, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('float', 3, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
   <!--========== 4D arrays ===========-->
     <xsl:when test="@data_type='INT_4D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('integer', 4, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('integer', 4, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_4D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('float', 4, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('float', 4, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
   <!--========== 5D arrays ===========-->
     <xsl:when test="@data_type='INT_5D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('integer', 5, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('integer', 5, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_5D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('float', 5, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('float', 5, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
   <!--========== 6D arrays ===========-->
     <xsl:when test="@data_type='INT_6D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('integer', 6, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('integer', 6, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
     <xsl:when test="@data_type='FLT_6D'">
-      <xsl:value-of select="$currentpath"/> = rand_array('float', 6, <xsl:value-of select="$dynamic"/>, slice);
+      <xsl:value-of select="$currentpath"/> = rand_array('float', 6, <xsl:value-of select="$dynamic"/>, ntime, slice);
     </xsl:when>
 
   <!--========== Unknown type ===========-->

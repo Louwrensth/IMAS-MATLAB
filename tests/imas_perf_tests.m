@@ -7,13 +7,13 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   end
 
   properties (ClassSetupParameter)
-    %useCache = struct('yes',true,'no',false);
-    useCache = struct('no',false);
+    useCache = struct('yes',true,'no',false);
+    ntime = struct('small',3,'medium',96,'large',3072)
   end
 
   %% Class-level setup
   methods (TestClassSetup)
-    function createIMASDb(testCase, useCache)
+    function createIMASDb(testCase, useCache, ntime)
       idx = imas_create_env('ids',9999,9999,0,0,'g2amerle','test','3');
       testCase.addTeardown(@imas_close,idx);
       if useCache
@@ -24,8 +24,8 @@ classdef imas_perf_tests < matlab.perftest.TestCase
       testCase.TestData.idx = idx;
       %
       for name = IDS_list.'
-        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},false);
-        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},true );
+        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},ntime,false);
+        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},ntime,true );
       end
       %
     end
