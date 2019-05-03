@@ -21,6 +21,8 @@ int end_dataTree_array_action();
 
 int iterate_dataTree_array(size_t index);
 
+int slice_dataTree_array(char * name, mwSize index);
+
 int replicate_dataTree_array(char * name, mwSize aosArraySize);
 
 int get_data_from_dataTree(char * name, mxArray ** data);

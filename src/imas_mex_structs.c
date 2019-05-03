@@ -402,8 +402,54 @@ int replace_data_in_dataTree(char * name, mxArray * data) {
 
 }
 
-  return 0;
+int slice_dataTree_array(char * name, mwSize index) {
 
+  int aosArraySize;
+  mxArray * array_old;
+  mxArray * array;
+  int nfields;
+  int ifield;
+
+  if (dataTree == NULL) {
+    strncpy(mex_errmsgid,"invalid_dataTree",14);
+    strncpy(mex_errmsgtxt,"Invalid dataTree in slice_dataTree_array",41);
+    return -1;
+  }
+
+  if (get_data_from_dataTree(name, &array_old) < 0)
+    return -1;
+  aosArraySize = mxGetNumberOfElements(array_old);
+
+  if (index < 0 || index > aosArraySize-1) {
+    strncpy(mex_errmsgid,"invalid_index",14);
+    strncpy(mex_errmsgtxt,"Invalid index in slice_dataTree_array",38);
+    return -1;
+  }
+
+  if (params.use_cell_array_for_array_of_structures) {
+    array = mxCreateCellMatrix(1, 1);
+
+    mxSetCell(array, 0,
+	      mxDuplicateArray(mxGetCell(array_old, index)));
+  } else {
+    array = mxCreateStructMatrix(1, 1, 0, NULL);
+
+    nfields = mxGetNumberOfFields(array_old);    
+    for (ifield=0; ifield<nfields; ifield++) {
+      if (mxAddField(array, mxGetFieldNameByNumber(array_old, ifield)) != ifield) {
+	strncpy(mex_errmsgid,"invalid_field",14);
+	strncpy(mex_errmsgtxt,"New and old field numbers do not match in slice_dataTree_array",63);
+	return -1;
+      }
+      mxSetFieldByNumber(array, 0, ifield,
+			 mxDuplicateArray(mxGetFieldByNumber(array_old, index, ifield)));
+    }
+  }
+
+  if (replace_data_in_dataTree(name, array) < 0)
+    return -1;
+
+  return 0;
 }
 
 int replicate_dataTree_array(char * name, mwSize aosArraySize) {

@@ -65,7 +65,7 @@ $(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
 $(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
 endef
 
-METHODS = get get_slice put put_slice delete allocate gen double_to_int int_to_double nan_to_empty empty_to_nan struct_to_cell cell_to_struct
+METHODS = get get_slice put put_slice delete allocate gen double_to_int int_to_double nan_to_empty empty_to_nan struct_to_cell cell_to_struct rand
 
 $(foreach method,$(METHODS),$(eval $(call TEMPLATE,$(method))))
 
@@ -89,7 +89,7 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
 				)
 # TODO/DEPRECATED: imas_open_hdf5 imas_create_hdf5 imas_enable_mem_cache imas_disable_mem_cache imas_flush_mem_cache imas_discard_mem_cache
 SOURCES = $(GENSOURCES)
-UTL_SRC_FILES = $(addsuffix .c, imas_mex_utils imas_mex_structs imas_mex_params imas_mex_casts)
+UTL_SRC_FILES = $(addsuffix .c, imas_mex_utils imas_mex_structs imas_mex_params imas_mex_casts imas_mex_rand)
 SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES) $(UTL_SRC_FILES))
 
 # Compiled objects
@@ -123,6 +123,7 @@ $(nan_to_empty_SRC_FILES):   emptys_nans.xsl
 $(empty_to_nan_SRC_FILES):   emptys_nans.xsl
 $(struct_to_cell_SRC_FILES): cells_structs.xsl
 $(cell_to_struct_SRC_FILES): cells_structs.xsl
+$(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 $(GENSOURCES):
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$<
