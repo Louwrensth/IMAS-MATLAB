@@ -45,28 +45,28 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
       name = mxArrayToString(prhs[ifield*2]);
       data = prhs[ifield*2+1];
     }
-    if (!mxIsNumeric(data) || !mxIsScalar(data))
+    if ( (!mxIsNumeric(data) || !mxIsScalar(data)) && !mxIsLogicalScalar(data))
 	mexErrMsgIdAndTxt("IMAS:imas_mex_set_params:input",
-			  "Parameter values must be numeric scalars.");
+			  "Parameter values must be numeric or logical scalars.");
     // get_int_as_double
     if (!strcmp(name, "get_int_as_double")) {
-      params.get_int_as_double = (int) mxGetScalar(data);
+      params.get_int_as_double = (int) mxGetScalar(data) != 0;
       continue;
     // put_int_from_double
     } else if (!strcmp(name, "put_int_from_double")) {
-      params.put_int_from_double = (int) mxGetScalar(data);
+      params.put_int_from_double = (int) mxGetScalar(data) != 0;
       continue;
     // get_empty_as_nan
     } else if (!strcmp(name, "get_empty_as_nan")) {
-      params.get_empty_as_nan = (int) mxGetScalar(data);
+      params.get_empty_as_nan = (int) mxGetScalar(data) != 0;
       continue;
     // put_empty_from_nan
     } else if (!strcmp(name, "put_empty_from_nan")) {
-      params.put_empty_from_nan = (int) mxGetScalar(data);
+      params.put_empty_from_nan = (int) mxGetScalar(data) != 0;
       continue;
     // use_cell_array_for_array_of_structures
     } else if (!strcmp(name, "use_cell_array_for_array_of_structures")) {
-      params.use_cell_array_for_array_of_structures = (int) mxGetScalar(data);
+      params.use_cell_array_for_array_of_structures = (int) mxGetScalar(data) != 0;
       continue;
     // convert_whole_ids
     } else if (!strcmp(name, "convert_whole_ids")) {
@@ -74,7 +74,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
       continue;
     // error_on_missing_field
     } else if (!strcmp(name, "error_on_missing_field")) {
-      params.error_on_missing_field = (int) mxGetScalar(data);
+      params.error_on_missing_field = (int) mxGetScalar(data) != 0;
       continue;
     // verbosity
     } else if (!strcmp(name, "verbosity")) {

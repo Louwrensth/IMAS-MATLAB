@@ -36,10 +36,10 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for three input arguments  
+  // Check for one input arguments  
   if(nrhs != 1) {
     mexErrMsgIdAndTxt("IMAS:ids_gen:nargin",
-                      "Three inputs required.");
+                      "One input required.");
   }
 
   // make sure IDSname is a string
