@@ -3,10 +3,12 @@
 <?modxslt-stylesheet type="text/xsl" media="screen" alternate="no" title="Show raw source of the XML file" charset="ISO-8859-1" ?>
 <!-- Generating MEX access layer code from Data Dictionary IDSDef.xml -->
 <!-- -->
-<xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exsl="http://exslt.org/common" version="1.0" extension-element-prefixes="yaslt exsl"
-  xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
-  xmlns:my="dummy">
+<xsl:stylesheet
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+    xmlns:my="dummy"
+    version="2.0">
 
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
@@ -125,7 +127,7 @@
       <xsl:sequence select="6"/>
     </xsl:when>
     <xsl:when test="$data_type='structure' or $data_type='struct_array'">
-      <xsl:sequence select="-1"/>
+      <xsl:sequence select="xs:integer(-1)"/>
     </xsl:when>
     <xsl:otherwise>
       <xsl:message terminate="yes">ERROR: Unidentified type: <xsl:value-of select="$data_type"/> !</xsl:message>

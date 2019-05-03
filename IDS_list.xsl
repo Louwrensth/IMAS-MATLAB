@@ -1,10 +1,11 @@
 <!--  Generating  Matlab code structs from IDSDefs.xml YB.MA Feb 2008 -->
 <!-- -->
-<xsl:stylesheet xmlns:yaslt="http://www.mod-xslt2.com/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
-		xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
-		xmlns:exsl="http://exslt.org/common"
-                extension-element-prefixes="yaslt exsl">
+<xsl:stylesheet
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+    xmlns:my="dummy"
+    version="2.0">
   <!-- -->
   <xsl:output method="text"/>
 

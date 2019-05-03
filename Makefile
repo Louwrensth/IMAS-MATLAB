@@ -127,7 +127,6 @@ $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 $(GENSOURCES):
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$<
-#	xsltproc $< $(IDSDEF)
 
 $(IDS_SRC_DIR)/%.c: $(IDS_SRC_DIR)/%.c.in
 	$(BEAUTIFY) $< -o $@
