@@ -188,7 +188,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return status;
     }
     action.context = ctx;
-    if (init_dataTree_read(ids) &lt; 0) {
+    if (init_dataTree_read() &lt; 0) {
     ual_end_action(ctx);
     return -1;
     }
@@ -196,6 +196,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:apply-templates select="field" mode="GET_SINGLE"/>
 
     ual_end_action(ctx);
+    if (get_data_from_dataTree(NULL, ids) &lt; 0)
+    return -1;
 #ifndef NO_GLOBAL_CONVERSION
     if (params.convert_whole_ids == 1) {
     // Conversion of INT fields to double

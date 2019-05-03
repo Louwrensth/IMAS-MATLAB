@@ -3,7 +3,7 @@
 
 #define IMAS_MEX_STRUCTS_H
 
-int init_dataTree_read(mxArray ** data);
+int init_dataTree_read();
 
 int init_dataTree_write(mxArray * data);
 
@@ -20,6 +20,8 @@ int end_dataTree_action();
 int end_dataTree_array_action();
 
 int iterate_dataTree_array(size_t index);
+
+int replicate_dataTree_array(char * name, mwSize aosArraySize);
 
 int get_data_from_dataTree(char * name, mxArray ** data);
 

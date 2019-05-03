@@ -98,10 +98,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
      int status;
      void *array;
      mxArray* data;
-     *ids = mxCreateStructMatrix(1, 1, 0, NULL);
-     if (init_dataTree_read(ids) &lt; 0)
+     if (init_dataTree_read() &lt; 0)
      return -1;
      <xsl:apply-templates select="field" mode="ALLOCATE"/>
+     if (get_data_from_dataTree(NULL, ids) &lt; 0)
+     return -1;
      return 0;
      }
    </xsl:for-each>

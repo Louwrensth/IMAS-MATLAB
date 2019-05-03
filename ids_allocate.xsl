@@ -121,12 +121,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
      // Paths-specific variables
      int maxpathsize=MAXPATHSIZE;
      mxArray* data;
-     mxArray* structure;
      int i;
-     // TODO: This is not compatible with params.use_cell_array_for_array_of_structures = 0
-     if (n > 0) {
-     *ids = mxCreateCellMatrix(n,1);
-     if (init_dataTree_read(&amp;structure) &lt; 0)
+     if (init_dataTree_read() &lt; 0)
      return -1;
      <xsl:for-each select=".//field[@data_type='struct_array']">
        if (!strncmp(pathInIDS, "<xsl:value-of select="@path"/>", maxpathsize)) {
@@ -135,12 +131,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
      </xsl:for-each>
      mexErrMsgIdAndTxt("IMAS:ids_allocate:unknown_path",
                        "Path '%s' did not match any known AoS in <xsl:value-of select="@name"/>", pathInIDS);
-     mxSetCell(*ids, (mwIndex) 0, structure);
-     for (i=1; i&lt;n; i++)
-       mxSetCell(*ids, (mwIndex) i, mxDuplicateArray(structure));
-     } else {
-     *ids = mxCreateCellMatrix(0,0);
-     }
+     if (replicate_dataTree_array(NULL, n) &lt; 0)
+     return -1;
+     if (get_data_from_dataTree(NULL, ids) &lt; 0)
+     return -1;
      return 0;
      }
    </xsl:for-each>

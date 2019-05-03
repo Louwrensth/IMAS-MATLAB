@@ -24,14 +24,15 @@ void free_dataTree() {
 
 }  
 
-int init_dataTree_read(mxArray** data) {
+int init_dataTree_read() {
 
   int status;
+  mxArray * data;
   
   if (dataTree != NULL)
     free_dataTree();
 
-  *data = mxCreateStructMatrix(1, 1, 0, NULL);
+  data = mxCreateStructMatrix(1, 1, 0, NULL);
   
   dataTree = malloc(sizeof(struct data_struct));
   if (!dataTree) {
@@ -41,7 +42,7 @@ int init_dataTree_read(mxArray** data) {
   }
     
   dataTree->parent = NULL;
-  dataTree->data = *data;
+  dataTree->data = data;
   dataTree->index = 0;
   dataTree->size = 1;
   dataTree->aosParent = NULL;
@@ -340,16 +341,20 @@ int get_data_from_dataTree(char * name, mxArray ** data) {
 
   int ifield;
 
-  ifield = mxGetFieldNumber(dataTree->data, name);
-  *data = mxGetFieldByNumber(dataTree->data, (mwIndex) dataTree->index, ifield);
+  if (name == NULL)
+    *data = dataTree->data;
+  else {
+    ifield = mxGetFieldNumber(dataTree->data, name);
+    *data = mxGetFieldByNumber(dataTree->data, (mwIndex) dataTree->index, ifield);
 
-  if (ifield < 0) {
-    if (params.error_on_missing_field) {
-      strncpy(mex_errmsgid,"invalid_field",14);
-      snprintf(mex_errmsgtxt, 26+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to retrieve field %s", name);
-      return -1;
-    } else {
-      *data = NULL;
+    if (ifield < 0) {
+      if (params.error_on_missing_field) {
+	strncpy(mex_errmsgid,"invalid_field",14);
+	snprintf(mex_errmsgtxt, 26+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to retrieve field %s", name);
+	return -1;
+      } else {
+	*data = NULL;
+      }
     }
   }
 
@@ -361,15 +366,19 @@ int put_data_in_dataTree(char * name, mxArray * data) {
 
   int ifield;
 
-  ifield = mxAddField(dataTree->data, name);
+  if (name == NULL)
+    dataTree->data = data;
+  else {
+    ifield = mxAddField(dataTree->data, name);
 
-  if (ifield < 0) {
-    strncpy(mex_errmsgid,"setfield_failed",14);
-    snprintf(mex_errmsgtxt, 34+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to add field %s to structure", name);
-    return -1;
+    if (ifield < 0) {
+      strncpy(mex_errmsgid,"setfield_failed",14);
+      snprintf(mex_errmsgtxt, 34+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to add field %s to structure", name);
+      return -1;
+    }
+
+    mxSetFieldByNumber(dataTree->data, dataTree->index, ifield, data);
   }
-
-  mxSetFieldByNumber(dataTree->data, dataTree->index, ifield, data);
 
   return 0;
 
@@ -386,8 +395,68 @@ int replace_data_in_dataTree(char * name, mxArray * data) {
   if (data_old != NULL)
     mxDestroyArray(data_old);
 
-  ifield = mxGetFieldNumber(dataTree->data, name);
-  mxSetFieldByNumber(dataTree->data, dataTree->index, ifield, data);
+  if (put_data_in_dataTree(name, data) < 0)
+    return -1;
+
+  return 0;
+
+}
+
+  return 0;
+
+}
+
+int replicate_dataTree_array(char * name, mwSize aosArraySize) {
+
+  mxArray * array_old;
+  mxArray * array;
+  mxArray * data;
+  int i;
+  int nfields;
+  int ifield;
+
+  if (dataTree == NULL) {
+    strncpy(mex_errmsgid,"invalid_dataTree",14);
+    strncpy(mex_errmsgtxt,"Invalid dataTree in replicate_dataTree_array",41);
+    return -1;
+  }
+
+  if (get_data_from_dataTree(name, &array_old) < 0)
+    return -1;
+
+  if (mxGetNumberOfElements(array_old) > 1) {
+    strncpy(mex_errmsgid,"invalid_array",14);
+    strncpy(mex_errmsgtxt,"Invalid original array size in replicate_dataTree_array",56);
+    return -1;
+  }
+  
+  if (params.use_cell_array_for_array_of_structures) {
+    if (aosArraySize > 0)
+      array = mxCreateCellMatrix(aosArraySize, 1);
+    else
+      array = mxCreateCellMatrix(0, 0);
+
+    data = mxGetCell(array_old, 0);
+    for (i=0; i<aosArraySize; i++)
+      mxSetCell(dataTree->data, i, mxDuplicateArray(data));
+  } else {
+    if (aosArraySize > 0)
+      array = mxCreateStructMatrix(aosArraySize, 1, 0, NULL);
+    else
+      array = mxCreateStructMatrix(0, 0, 0, NULL);
+
+    nfields = mxGetNumberOfFields(array_old);
+    for (ifield=0; ifield<nfields; ifield++) {
+      data = mxGetFieldByNumber(array_old, 0, ifield);
+      if (mxAddField(dataTree->data, mxGetFieldNameByNumber(array_old, ifield)) != ifield)
+	return -1;
+      for (i=0; i<aosArraySize; i++)
+	mxSetFieldByNumber(dataTree->data, i, ifield, mxDuplicateArray(data));
+    }
+  }
+
+  if (replace_data_in_dataTree(name, array) < 0)
+    return -1;
 
   return 0;
 
