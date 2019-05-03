@@ -35,21 +35,18 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // Get the value of the name
     char *name = mxArrayToString(prhs[0]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input name is:  %s\n", name);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input name is:  %s\n", name);
 
     // Get the value of the shot
     int shot = (int) mxGetScalar(prhs[1]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input shot is:  %d\n", shot);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input shot is:  %d\n", shot);
 
     // Get the value of the run
     int run = (int) mxGetScalar(prhs[2]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input run is:  %d\n", run);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input run is:  %d\n", run);
 
     int idx;
     int status = ual_open_hdf5("ids", shot, run, &idx);

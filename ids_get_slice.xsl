@@ -51,9 +51,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of the idx
   int idx = (int) mxGetScalar(prhs[0]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input idx is:  %d\n", idx);
-#endif
   
   // make sure IDSpath is a string
   if( !mxIsChar(prhs[1]) ) {
@@ -62,9 +61,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of IDSpath
   char *IDSpath = mxArrayToString(prhs[1]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input IDSpath is:  %s\n", IDSpath);
-#endif
 
   if(nrhs == 3) {
   int occ;
@@ -77,9 +75,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of occ
   occ = (int) mxGetScalar(prhs[2]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input occurence is:  %d\n", occ);
-#endif
   if (occ &gt; 0) {
   pathlen = strlen(IDSpath);
   IDSpath = mxRealloc(IDSpath, (pathlen+5)*sizeof(char));
@@ -95,9 +92,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of the inTime
   double inTime = mxGetScalar(prhs[nrhs-2]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input inTime is:  %f\n", inTime);
-#endif
 
   // make sure the last input argument is scalar
   if( !mxIsNumeric(prhs[nrhs-1]) ||
@@ -107,9 +103,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of the interpolation Mode
   int interpolMode = (int) mxGetScalar(prhs[nrhs-1]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input interpolMode is:  %d\n", interpolMode);
-#endif
 
   // Check for one output argument
   if(nlhs > 1) {

@@ -40,33 +40,28 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // Get the value of the name
     char *name = mxArrayToString(prhs[0]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input name is:  %s\n", name);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input name is:  %s\n", name);
 
     // Get the value of the shot
     int shot = (int) mxGetScalar(prhs[1]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input shot is:  %d\n", shot);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input shot is:  %d\n", shot);
 
     // Get the value of the run
     int run = (int) mxGetScalar(prhs[2]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input run is:  %d\n", run);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input run is:  %d\n", run);
 
     // Get the value of the refShot
     int refShot = (int) mxGetScalar(prhs[3]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input refShot is:  %d\n", refShot);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input refShot is:  %d\n", refShot);
 
     // Get the value of the refRun
     int refRun = (int) mxGetScalar(prhs[4]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input refRun is:  %d\n", refRun);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input refRun is:  %d\n", refRun);
 
     int idx;
     int status = ual_create("ids", shot, run, refShot, refRun, &idx);

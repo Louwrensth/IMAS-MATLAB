@@ -44,39 +44,33 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // Get the value of the name
     char *name = mxArrayToString(prhs[0]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input name is:  %s\n", name);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input name is:  %s\n", name);
 
     // Get the value of the shot
     int shot = (int) mxGetScalar(prhs[1]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input shot is:  %d\n", shot);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input shot is:  %d\n", shot);
 
     // Get the value of the run
     int run = (int) mxGetScalar(prhs[2]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input run is:  %d\n", run);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input run is:  %d\n", run);
 
     // Get the value of the user
     char *user = mxArrayToString(prhs[3]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input user is:  %s\n", user);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input user is:  %s\n", user);
 
     // Get the value of the tokamak
     char *tokamak = mxArrayToString(prhs[4]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input tokamak is:  %s\n", tokamak);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input tokamak is:  %s\n", tokamak);
 
     // Get the value of the version
     char *version = mxArrayToString(prhs[5]);
-#ifdef MEX_DEBUG
-    mexPrintf("The input version is:  %s\n", version);
-#endif
+    if (params.verbosity >= 4)
+        mexPrintf("The input version is:  %s\n", version);
 
     int idx;
     int status = ual_open_env("ids", shot, run, &idx, user, tokamak, version);

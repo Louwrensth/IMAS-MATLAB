@@ -52,9 +52,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of idx
   int idx = (int) mxGetScalar(prhs[0]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input idx is:  %d\n", idx);
-#endif
 
   // make sure IDSpath is a string
   if( !mxIsChar(prhs[1]) ) {
@@ -63,9 +62,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of IDSpath
   char *IDSpath = mxArrayToString(prhs[1]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input IDSpath is:  %s\n", IDSpath);
-#endif
 
   if(nrhs == 4) {
   int occ;
@@ -78,9 +76,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   // Get the value of occ
   occ = (int) mxGetScalar(prhs[2]);
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input occurence is:  %d\n", occ);
-#endif
   if (occ &gt; 0) {
   pathlen = strlen(IDSpath);
   IDSpath = mxRealloc(IDSpath, (pathlen+5)*sizeof(char));
@@ -95,9 +92,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
                         "Input ids must be a scalar structure.");
   }
   // Get the value of ids
-#ifdef MEX_DEBUG
+  if (params.verbosity >= 4)
   mexPrintf("The input ids is:  %s\n", "SKIPPED");
-#endif
 
   // Check for no output argument
   if(nlhs > 0) {
