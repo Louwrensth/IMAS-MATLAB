@@ -242,7 +242,7 @@ int begin_dataTree_array_read(char * name, int aosArraySize) {
 
   child->parent = dataTree;
   child->data = data;
-  child->index = 0;
+  child->index = -1;
   child->size = aosArraySize;
   child->aosParent = child;
   child->isArray = 1;
@@ -279,7 +279,7 @@ int begin_dataTree_array_write(char * name, int * aosArraySize) {
 
   child->parent = dataTree;
   child->data = data;
-  child->index = 0;
+  child->index = -1;
   child->size = *aosArraySize;
   child->aosParent = child;
   child->isArray = 1;
@@ -435,12 +435,16 @@ int put_data_in_dataTree(char * name, mxArray * data) {
   if (name == NULL)
     dataTree->data = data;
   else {
-    ifield = mxAddField(dataTree->data, name);
+    if (!dataTree->isArray || dataTree->index == 0) {
+      ifield = mxAddField(dataTree->data, name);
 
-    if (ifield < 0) {
-      strncpy(mex_errmsgid,"setfield_failed",14);
-      snprintf(mex_errmsgtxt, 34+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to add field %s to structure", name);
-      return -1;
+      if (ifield < 0) {
+        strncpy(mex_errmsgid,"setfield_failed",14);
+        snprintf(mex_errmsgtxt, 34+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to add field %s to structure", name);
+        return -1;
+      }
+    } else {
+      ifield = mxGetFieldNumber(dataTree->data, name);
     }
 
     mxSetFieldByNumber(dataTree->data, dataTree->index, ifield, data);
