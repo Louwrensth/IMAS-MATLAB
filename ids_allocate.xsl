@@ -123,7 +123,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
      int maxpathsize=MAXPATHSIZE;
      mxArray* data;
      int i;
-     if (init_dataTree_read() &lt; 0)
+     if (init_dataTree_array_read(1) &lt; 0)
+     return -1;
+     if (iterate_dataTree_array(0) &lt; 0)
      return -1;
      <xsl:for-each select=".//field[@data_type='struct_array']">
        if (!strncmp(pathInIDS, "<xsl:value-of select="@path"/>", maxpathsize)) {
@@ -132,6 +134,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
      </xsl:for-each>
      mexErrMsgIdAndTxt("IMAS:ids_allocate:unknown_path",
                        "Path '%s' did not match any known AoS in <xsl:value-of select="@name"/>", pathInIDS);
+     if (end_dataTree_array_action() &lt; 0)
+     return -1;
      if (replicate_dataTree_array(NULL, n) &lt; 0)
      return -1;
      if (get_data_from_dataTree(NULL, ids) &lt; 0)

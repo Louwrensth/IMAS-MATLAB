@@ -26,7 +26,6 @@ void free_dataTree() {
 
 int init_dataTree_read() {
 
-  int status;
   mxArray * data;
   
   if (dataTree != NULL)
@@ -53,8 +52,6 @@ int init_dataTree_read() {
 }
 
 int init_dataTree_write(mxArray * data) {
-
-  int status;
   
   if (dataTree != NULL)
     free_dataTree();
@@ -72,6 +69,73 @@ int init_dataTree_write(mxArray * data) {
   dataTree->size = 1;
   dataTree->aosParent = NULL;
   dataTree->isArray = 0;
+
+  return 0;
+
+} 
+
+int init_dataTree_array_read(int aosArraySize) {
+
+  mxArray * data;
+  mwIndex i;
+  
+  if (dataTree != NULL)
+    free_dataTree();
+  
+  dataTree = malloc(sizeof(struct data_struct));
+  if (!dataTree) {
+    strncpy(mex_errmsgid,"out_of_memory",14);
+    strncpy(mex_errmsgtxt,"Out of memory in init_dataTree_write",37);
+    return -1;
+  }
+  
+  if (aosArraySize == 0) {
+    // Special case for empty arrays
+    if (params.use_cell_array_for_array_of_structures) {
+      data = mxCreateCellMatrix(0, 0);
+    } else {
+      data = mxCreateStructMatrix(0, 0, 0, NULL);
+    }
+  } else {
+    if (params.use_cell_array_for_array_of_structures) {
+      data = mxCreateCellMatrix(aosArraySize, 1);
+      for (i = 0; i < aosArraySize; i++)
+	mxSetCell(data, i, mxCreateStructMatrix(1, 1, 0, NULL));
+    } else
+      data = mxCreateStructMatrix(aosArraySize, 1, 0, NULL);
+  }
+
+  dataTree->parent = NULL;
+  dataTree->data = data;
+  dataTree->index = 0;
+  dataTree->size = aosArraySize;
+  dataTree->aosParent = dataTree;
+  dataTree->isArray = 1;
+
+  return 0;
+
+}
+
+int init_dataTree_array_write(mxArray * data, int * aosArraySize) {
+  
+  if (dataTree != NULL)
+    free_dataTree();
+  
+  dataTree = malloc(sizeof(struct data_struct));
+  if (!dataTree) {
+    strncpy(mex_errmsgid,"out_of_memory",14);
+    strncpy(mex_errmsgtxt,"Out of memory in init_dataTree_write",37);
+    return -1;
+  }
+
+  *aosArraySize = mxGetNumberOfElements(data);
+
+  dataTree->parent = NULL;
+  dataTree->data = data;
+  dataTree->index = 0;
+  dataTree->size = *aosArraySize;
+  dataTree->aosParent = dataTree;
+  dataTree->isArray = 1;
 
   return 0;
 
@@ -251,7 +315,7 @@ int end_dataTree_array_action() {
     strncpy(mex_errmsgtxt,"Invalid dataTree in end_dataTree_array_action",46);
     return -1;
   }
-  
+
   if (params.use_cell_array_for_array_of_structures) {
     if (!mxIsCell(dataTree->data)) { // We have already iterated on this array
       parent = dataTree->parent;
@@ -262,8 +326,10 @@ int end_dataTree_array_action() {
       return -1;
   }
   parent = dataTree->parent;
-  free(dataTree);
-  dataTree = parent;
+  if (parent) {
+    free(dataTree);
+    dataTree = parent;
+  }
 
   return 0;
 }
@@ -321,7 +387,7 @@ int iterate_dataTree_array(size_t index) {
     child->isArray = 0;
 
     dataTree = child;
-    
+   
   } else {
 
     if (index < 0 || index > dataTree->size-1) {
@@ -463,7 +529,7 @@ int replicate_dataTree_array(char * name, mwSize aosArraySize) {
 
   if (dataTree == NULL) {
     strncpy(mex_errmsgid,"invalid_dataTree",14);
-    strncpy(mex_errmsgtxt,"Invalid dataTree in replicate_dataTree_array",41);
+    strncpy(mex_errmsgtxt,"Invalid dataTree in replicate_dataTree_array",45);
     return -1;
   }
 
@@ -484,7 +550,7 @@ int replicate_dataTree_array(char * name, mwSize aosArraySize) {
 
     data = mxGetCell(array_old, 0);
     for (i=0; i<aosArraySize; i++)
-      mxSetCell(dataTree->data, i, mxDuplicateArray(data));
+      mxSetCell(array, i, mxDuplicateArray(data));
   } else {
     if (aosArraySize > 0)
       array = mxCreateStructMatrix(aosArraySize, 1, 0, NULL);
@@ -494,10 +560,10 @@ int replicate_dataTree_array(char * name, mwSize aosArraySize) {
     nfields = mxGetNumberOfFields(array_old);
     for (ifield=0; ifield<nfields; ifield++) {
       data = mxGetFieldByNumber(array_old, 0, ifield);
-      if (mxAddField(dataTree->data, mxGetFieldNameByNumber(array_old, ifield)) != ifield)
+      if (mxAddField(array, mxGetFieldNameByNumber(array_old, ifield)) != ifield)
 	return -1;
       for (i=0; i<aosArraySize; i++)
-	mxSetFieldByNumber(dataTree->data, i, ifield, mxDuplicateArray(data));
+	mxSetFieldByNumber(array, i, ifield, mxDuplicateArray(data));
     }
   }
 

@@ -7,6 +7,10 @@ int init_dataTree_read();
 
 int init_dataTree_write(mxArray * data);
 
+int init_dataTree_array_read(int aosArraySize);
+
+int init_dataTree_array_write(mxArray * data, int * aosArraySize);
+
 int begin_dataTree_read(char * name);
 
 int begin_dataTree_write(char * name, int * isEmpty);
