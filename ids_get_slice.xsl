@@ -123,7 +123,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="function_name">get_slice</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
-  if (get_slice == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_get_slice:unknown_ids",
            "Unknown IDS name: %s", name);
 

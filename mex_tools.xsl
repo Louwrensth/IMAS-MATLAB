@@ -27,7 +27,7 @@
   if (params.verbosity >= 4)
     mexPrintf("Matched <xsl:value-of select="@name"/>\n");
   <xsl:value-of select="$function_name"/> = &amp;<xsl:value-of select="concat($function_name,'_',@name)"/>;
-}</xsl:template>
+  } else</xsl:template>
 
 <xsl:template name ="printAosRelativePath">
   <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>

@@ -70,7 +70,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="function_name">gen</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
-  if (gen == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_gen:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   

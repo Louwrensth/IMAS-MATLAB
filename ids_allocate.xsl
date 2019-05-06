@@ -91,7 +91,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="function_name">allocate</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
-  if (allocate == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_allocate:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   

@@ -125,7 +125,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="function_name"><xsl:value-of select="$conversion"/></xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
-  if (<xsl:value-of select="$conversion"/> == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:unknown_ids",
            "Unknown IDS path: %s", IDSpath);
 

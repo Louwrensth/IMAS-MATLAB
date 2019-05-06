@@ -93,7 +93,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="function_name">rand</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
-  if (rand == NULL)
   mexErrMsgIdAndTxt("IMAS:ids_rand:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   
