@@ -62,7 +62,7 @@
 	    cast_status = castCellToStruct(&amp;data);
 	    if (cast_status &lt; 0) {
 	    strncpy(mex_errmsgid,"cast_failed",12);
-	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace structs by cell for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
+	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace cell by structs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	    }
 	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
@@ -89,7 +89,7 @@
 	    if (!params.use_cell_array_for_array_of_structures) {
 	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
 	    return -1;
-	    cast_status = castCellToStruct(&amp;data);
+	    cast_status = castStructToCell(&amp;data);
 	    if (cast_status &lt; 0) {
 	    strncpy(mex_errmsgid,"cast_failed",12);
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace structs by cell for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
@@ -103,10 +103,10 @@
 	    if (params.use_cell_array_for_array_of_structures) {
 	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
 	    return -1;
-	    cast_status = castStructToCell(&amp;data);
+	    cast_status = castCellToStruct(&amp;data);
 	    if (cast_status &lt; 0) {
 	    strncpy(mex_errmsgid,"cast_failed",12);
-	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace structs by cell for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
+	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace cell by structs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	    }
 	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
