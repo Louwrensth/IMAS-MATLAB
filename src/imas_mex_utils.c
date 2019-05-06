@@ -162,7 +162,7 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
   // Convert array size and compute total number of elements
   for (i = 0; i < dim; i++) {
     size[i] = ndims > i ? (int) dims[i] : 1;
-    numel = numel * dims[i];
+    numel = numel * size[i];
   }
   // Allow for 1D row vectors 
   if (dim == 1 && dims[0] == 1) {
