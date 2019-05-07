@@ -21,3 +21,12 @@ $(GENSOURCES): $(IDSDEF)
 test: $(GENSOURCES)
 	matlab -nodisplay -r "addpath ../lib ../matlab;res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
 
+.PHONY: all install clean clean-src perf_tools
+
+perf_tools: run_perf_f90 imas_mex_c_workflow_tests
+
+run_perf_f90: run_perf_f90.f90
+	gfortran -O0 -g $^ -ffree-line-length-none -o $@ $$(pkg-config --cflags --libs imas-gfortran)
+
+imas_mex_c_workflow_tests: imas_mex_c_workflow_tests.c
+	gcc -DTARGET_API_VERSION=700  -DUSE_MEX_CMD -D__USE_XOPEN2K8 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I"/gw/swvend/matlab/r2017a/extern/include" -I"/gw/swvend/matlab/r2017a/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g -Wl,--no-undefined  -Wl,-rpath $(realpath ../lib) -L"/gw/swvend/matlab/r2017a/bin/glnxa64" -lmx -lmex -ldl $^ -o $@

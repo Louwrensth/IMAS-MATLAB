@@ -2,5 +2,7 @@ build
 lib
 src/ids
 matlab/IDS_list.m
-tests/private/rand_*.m
-
+*~
+/doc/
+tests/run_perf_f90
+tests/imas_mex_c_workflow_tests
