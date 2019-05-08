@@ -9,6 +9,8 @@ all sources sources_install install clean clean-src:
 	$(warning "Ignoring mexinterface (IMAS_MEX=no).")
 else
 
+MEX_SO_NUM=1
+
 CFLAGS_DEBUG = -g
 LDFLAGS_DEBUG = -g
 CFLAGS_OPTIM = -O -DNDEBUG
@@ -34,7 +36,7 @@ IDS_SRC_DIR:=$(SRC_DIR)/ids
 INCDIR=-I$(SRC_DIR) -I$(IDS_SRC_DIR) -I../lowlevel
 
 IDSDEF= ../xml/IDSDef.xml
-LIBS=-Wl,-rpath $(realpath $(CURDIR)/../lowlevel) -L../lowlevel -limas
+LIBS=-L../lowlevel -limas
 
 # Check existence of the "indent" utility to get a clean C format
 ifeq "$(shell which indent 2> /dev/null)" ""
@@ -100,6 +102,7 @@ OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_SRC_FILES:.c=.o))
 
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c.in=.mexa64))
+TARGETS+= $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
 
 
 all: $(SOURCES) $(TARGETS)
@@ -147,11 +150,14 @@ $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DI
 $(LIB_DIR)/ids_put_slice.mexa64:     $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DIR)/nan_to_empty_ids.o
 $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o
 $(LIB_DIR)/ids_put_non_timed.mexa64: $(BUILD_DIR)/delete_ids.o
-$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o | $(LIB_DIR) $(LIB_DIR)/libimas_mex.so
-	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS) -Wl,-rpath,$(realpath $(CURDIR)/$(LIB_DIR)) -L $(realpath $(CURDIR)/$(LIB_DIR)) -limas_mex
+$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o | $(LIB_DIR) $(LIB_DIR)/libimas-mex.so
+	$(CC) $(LDFLAGS) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -limas-mex $(LIBS)
 
-$(LIB_DIR)/libimas_mex.so: $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FILES:.c=.o)) | $(LIB_DIR)
-	$(CC) -g -o $@ -shared -Wl,-soname,$(notdir $@).$(IMAS_MAJOR).$(IMAS_MINOR) $^
+$(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM): $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FILES:.c=.o)) | $(LIB_DIR)
+	$(CC) -g -o $@ -shared -Wl,-soname,$(notdir $@) $^
+
+$(LIB_DIR)/libimas-mex.so: $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
+	ln -sf $(notdir $<) $@
 
 $(BUILD_DIR)/c_mexapi_version.o: $(MATLAB)/extern/version/c_mexapi_version.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $(@)
@@ -168,13 +174,10 @@ $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c  $(addprefix $(SRC_DIR)/
 
 install: all pkgconfig_install
 	$(mkdir_p) $(libdir)
-	$(INSTALL_DATA) $(filter %.mexa64,$(TARGETS)) $(libdir)	
-	$(foreach sofile,$(filter %.so,$(TARGETS)),\
-		$(INSTALL_DATA) -T $(sofile) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO); \
-		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR) ;\
-		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)).$(IMAS_MAJOR) ;\
-		ln -svfT $(notdir $(sofile)).$(IMAS_MAJOR).$(IMAS_MINOR).$(IMAS_MICRO) $(libdir)/$(notdir $(sofile)) ;\
-	)
+	$(INSTALL_DATA) $(filter %.mexa64,$(TARGETS)) $(prefix)/mex
+	$(INSTALL_DATA) $($(filter %.mexa64,$(TARGETS)):.mexa64=.m) $(prefix)/mex	
+	$(INSTALL_DATA) -T $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so.$(MEX_SO_NUM)
+	ln -sf libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so
 
 sources_install: $(SOURCES)
 	$(mkdir_p) $(datadir)/src/mexinterface/ids
