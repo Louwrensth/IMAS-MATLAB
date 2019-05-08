@@ -8,13 +8,14 @@ classdef imas_perf_tests < matlab.perftest.TestCase
 
   properties (ClassSetupParameter)
     useCache = struct('yes',true,'no',false);
-    ntime = struct('small',3,'medium',96,'large',3072)
+    ntime = struct('small',3,'medium',24,'large',192)
   end
 
   %% Class-level setup
   methods (TestClassSetup)
     function createIMASDb(testCase, useCache, ntime)
-      idx = imas_create_env('ids',9999,9999,0,0,'g2amerle','test','3');
+      run = imas_perf_tests.getRunNumber(ntime);
+      idx = imas_create_env('ids',9999,run,0,0,'g2amerle','test','3');
       testCase.addTeardown(@imas_close,idx);
       if useCache
         imas_enable_mem_cache(idx);
@@ -40,7 +41,6 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   methods (Test)
 
     function Put(testCase, IDSname)
-      ids = testCase.TestData.IDS.(IDSname);
       ids_put(testCase.TestData.idx, IDSname, testCase.TestData.IDS.(IDSname));
     end
 
@@ -49,5 +49,21 @@ classdef imas_perf_tests < matlab.perftest.TestCase
     end
 
   end
-
+  
+  %% Static Method Block
+  methods (Static)
+    
+    function run = getRunNumber(ntime)
+      newLL = str2num(strtok(getenv('UAL_VERSION'),'.')) > 3;
+      base = 0+10*~newLL;
+      switch ntime
+        case 3,    number = 1;
+        case 24,   number = 2;
+        case 192,  number = 3;
+        otherwise, number = 9;
+      end
+      run = base + number;
+    end
+    
+  end
 end
