@@ -2,7 +2,12 @@ build
 lib
 src/ids
 matlab/IDS_list.m
-*~
-/doc/
+tests/*.o
+tests/*.mod
 tests/run_perf_f90
 tests/imas_mex_c_workflow_tests
+tests/IDS_test_f90.f90
+tests/IDS_list.f90
+tests/IDS_list.h
+*~
+/doc/
