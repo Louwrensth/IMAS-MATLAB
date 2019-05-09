@@ -45,6 +45,7 @@
 	    if (params.use_cell_array_for_array_of_structures) {
 	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
 	    return -1;
+	    if (data != NULL) {
 	    cast_status = castStructToCell(&amp;data);
 	    if (cast_status &lt; 0) {
 	    strncpy(mex_errmsgid,"cast_failed",12);
@@ -54,11 +55,13 @@
 	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
 	    return -1;
 	    }
+	    }
 	  </xsl:when>
 	  <xsl:when test="$method_name='cell_to_struct'">
 	    if (!params.use_cell_array_for_array_of_structures) {
 	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
 	    return -1;
+	    if (data != NULL) {
 	    cast_status = castCellToStruct(&amp;data);
 	    if (cast_status &lt; 0) {
 	    strncpy(mex_errmsgid,"cast_failed",12);
@@ -67,6 +70,7 @@
 	    }
 	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
 	    return -1;
+	    }
 	    }
 	  </xsl:when>
 	</xsl:choose>
@@ -89,6 +93,7 @@
 	    if (!params.use_cell_array_for_array_of_structures) {
 	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
 	    return -1;
+	    if (data != NULL) {
 	    cast_status = castStructToCell(&amp;data);
 	    if (cast_status &lt; 0) {
 	    strncpy(mex_errmsgid,"cast_failed",12);
@@ -98,11 +103,13 @@
 	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
 	    return -1;
 	    }
+	    }
 	  </xsl:when>
 	  <xsl:when test="$method_name='cell_to_struct'">
 	    if (params.use_cell_array_for_array_of_structures) {
 	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
 	    return -1;
+	    if (data != NULL) {
 	    cast_status = castCellToStruct(&amp;data);
 	    if (cast_status &lt; 0) {
 	    strncpy(mex_errmsgid,"cast_failed",12);
@@ -111,6 +118,7 @@
 	    }
 	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
 	    return -1;
+	    }
 	    }
 	  </xsl:when>
 	</xsl:choose>

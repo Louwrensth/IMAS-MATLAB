@@ -116,6 +116,7 @@ int data_to_mxArray(int read_status, int datatype, int dim, void *array, int *si
 	dims[i] = (mwSize) size[i];
 	numel = numel * dims[i];
       }
+      if (!numel) ndims=0; // True empty arrays
       *data = mxCreateNumericArray(ndims, dims, classid, ComplexFlag);
       // integer and double data map directly to MATLAB types
       memcpy(mxGetData(*data), array, numel * dsize);

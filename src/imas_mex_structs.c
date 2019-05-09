@@ -174,20 +174,20 @@ int begin_dataTree_read(char * name) {
 int begin_dataTree_write(char * name, int * isEmpty) {
 
   mxArray * data;
+  int isStruct;
   struct data_struct * child;
 
   if (get_data_from_dataTree(name, &data) < 0)
     return -1;
 
-  if (!mxIsStruct(data) || 
-      ( mxIsEmpty(data) && params.error_on_missing_field) || 
-      (!mxIsEmpty(data) && !mxIsScalar(data))) {
+  *isEmpty = (data == NULL) || mxIsEmpty(data);
+  isStruct = (data != NULL) && mxIsStruct(data) && mxIsScalar(data);
+
+  if (!isStruct && (!*isEmpty || params.error_on_missing_field)) {
     strncpy(mex_errmsgid,"invalid_structure",18);
     snprintf(mex_errmsgtxt,MAXERRMSGTXTSIZE,"Value of field %s is invalid",name);
     return -1;
   }
-
-  *isEmpty = mxIsEmpty(data);
 
   child = malloc(sizeof(struct data_struct));
   if (!dataTree) {
@@ -260,7 +260,7 @@ int begin_dataTree_array_write(char * name, int * aosArraySize) {
   if (get_data_from_dataTree(name, &data) < 0)
     return -1;
 
-  if (!mxIsEmpty(data) && 
+  if ((data != NULL && !mxIsEmpty(data)) && 
       ( params.use_cell_array_for_array_of_structures && !mxIsCell(data)) ||
       (!params.use_cell_array_for_array_of_structures && !mxIsStruct(data))) {
     strncpy(mex_errmsgid,"invalid_struct_array",21);
@@ -268,7 +268,7 @@ int begin_dataTree_array_write(char * name, int * aosArraySize) {
     return -1;
   }
 
-  *aosArraySize = mxGetNumberOfElements(data);
+  *aosArraySize = (data == NULL) ? 0 : mxGetNumberOfElements(data);
 
   child = malloc(sizeof(struct data_struct));
   if (!dataTree) {
@@ -317,12 +317,12 @@ int end_dataTree_array_action() {
   }
 
   if (params.use_cell_array_for_array_of_structures) {
-    if (!mxIsCell(dataTree->data)) { // We have already iterated on this array
+    if (dataTree->data!=NULL && !mxIsCell(dataTree->data)) { // We have already iterated on this array
       parent = dataTree->parent;
       free(dataTree);
       dataTree = parent;
     }
-    if (!mxIsCell(dataTree->data))
+    if (dataTree->data!=NULL && !mxIsCell(dataTree->data))
       return -1;
   }
   parent = dataTree->parent;
@@ -488,7 +488,7 @@ int slice_dataTree_array(char * name, mwSize index) {
 
   if (get_data_from_dataTree(name, &array_old) < 0)
     return -1;
-  aosArraySize = mxGetNumberOfElements(array_old);
+  aosArraySize = (array_old == NULL) ? 0 : mxGetNumberOfElements(array_old);
 
   if (index < 0 || index > aosArraySize-1) {
     strncpy(mex_errmsgid,"invalid_index",14);
@@ -540,7 +540,7 @@ int replicate_dataTree_array(char * name, mwSize aosArraySize) {
   if (get_data_from_dataTree(name, &array_old) < 0)
     return -1;
 
-  if (mxGetNumberOfElements(array_old) > 1) {
+  if (array_old == NULL || mxGetNumberOfElements(array_old) > 1) {
     strncpy(mex_errmsgid,"invalid_array",14);
     strncpy(mex_errmsgtxt,"Invalid original array size in replicate_dataTree_array",56);
     return -1;
