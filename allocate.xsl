@@ -17,6 +17,7 @@
 <!--=================================================-->
 
 <xsl:template match="field" mode="ALLOCATE">
+<xsl:param name="scalar_aos"/>
 
 <xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
 
@@ -24,8 +25,22 @@
 <xsl:choose>
   <!--========== Array of structure ===========-->
     <xsl:when test = "@data_type = 'struct_array'">
-      if (begin_dataTree_array_read("<xsl:value-of select="@name"/>",0) &lt; 0)
-      return -1;
+      <xsl:choose>
+	<xsl:when test="$scalar_aos">
+	  if (begin_dataTree_array_read("<xsl:value-of select="@name"/>",1) &lt; 0)
+	  return -1;
+	  if (iterate_dataTree_array(0) &lt; 0) {
+	  return -1;
+	  }
+	  <xsl:apply-templates select = "field" mode = "ALLOCATE">
+	    <xsl:with-param name="scalar_aos" select="$scalar_aos"/>
+	  </xsl:apply-templates>
+	</xsl:when>
+	<xsl:otherwise>
+	  if (begin_dataTree_array_read("<xsl:value-of select="@name"/>",0) &lt; 0)
+	  return -1;
+	</xsl:otherwise>
+      </xsl:choose>
       // Finished processing array of structure <xsl:value-of select="@name"/>
       if (end_dataTree_array_action() &lt; 0)
       return -1;
@@ -35,7 +50,9 @@
     <xsl:when test="@data_type='structure'">
       if (begin_dataTree_read("<xsl:value-of select="@name"/>") &lt; 0)
       return -1;
-      <xsl:apply-templates select="field" mode="ALLOCATE"/>
+      <xsl:apply-templates select = "field" mode = "ALLOCATE">
+	<xsl:with-param name="scalar_aos" select="$scalar_aos"/>
+      </xsl:apply-templates>
       // Finished processing structure <xsl:value-of select="@name"/>
       if (end_dataTree_action() &lt; 0)
       return -1;

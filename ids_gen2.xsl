@@ -24,16 +24,16 @@
 <!--================================================-->
 
 <xsl:template match = "/IDSs">
- <!-- First Version: Scalar AOS -->
- <xsl:result-document href="src/ids/ids_gen.c.in" standalone="yes" method="text">
+ <!-- Second Version: Empty AOS -->
+ <xsl:result-document href="src/ids/ids_gen2.c.in" standalone="yes" method="text">
 /*
- * ids_gen.c -  initialise IDS in MATLAB External Interfaces
+ * ids_gen2.c -  initialise IDS in MATLAB External Interfaces
  *
- *		ids = ids_gen(IDSname)
+ *		ids = ids_gen2(IDSname)
  *
  * This is a MEX file for MATLAB.
 */
-#include "ids_gen.h"
+#include "ids_gen2.h"
 #include "imas_mex_utils.h"
 
 void mexFunction(int nlhs, mxArray *plhs[],
@@ -41,13 +41,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
 {
   // Check for one input arguments  
   if(nrhs != 1) {
-    mexErrMsgIdAndTxt("IMAS:ids_gen:nargin",
+    mexErrMsgIdAndTxt("IMAS:ids_gen2:nargin",
                       "One input required.");
   }
 
   // make sure IDSname is a string
   if( !mxIsChar(prhs[0]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_gen:notChar",
+      mexErrMsgIdAndTxt("IMAS:ids_gen2:notChar",
                         "Input IDSname must be a string.");
   }
   // Get the value of IDSname
@@ -57,7 +57,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   // Check for one output argument
   if(nlhs > 1) {
-    mexErrMsgIdAndTxt("IMAS:ids_gen:nargout",
+    mexErrMsgIdAndTxt("IMAS:ids_gen2:nargout",
                       "One output maximum required.");
   }
   
@@ -65,46 +65,44 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = IDSname;
 
   // Declare Function Pointer
-  int(*gen)(mxArray**) = NULL;
+  int(*gen2)(mxArray**) = NULL;
   // Assign pointer based on IDS name
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name">gen</xsl:with-param>
+    <xsl:with-param name="function_name">gen2</xsl:with-param>
   </xsl:apply-templates>
   // Error if there was no match
-  mexErrMsgIdAndTxt("IMAS:ids_gen:unknown_ids",
+  mexErrMsgIdAndTxt("IMAS:ids_gen2:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   
   // Clean-up previous errors
   mex_errmsgid[0] = '\000';
   mex_errmsgtxt[0] = '\000';
   // Call function
-  int err = gen(&amp;plhs[0]);
+  int err = gen2(&amp;plhs[0]);
   if (err &lt; 0 )
-  my_mexErrMsgIdAndTxt(err, "IMAS:ids_gen:");
+  my_mexErrMsgIdAndTxt(err, "IMAS:ids_gen2:");
   return;
 
 }
  </xsl:result-document>
- <xsl:result-document href="src/ids/ids_gen.h.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_gen2.h.in" standalone="yes" method="text">
   #include "mex.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'int gen_'"/>
+    <xsl:with-param name="prefix" select="'int gen2_'"/>
     <xsl:with-param name="suffix" select="'(mxArray** ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
- <xsl:result-document href="src/ids/gen_ids.c.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/gen2_ids.c.in" standalone="yes" method="text">
    #include "imas_mex_utils.h"
    <xsl:for-each select="IDS">
-     int gen_<xsl:value-of select="@name"/>(mxArray** ids)
+     int gen2_<xsl:value-of select="@name"/>(mxArray** ids)
      {
      int status;
      void *array;
      mxArray* data;
      if (init_dataTree_read() &lt; 0)
      return -1;
-     <xsl:apply-templates select="field" mode="ALLOCATE">
-       <xsl:with-param name="scalar_aos" select="'yes'"/>
-     </xsl:apply-templates>
+     <xsl:apply-templates select="field" mode="ALLOCATE"/>
      if (get_data_from_dataTree(NULL, ids) &lt; 0)
      return -1;
      return 0;
