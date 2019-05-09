@@ -15,18 +15,19 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   methods (TestClassSetup)
     function createIMASDb(testCase, useCache, ntime)
       run = imas_perf_tests.getRunNumber(ntime);
-      idx = imas_create_env('ids',9999,run,0,0,'g2amerle','test','3');
+      idxr = imas_open_env('ids',9999,run,0,0,'g2amerle','test','3');
+      idxw = imas_create_env('ids',9999,run+9900,'g2amerle','test','3');
       testCase.addTeardown(@imas_close,idx);
       if useCache
         imas_enable_mem_cache(idx);
         testCase.addTeardown(@imas_disable_mem_cache,idx);
         testCase.addTeardown(@imas_discard_mem_cache,idx);
       end
-      testCase.TestData.idx = idx;
+      testCase.TestData.idxr = idxr;
+      testCase.TestData.idxw = idxw;
       %
       for name = IDS_list.'
-        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},ntime,false);
-        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},ntime,true );
+        testCase.TestData.IDS.(name{1}) = ids_rand(name{1},ntime,false);
       end
       %
     end
@@ -41,11 +42,11 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   methods (Test)
 
     function Put(testCase, IDSname)
-      ids_put(testCase.TestData.idx, IDSname, testCase.TestData.IDS.(IDSname));
+      ids_put(testCase.TestData.idxw, IDSname, testCase.TestData.IDS.(IDSname));
     end
 
     function Get(testCase, IDSname)
-      ids = ids_get(testCase.TestData.idx, IDSname);
+      ids = ids_get(testCase.TestData.idxr, IDSname);
     end
 
   end
