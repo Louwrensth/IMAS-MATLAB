@@ -9,16 +9,76 @@ The code generation of methods for IDSs has been adapted from the one developed 
 Since MATLAB uses column-major order for arrays (i.e. as in FORTRAN), no re-ordering of the data in arrays is necessary. However trailing singleton dimensions are never shown for multi-dimensional arrays (at least 3-dimensional), hence ones have to be added if needed when dealing with this type of arrays.
 
 
-2. Differences with the MATLAB interface 
+2. Notes
 
-Here only the differences with the new lowlevel version of the MATLAB interface are discussed
+   - To accomodate compatibility with the present MATLAB interface options have been implemented to convert fields of type INT to double value and to replace NaN values by EMPTY_FLOAT both in get and put methods.
 
-  - So far STR_1D are implemented as char matrices with each column corresponding to a different array element. This causes padding of the smaller strings with spaces. The MATLAB interface uses cell arrays of strings for this purpose which allevaites this padding problem. The documentation specifies 'char array' for STR_1D which is probably not specific enough.
+   - Treatment of strings requires casting from the intrinsic char type in C (8 bits) and the mxChar type used in MATLAB character arrays (16 bits). Additionally, string vectors (STR_1D) are represented using cell array of strings which differs from the AL lowlevel representation using char matrices.
 
-  - STR_0D are represented as column vectors of char to reflect the C representation in the lowlevel library. This however is in contradiction with MATLAB common use where row vectors are used (this is also true for STR_1D where common use would have row vectors as the basic elements. The MATLAB interface uses the more classic MATLAB representation. [This can be easily changed by calling transpose on such elements.]
+3. List of functions
 
-  - INT scalars or arrays are implemented as int32 arrays. The MATLAB interface uses double arrays. This is in contradiction with the documentation which specifies 'int or int array' (which does not correspond to any built-in MATLAB class).
+The standard functions have been implemented:
+    - Functions to open/create/close a pulse file
+        + imas_open_env
+        + imas_open_public
+        + imas_create_env
+        + imas_create_public
+        + imas_close
+    - Function to query the backend in use
+        + imas_get_backendID
+    - Functions to read/write IDSs
+        + ids_delete
+        + ids_get
+        + ids_get_slice
+        + ids_put
+        + ids_put_slice
+    - Function to initialize an IDS structure
+        + ids_gen
 
-  - For empty array of structures in get methods, empty cell arrays are returned. The MATLAB interface returns a cell array of size 1 with uninitialized fields (EMPTY_INT, EMPTY_FLOAT, empty arrays, except for children aos which follow the same rule), this is in contradiction with the documentation. NB: In the MATLAB interface, this seems to be a choice of the implementation of the java to MATLAB converters, and correcting this would also mean that empty arrays are created in ids_gen.
+The following additional functions are also provided
+    - Functions to open/create/close a pulse file (requires fiddling with the environment)
+        + imas_open
+        + imas_create
+    - Functions to query/modify the global parameters for the MEX interface (see 4.)
+        + imas_get_mex_params
+        + imas_set_mex_params
+    - Converters
+        + ids_int_to_double
+        + ids_double_to_int
+        + ids_empty_to_nan
+        + ids_nan_to_empty
+        + ids_cell_to_struct
+        + ids_struct_to_cell
+    - Functions to initialize an IDS structure
+        + ids_gen2            (provides empty arrays of structures, whereas ids_gen provides scalar arrays of structures)
+        + ids_allocate        (for allocating arrays of structures)
+    - Function to generate an IDS structure with random field values (for tests only)
+        + ids_rand
 
-  - No ids_gen function has been implemented so far.
+4. Parameters
+
+List of current valid parameters:
+    - get_int_as_double                         (default:0)
+        In get methods, convert integer fields to double.
+    - put_int_from_double                       (default:1)
+        In put methods, allows to provide double values for integer fields.
+    - get_empty_as_nan                          (default:0)
+        In get methods, for fields of type float replace EMPTY_FLOAT values by NaNs.
+    - put_empty_from_nan                        (default:0)
+        In put methods, for fields of type float replace NaNs by EMPTY_FLOAT.
+    - use_cell_array_for_array_of_structures    (default:1)
+        If enabled arrays of structures will be represented using cell arrays of structes (default), otherwise using structure arrays.
+    - convert_whole_ids                         (default:0)
+        If disabled the conversions (int <-> double) and (EMPTY_FLOAT <-> NaN) will be performed just before/after  calling the lowlevel write/read routines, otherwise they will be performed in one block.
+    - error_on_missing_field                    (default:1)
+        If enabled put methods will trigger an error if any field is missing from the input IDS.
+    - verbosity                                 (default:0)
+        Controls the verbosity level of the interface, higher means more verbose. Minimum value is 0, maximum value is 4.
+
+5. TODO
+
+   - Print context info on error
+   - Decide on returning 0 (success) or status of ual_end_action
+   - Decide on how to assign error codes for local (mexinterface) functions
+   - Minimize use of memcpy in get methods (check that no error appears when mex are cleared)
+   - Enable/Disable memory backend from MATLAB
