@@ -75,7 +75,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
            "Unknown IDS name: %s", IDSname);
   
   // Clean-up previous errors
-  mex_errmsgid[0] = '\000';
+  mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
   // Call function
   int err = gen2(&amp;plhs[0]);

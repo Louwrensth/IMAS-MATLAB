@@ -48,7 +48,7 @@
 	    if (data != NULL) {
 	    cast_status = castStructToCell(&amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace structs by cell for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	    }
@@ -64,7 +64,7 @@
 	    if (data != NULL) {
 	    cast_status = castCellToStruct(&amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace cell by structs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	    }
@@ -96,7 +96,7 @@
 	    if (data != NULL) {
 	    cast_status = castStructToCell(&amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace structs by cell for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	    }
@@ -112,7 +112,7 @@
 	    if (data != NULL) {
 	    cast_status = castCellToStruct(&amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace cell by structs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	    }

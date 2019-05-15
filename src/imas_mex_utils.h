@@ -36,7 +36,7 @@ struct imas_mex_fieldInfo {
   int dim;
 };
 
-extern char mex_errmsgid[MAXERRMSGIDSIZE];
+extern const char * mex_errmsgid;
 extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
 extern int msglen;
 

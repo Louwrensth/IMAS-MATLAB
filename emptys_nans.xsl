@@ -66,7 +66,7 @@
 	    if (mxIsNumeric(data) &amp;&amp; mxIsDouble(data)) {
 	    cast_status = castEmptyToNaN((mxArray **) &amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace EMPTY_DOUBLEs by NaNs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	  </xsl:when>
@@ -74,7 +74,7 @@
 	    if (mxIsNumeric(data) &amp;&amp; mxIsDouble(data)) {
 	    cast_status = castNaNToEmpty((mxArray **) &amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace NaNs by EMPTY_DOUBLEs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	  </xsl:when>

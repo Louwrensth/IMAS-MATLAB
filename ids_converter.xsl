@@ -132,7 +132,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   free(IDSpathcopy);
   
   // Clean-up previous errors
-  mex_errmsgid[0] = '\000';
+  mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
   // Call function
   int err = <xsl:value-of select="$conversion"/>(plhs[0]);

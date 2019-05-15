@@ -5,7 +5,7 @@ const char EMPTY_CHAR = '\0';
 const int EMPTY_INT = -999999999;
 const double EMPTY_DOUBLE = -9.0E40;
 
-char mex_errmsgid[MAXERRMSGIDSIZE];
+const char * mex_errmsgid;
 char mex_errmsgtxt[MAXERRMSGTXTSIZE];
 int msglen = 0;
 
@@ -237,7 +237,7 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
 	data_old = *data;
 	cast_status = castInt32ToDouble(data);
 	if (cast_status < 0) {
-	  strncpy(mex_errmsgid,"cast_failed",12);
+	  mex_errmsgid = "cast_failed";
 	  snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to double", field->fieldPath);
 	  return -1;
 	}
@@ -249,7 +249,7 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
 	data_old = *data;
 	cast_status = castEmptyToNaN(data);
 	if (cast_status < 0) {
-	  strncpy(mex_errmsgid,"cast_failed",12);
+	  mex_errmsgid = "cast_failed";
 	  snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to replace EMPTY_FLOATs by NaNs for field %s", field->fieldPath);
 	  return -1;
 	}
@@ -263,7 +263,7 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
     data_old = *data;
     cast_status = castCharToCell(data);
     if (cast_status < 0) {
-      strncpy(mex_errmsgid,"cast_failed",12);
+      mex_errmsgid = "cast_failed";
       snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to cell", field->fieldPath);
       return -1;
     }
@@ -293,7 +293,7 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
 	  if (mxIsNumeric(data) && mxIsDouble(data)) {
 	    cast_status = castDoubleToInt32((mxArray **) &data);
 	    if (cast_status < 0) {
-	      strncpy(mex_errmsgid,"cast_failed",12);
+	      mex_errmsgid = "cast_failed";
 	      snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to int32", field->fieldPath);
 	      return -1;
 	    }
@@ -305,7 +305,7 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
 	  if (mxIsNumeric(data) && mxIsDouble(data)) {
 	    cast_status = castNaNToEmpty((mxArray **) &data);
 	    if (cast_status < 0) {
-	      strncpy(mex_errmsgid,"cast_failed",12);
+	      mex_errmsgid = "cast_failed";
 	      snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to replace NaNs by EMPTY_FLOATs for field %s", field->fieldPath);
 	      return -1;
 	    }
@@ -318,7 +318,7 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
       if (mxIsCell(data)) {
 	cast_status = castCellToChar((mxArray **) &data);
 	if (cast_status < 0) {
-	  strncpy(mex_errmsgid,"cast_failed",12);
+	  mex_errmsgid = "cast_failed";
 	  snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to char", field->fieldPath);
 	  return -1;
 	}

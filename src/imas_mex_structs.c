@@ -35,7 +35,7 @@ int init_dataTree_read() {
   
   dataTree = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in init_dataTree_read",36);
     return -1;
   }
@@ -58,7 +58,7 @@ int init_dataTree_write(mxArray * data) {
   
   dataTree = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in init_dataTree_write",37);
     return -1;
   }
@@ -84,7 +84,7 @@ int init_dataTree_array_read(int aosArraySize) {
   
   dataTree = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in init_dataTree_write",37);
     return -1;
   }
@@ -123,7 +123,7 @@ int init_dataTree_array_write(mxArray * data, int * aosArraySize) {
   
   dataTree = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in init_dataTree_write",37);
     return -1;
   }
@@ -154,7 +154,7 @@ int begin_dataTree_read(char * name) {
 
   child = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in begin_dataTree_read",37);
     return -1;
   }
@@ -184,14 +184,14 @@ int begin_dataTree_write(char * name, int * isEmpty) {
   isStruct = (data != NULL) && mxIsStruct(data) && mxIsScalar(data);
 
   if (!isStruct && (!*isEmpty || params.error_on_missing_field)) {
-    strncpy(mex_errmsgid,"invalid_structure",18);
+    mex_errmsgid = "invalid_structure";
     snprintf(mex_errmsgtxt,MAXERRMSGTXTSIZE,"Value of field %s is invalid",name);
     return -1;
   }
 
   child = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in begin_dataTree_write",38);
     return -1;
   }
@@ -235,7 +235,7 @@ int begin_dataTree_array_read(char * name, int aosArraySize) {
 
   child = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in begin_dataTree_array_read",53);
     return -1;
   }
@@ -263,7 +263,7 @@ int begin_dataTree_array_write(char * name, int * aosArraySize) {
   if ((data != NULL && !mxIsEmpty(data)) && 
       ( params.use_cell_array_for_array_of_structures && !mxIsCell(data)) ||
       (!params.use_cell_array_for_array_of_structures && !mxIsStruct(data))) {
-    strncpy(mex_errmsgid,"invalid_struct_array",21);
+    mex_errmsgid = "invalid_struct_array";
     snprintf(mex_errmsgtxt,MAXERRMSGTXTSIZE,"Value of field %s is invalid",name);
     return -1;
   }
@@ -272,7 +272,7 @@ int begin_dataTree_array_write(char * name, int * aosArraySize) {
 
   child = malloc(sizeof(struct data_struct));
   if (!dataTree) {
-    strncpy(mex_errmsgid,"out_of_memory",14);
+    mex_errmsgid = "out_of_memory";
     strncpy(mex_errmsgtxt,"Out of memory in begin_dataTree_array_write",54);
     return -1;
   }
@@ -294,7 +294,7 @@ int end_dataTree_action() {
   struct data_struct * parent;
 
   if (dataTree == NULL) {
-    strncpy(mex_errmsgid,"invalid_dataTree",14);
+    mex_errmsgid = "invalid_dataTree";
     strncpy(mex_errmsgtxt,"Invalid dataTree in end_dataTree_action",40);
     return -1;
   }
@@ -311,7 +311,7 @@ int end_dataTree_array_action() {
   struct data_struct * parent;
 
   if (dataTree == NULL) {
-    strncpy(mex_errmsgid,"invalid_dataTree",14);
+    mex_errmsgid = "invalid_dataTree";
     strncpy(mex_errmsgtxt,"Invalid dataTree in end_dataTree_array_action",46);
     return -1;
   }
@@ -341,7 +341,7 @@ int iterate_dataTree_array(size_t index) {
   mxArray * data;
   
   if (dataTree == NULL) {
-    strncpy(mex_errmsgid,"invalid_dataTree",14);
+    mex_errmsgid = "invalid_dataTree";
     strncpy(mex_errmsgtxt,"Invalid dataTree in iterate_dataTree_array",43);
     return -1;
   }
@@ -353,13 +353,13 @@ int iterate_dataTree_array(size_t index) {
       dataTree = parent;
     }
     if (!mxIsCell(dataTree->data)) {
-      strncpy(mex_errmsgid,"invalid_dataTree",14);
+      mex_errmsgid = "invalid_dataTree";
       strncpy(mex_errmsgtxt,"dataTree is not a cell in iterate_dataTree_array",49);
       return -1;
     }
 
     if (index < 0 || index > dataTree->size-1) {
-      strncpy(mex_errmsgid,"invalid_index",14);
+      mex_errmsgid = "invalid_index";
       strncpy(mex_errmsgtxt,"Invalid index in iterate_dataTree_array",40);
       return -1;
     }
@@ -367,14 +367,14 @@ int iterate_dataTree_array(size_t index) {
     data = mxGetCell(dataTree->data, index);
     
     if (data == NULL) {
-      strncpy(mex_errmsgid,"invalid_AoS_element",20);
+      mex_errmsgid = "invalid_AoS_element";
       snprintf(mex_errmsgtxt,MAXERRMSGTXTSIZE,"Unable to retrieve element %d in data AoS",index);
       return -1;
     }
 
     child = malloc(sizeof(struct data_struct));
     if (!dataTree) {
-      strncpy(mex_errmsgid,"out_of_memory",14);
+      mex_errmsgid = "out_of_memory";
       strncpy(mex_errmsgtxt,"Out of memory in iterate_dataTree_array",40);
       return -1;
     }
@@ -391,7 +391,7 @@ int iterate_dataTree_array(size_t index) {
   } else {
 
     if (index < 0 || index > dataTree->size-1) {
-      strncpy(mex_errmsgid,"invalid_index",14);
+      mex_errmsgid = "invalid_index";
       strncpy(mex_errmsgtxt,"Invalid index in iterate_dataTree_array",40);
       return -1;
     }
@@ -415,7 +415,7 @@ int get_data_from_dataTree(char * name, mxArray ** data) {
 
     if (ifield < 0) {
       if (params.error_on_missing_field) {
-	strncpy(mex_errmsgid,"invalid_field",14);
+	mex_errmsgid = "invalid_field";
 	snprintf(mex_errmsgtxt, 26+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to retrieve field %s", name);
 	return -1;
       } else {
@@ -439,7 +439,7 @@ int put_data_in_dataTree(char * name, mxArray * data) {
       ifield = mxAddField(dataTree->data, name);
 
       if (ifield < 0) {
-        strncpy(mex_errmsgid,"setfield_failed",14);
+        mex_errmsgid = "setfield_failed";
         snprintf(mex_errmsgtxt, 34+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to add field %s to structure", name);
         return -1;
       }
@@ -481,7 +481,7 @@ int slice_dataTree_array(char * name, mwSize index) {
   int ifield;
 
   if (dataTree == NULL) {
-    strncpy(mex_errmsgid,"invalid_dataTree",14);
+    mex_errmsgid = "invalid_dataTree";
     strncpy(mex_errmsgtxt,"Invalid dataTree in slice_dataTree_array",41);
     return -1;
   }
@@ -491,7 +491,7 @@ int slice_dataTree_array(char * name, mwSize index) {
   aosArraySize = (array_old == NULL) ? 0 : mxGetNumberOfElements(array_old);
 
   if (index < 0 || index > aosArraySize-1) {
-    strncpy(mex_errmsgid,"invalid_index",14);
+    mex_errmsgid = "invalid_index";
     strncpy(mex_errmsgtxt,"Invalid index in slice_dataTree_array",38);
     return -1;
   }
@@ -507,7 +507,7 @@ int slice_dataTree_array(char * name, mwSize index) {
     nfields = mxGetNumberOfFields(array_old);    
     for (ifield=0; ifield<nfields; ifield++) {
       if (mxAddField(array, mxGetFieldNameByNumber(array_old, ifield)) != ifield) {
-	strncpy(mex_errmsgid,"invalid_field",14);
+	mex_errmsgid = "invalid_field";
 	strncpy(mex_errmsgtxt,"New and old field numbers do not match in slice_dataTree_array",63);
 	return -1;
       }
@@ -532,7 +532,7 @@ int replicate_dataTree_array(char * name, mwSize aosArraySize) {
   int ifield;
 
   if (dataTree == NULL) {
-    strncpy(mex_errmsgid,"invalid_dataTree",14);
+    mex_errmsgid = "invalid_dataTree";
     strncpy(mex_errmsgtxt,"Invalid dataTree in replicate_dataTree_array",45);
     return -1;
   }
@@ -541,7 +541,7 @@ int replicate_dataTree_array(char * name, mwSize aosArraySize) {
     return -1;
 
   if (array_old == NULL || mxGetNumberOfElements(array_old) > 1) {
-    strncpy(mex_errmsgid,"invalid_array",14);
+    mex_errmsgid = "invalid_array";
     strncpy(mex_errmsgtxt,"Invalid original array size in replicate_dataTree_array",56);
     return -1;
   }
@@ -635,12 +635,12 @@ int getHomogeneousTime(int *homogeneousTime)
   const mxArray *data = NULL;
   status = getSimpleFieldStruct("ids_properties/homogeneous_time", &data);
   if (status < 0 || data == NULL) {
-    strncpy(mex_errmsgid,"homogeneous_time_required",26);
+    mex_errmsgid = "homogeneous_time_required";
     strncpy(mex_errmsgtxt,"ids_properties%homogeneous_time is not filled",46);
     return -1;
   }
   if (!mxIsNumeric(data) || !mxIsScalar(data)) {
-    strncpy(mex_errmsgid,"invalid_homogeneous_time",26);
+    mex_errmsgid = "invalid_homogeneous_time";
     strncpy(mex_errmsgtxt,"ids_properties%homogeneous_time is not a numeric scalar",56);
     return -1;
   }

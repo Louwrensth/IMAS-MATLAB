@@ -66,7 +66,7 @@
 	    if (mxIsNumeric(data) &amp;&amp; mxIsDouble(data)) {
 	    cast_status = castDoubleToInt32((mxArray **) &amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to cast field <xsl:value-of select="@path"/> to int32", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	  </xsl:when>
@@ -74,7 +74,7 @@
 	    if (mxIsNumeric(data) &amp;&amp; mxIsInt32(data)) {
 	    cast_status = castInt32ToDouble((mxArray **) &amp;data);
 	    if (cast_status &lt; 0) {
-	    strncpy(mex_errmsgid,"cast_failed",12);
+	    mex_errmsgid = "cast_failed";
 	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to cast field <xsl:value-of select="@path"/> to double", MAXERRMSGTXTSIZE-msglen);
 	    return -1;
 	  </xsl:when>
