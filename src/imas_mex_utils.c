@@ -79,7 +79,7 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
   return -1; // TODO: Should we use a unique status ID?
 }
 
-int data_to_mxArray(int read_status, int datatype, int dim, void *array, int *size, mxArray **data)
+int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data)
 {
   int status = -1;
   mxClassID classid;
@@ -94,20 +94,9 @@ int data_to_mxArray(int read_status, int datatype, int dim, void *array, int *si
   status = get_data_info(datatype, dim, &classid, &ComplexFlag, &dsize, &array);
   if (status < 0)
     return status;
-  if (!read_status || dim == 0) {
+  if (dim == 0 || size == NULL || size[0] > 0) {
     if (datatype != CHAR_DATA) {
       //           **** NUMERIC DATA ****
-      // Assign default value for scalars
-      if (read_status) {
-	if (datatype == INTEGER_DATA)
-	  *((int *) array) = EMPTY_INT;
-	else if (datatype == DOUBLE_DATA)
-	  *((double *) array) = EMPTY_DOUBLE;
-	/*
-	  else if (datatype == COMPLEX_DATA)
-	  *((double *) array) = EMPTY_COMPLEX;
-	  */
-      }
       // Avoid creating empty arrays for scalars
       ndims = (dim > 0) ? dim : 1;
       dims[0] = 1;
@@ -215,7 +204,6 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
   mxArray * data_old;
   void * array = NULL;
   int dims[MAXDIM];
-  int numDims;
 
   int i;
   double retTime;
@@ -233,7 +221,7 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
 
   read_status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
 
-  status = data_to_mxArray(read_status, field->datatype, field->dim, array, dims, data);
+  status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
 
   if (read_status < 0)
     return 0;

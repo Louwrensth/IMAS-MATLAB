@@ -25,15 +25,15 @@ int end_dataTree_array_action();
 
 int iterate_dataTree_array(size_t index);
 
-int slice_dataTree_array(char * name, mwSize index);
-
-int replicate_dataTree_array(char * name, mwSize aosArraySize);
-
 int get_data_from_dataTree(char * name, mxArray ** data);
 
 int put_data_in_dataTree(char * name, mxArray * data);
 
 int replace_data_in_dataTree(char * name, mxArray * data);
+
+int slice_dataTree_array(char * name, mwSize index);
+
+int replicate_dataTree_array(char * name, mwSize aosArraySize);
 
 int getSimpleFieldStruct(char *path, const mxArray ** data);
 

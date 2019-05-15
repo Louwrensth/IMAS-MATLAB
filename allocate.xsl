@@ -64,13 +64,13 @@
 		    my:get_datatype(@data_type)='DOUBLE_DATA'">
       <xsl:choose>
 	<xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
-	array = malloc(sizeof(int));</xsl:when>
+	array = (int *) &amp;EMPTY_INT;</xsl:when>
 	<xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
-	array = malloc(sizeof(double));</xsl:when>
+	array = (double *) &amp;EMPTY_DOUBLE;</xsl:when>
 	<xsl:otherwise>
 	array = NULL;</xsl:otherwise>
       </xsl:choose>
-      status = data_to_mxArray(-1, <xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, array, NULL, &amp;data);
+      status = data_to_mxArray(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, array, NULL, &amp;data);
       if (array != NULL)
       free(array);
       if (status) {

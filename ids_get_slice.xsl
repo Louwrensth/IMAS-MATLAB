@@ -201,7 +201,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (int_to_double_<xsl:value-of select="@name"/>(*ids) &lt; 0)
     return -1;
     }
-    // Conversion of EMPTY_FLOAT values for FLT fields to NaN
+    // Conversion of EMPTY_DOUBLE values for FLT fields to NaN
     if (params.get_empty_as_nan) {
     if (empty_to_nan_<xsl:value-of select="@name"/>(*ids) &lt; 0)
     return -1;

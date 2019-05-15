@@ -11,7 +11,7 @@ Since MATLAB uses column-major order for arrays (i.e. as in FORTRAN), no re-orde
 
 2. Notes
 
-   - To accomodate compatibility with the present MATLAB interface options have been implemented to convert fields of type INT to double value and to replace NaN values by EMPTY_FLOAT both in get and put methods.
+   - To accomodate compatibility with the present MATLAB interface options have been implemented to convert fields of type INT to double value and to replace NaN values by EMPTY_DOUBLE both in get and put methods.
 
    - Treatment of strings requires casting from the intrinsic char type in C (8 bits) and the mxChar type used in MATLAB character arrays (16 bits). Additionally, string vectors (STR_1D) are represented using cell array of strings which differs from the AL lowlevel representation using char matrices.
 
@@ -63,13 +63,13 @@ List of current valid parameters:
     - put_int_from_double                       (default:1)
         In put methods, allows to provide double values for integer fields.
     - get_empty_as_nan                          (default:0)
-        In get methods, for fields of type float replace EMPTY_FLOAT values by NaNs.
+        In get methods, for fields of type float replace EMPTY_DOUBLE values by NaNs.
     - put_empty_from_nan                        (default:0)
-        In put methods, for fields of type float replace NaNs by EMPTY_FLOAT.
+        In put methods, for fields of type float replace NaNs by EMPTY_DOUBLE.
     - use_cell_array_for_array_of_structures    (default:1)
         If enabled arrays of structures will be represented using cell arrays of structes (default), otherwise using structure arrays.
     - convert_whole_ids                         (default:0)
-        If disabled the conversions (int <-> double) and (EMPTY_FLOAT <-> NaN) will be performed just before/after  calling the lowlevel write/read routines, otherwise they will be performed in one block.
+        If disabled the conversions (int <-> double) and (EMPTY_DOUBLE <-> NaN) will be performed just before/after  calling the lowlevel write/read routines, otherwise they will be performed in one block.
     - error_on_missing_field                    (default:1)
         If enabled put methods will trigger an error if any field is missing from the input IDS.
     - verbosity                                 (default:0)

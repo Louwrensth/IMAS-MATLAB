@@ -163,7 +163,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return status;
     }
     action.context = ctx;
-     if (init_dataTree_read() &lt; 0) {
+    if (init_dataTree_read() &lt; 0) {
     ual_end_action(ctx);
     return -1;
     }
@@ -171,8 +171,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:apply-templates select="field" mode="GET_SINGLE"/>
 
     ual_end_action(ctx);
-     if (get_data_from_dataTree(NULL, ids) &lt; 0)
-     return -1;
+    if (get_data_from_dataTree(NULL, ids) &lt; 0)
+    return -1;
 #ifndef NO_GLOBAL_CONVERSION
     if (params.convert_whole_ids == 1) {
     // Conversion of INT fields to double
@@ -180,7 +180,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (int_to_double_<xsl:value-of select="@name"/>(*ids) &lt; 0)
     return -1;
     }
-    // Conversion of EMPTY_FLOAT values for FLT fields to NaN
+    // Conversion of EMPTY_DOUBLE values for FLT fields to NaN
     if (params.get_empty_as_nan) {
     if (empty_to_nan_<xsl:value-of select="@name"/>(*ids) &lt; 0)
     return -1;

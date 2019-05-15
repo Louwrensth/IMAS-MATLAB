@@ -162,7 +162,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
       int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
       int ifield;
       mxArray* data=NULL;
-      mxArray* data_new=NULL;
       int cast_status = -1;
       if (init_dataTree_write(ids) &lt; 0)
       return -1;

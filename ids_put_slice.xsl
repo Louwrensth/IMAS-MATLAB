@@ -178,7 +178,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return -1;
     ids = ids_conv;
     }
-    // Conversion of NaN values for FLT fields to EMPTY_FLOAT
+    // Conversion of NaN values for FLT fields to EMPTY_DOUBLE
     if (params.put_empty_from_nan) {
     if (ids_conv == NULL) // if input was not already duplicated
     ids_conv = mxDuplicateArray(ids);
