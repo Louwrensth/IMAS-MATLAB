@@ -119,8 +119,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
      {
      int status;
      void *array;
-     // Paths-specific variables
-     int maxpathsize=MAXPATHSIZE;
      mxArray* data;
      int i;
      if (init_dataTree_array_read(1) &lt; 0)
@@ -128,7 +126,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
      if (iterate_dataTree_array(0) &lt; 0)
      return -1;
      <xsl:for-each select=".//field[@data_type='struct_array']">
-       if (!strncmp(pathInIDS, "<xsl:value-of select="@path"/>", maxpathsize)) {
+       if (!strncmp(pathInIDS, <xsl:value-of select="concat('&quot;',@path,'&quot;, ',string-length(@path))"/>)) {
        <xsl:apply-templates select="field" mode="ALLOCATE"/>
        } else
      </xsl:for-each>

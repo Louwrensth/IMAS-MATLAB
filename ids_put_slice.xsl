@@ -148,13 +148,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     int put_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
     {
-     struct imas_mex_actionInfo action;
-     struct imas_mex_fieldInfo field;
-    // Paths-specific variables
-    int maxpathsize = MAXPATHSIZE;
+    struct imas_mex_actionInfo action;
+    struct imas_mex_fieldInfo field;
     const mxArray* data=NULL;
 #ifndef NO_GLOBAL_CONVERSION
-     mxArray* ids_conv=NULL;
+    mxArray* ids_conv=NULL;
 #endif
     int ifield;
     const mwSize* dims;
@@ -238,8 +236,6 @@ int put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx,
     {
     struct imas_mex_actionInfo action;
     struct imas_mex_fieldInfo field;
-    // Paths-specific variables
-    int maxpathsize = MAXPATHSIZE;
     const mxArray* data=NULL;
     int ifield;
     const mwSize* dims;

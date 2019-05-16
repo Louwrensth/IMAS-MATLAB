@@ -21,7 +21,6 @@ const double EMPTY_DOUBLE;
 #include <string.h>
 #include <stdio.h>
 
-#define MAXPATHSIZE 1025
 #define MAXERRMSGIDSIZE 129
 #define MAXERRMSGTXTSIZE 1025
 
@@ -30,8 +29,8 @@ struct imas_mex_actionInfo {
 };
 
 struct imas_mex_fieldInfo {
-  char fieldPath[MAXPATHSIZE];
-  char timebasePath[MAXPATHSIZE];
+  char * fieldPath;
+  char * timebasePath;
   int datatype;
   int dim;
 };

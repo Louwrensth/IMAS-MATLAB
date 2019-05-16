@@ -151,8 +151,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     {
     struct imas_mex_actionInfo action;
     struct imas_mex_fieldInfo field;
-    // Paths-specific variables
-    int maxpathsize = MAXPATHSIZE;
     const mxArray* data=NULL;
 #ifndef NO_GLOBAL_CONVERSION
      mxArray* ids_conv=NULL;
@@ -228,8 +226,6 @@ int put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int h
     {
     struct imas_mex_actionInfo action;
     struct imas_mex_fieldInfo field;
-    // Paths-specific variables
-    int maxpathsize = MAXPATHSIZE;
     const mxArray* data=NULL;
     int ifield;
     int cast_status = -1;

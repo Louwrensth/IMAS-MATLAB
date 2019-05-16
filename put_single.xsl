@@ -41,7 +41,7 @@
   <!-- Type 2 arrays of structure -->
   <!-- Type 3 arrays of structure, with a unique time base -->
     <xsl:when test = "@data_type = 'struct_array'">
-      strncpy(field.fieldPath, &quot;<xsl:value-of select="$AosRelativePath"/>&quot;, <xsl:value-of select="string-length($AosRelativePath)+1"/>);
+      field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
       <xsl:if test="ancestor::field[@data_type='struct_array']">
 	//<xsl:value-of select="ancestor::field[@data_type='struct_array'][1]/@path"/>
 	//<xsl:value-of select="@path"/>
@@ -49,12 +49,12 @@
       <xsl:choose>	
 	<xsl:when test="@type='dynamic'"> <!-- Type 3 -->
 	  if (homogeneousTime) 
-          strncpy(field.timebasePath, "/time", 6);
+          field.timebasePath = "/time";
        	  else
-	  strncpy(field.timebasePath, &quot;<xsl:value-of select="$AosRelativePath"/>/time&quot;, <xsl:value-of select="string-length($AosRelativePath)+6"/>);
+	  field.timebasePath = &quot;<xsl:value-of select="$AosRelativePath"/>/time&quot;;
 	</xsl:when>
   	<xsl:otherwise> <!-- Type 1 or 2 -->
-	  strncpy(field.timebasePath, "", 1);
+	  field.timebasePath = "";
 	</xsl:otherwise>
       </xsl:choose>
       if (begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize) &lt; 0) {
@@ -128,16 +128,16 @@
     return -1;
     }
     if  (data != NULL &amp;&amp; !mxIsEmpty(data)) {
-    strncpy(field.fieldPath, &quot;<xsl:value-of select="$AosRelativePath"/>&quot;, <xsl:value-of select="string-length($AosRelativePath)+1"/>);
+    field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
     <xsl:choose>
       <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
 	if (homogeneousTime == 1) 
-        strncpy(field.timebasePath, "/time", 6);
+        field.timebasePath = "/time";
        	else
-	strncpy(field.timebasePath, &quot;<xsl:value-of select="@timebasepath"/>&quot;, <xsl:value-of select="string-length(@timebasepath)+1"/>);
+	field.timebasePath = &quot;<xsl:value-of select="@timebasepath"/>&quot;;
       </xsl:when>
       <xsl:otherwise>
-	strncpy(field.timebasePath, "", 1);
+	field.timebasePath = "";
       </xsl:otherwise>
     </xsl:choose>
     field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
