@@ -71,8 +71,6 @@
 	array = NULL;</xsl:otherwise>
       </xsl:choose>
       status = data_to_mxArray(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, array, NULL, &amp;data);
-      if (array != NULL)
-      free(array);
       if (status) {
       return status;
       }
