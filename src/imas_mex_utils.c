@@ -9,11 +9,6 @@ const char * mex_errmsgid;
 char mex_errmsgtxt[MAXERRMSGTXTSIZE];
 int msglen = 0;
 
-char *ual_last_errmsg()
-{
-    return "ual_last_errmsg_dummy";
-}
-
 void my_mexErrMsgIdAndTxt(int status, const char * prefix)
 {
   char msgid[MAXERRMSGIDSIZE];
@@ -188,8 +183,10 @@ int getHomogeneousTime2(int ctx, int *homogeneousTime)
   int status = 0;
   char *fieldPath = "ids_properties/homogeneous_time";
   char *timebasePath = "";
+  int retSize[MAXDIM];
 
-  status = getInt(ctx, fieldPath, timebasePath, homogeneousTime);
+  status = ual_read_data(ctx, fieldPath, timebasePath, (void**)&homogeneousTime, 
+			 INTEGER_DATA, 0, &retSize[0]);
 
   return status;
 }

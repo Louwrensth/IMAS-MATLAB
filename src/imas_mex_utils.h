@@ -16,7 +16,6 @@ const double EMPTY_DOUBLE;
 #include "imas_mex_casts.h"
 #include "imas_mex_structs.h"
 #include "ual_lowlevel.h"
-#include "ual_low_level.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -38,8 +37,6 @@ struct imas_mex_fieldInfo {
 extern const char * mex_errmsgid;
 extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
 extern int msglen;
-
-char *ual_last_errmsg();
 
 void my_mexErrMsgIdAndTxt(int status, const char * prefix);
 

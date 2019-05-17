@@ -82,8 +82,9 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
       status = idx;
     else
       status = ual_open_pulse(idx, FORCE_CREATE_PULSE, "");
+
     if (status != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_public:Failed", "Error creating imas shot %d, run %d expName %s: %s", shot, run, expName, ual_last_errmsg());
+        mexErrMsgIdAndTxt("IMAS:imas_create_public:Failed", "Error creating imas shot %d, run %d expName %s", shot, run, expName);
     }
     // Prepare the return argument
     plhs[0] = mxCreateDoubleScalar(idx);

@@ -27,7 +27,12 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (params.verbosity >= 4)
         mexPrintf("The input idx is:  %d\n", idx);
 
-    if (idx != -1)
-        ual_close(idx);
+    int status;
+
+    if (idx != -1) {
+      status = ual_close_pulse(idx, CLOSE_PULSE, "");
+      if (status >= 0)
+	ual_end_action(idx);
+    }
 
 }

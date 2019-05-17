@@ -66,7 +66,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
       status = ual_open_pulse(idx, OPEN_PULSE, "");
 
     if (status != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_open_public:Failed", "Error opening imas shot %d, run %d expName %s: %s", shot, run, expName, ual_last_errmsg());
+        mexErrMsgIdAndTxt("IMAS:imas_open_public:Failed", "Error opening imas shot %d, run %d expName %s", shot, run, expName);
     }
     // Prepare the return argument
     plhs[0] = mxCreateDoubleScalar(idx);
