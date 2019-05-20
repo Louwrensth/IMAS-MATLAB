@@ -14,7 +14,7 @@ void my_mexErrMsgIdAndTxt(int status, const char * prefix)
   char msgid[MAXERRMSGIDSIZE];
 
   strncpy(msgid, prefix, strnlen(prefix, MAXERRMSGIDSIZE-1)+1);
-  if (strnlen(mex_errmsgid, MAXERRMSGIDSIZE-1)) {
+  if (mex_errmsgid != NULL && strnlen(mex_errmsgid, MAXERRMSGIDSIZE-1)) {
     strncat(msgid, mex_errmsgid, MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
     mexErrMsgIdAndTxt(msgid,mex_errmsgtxt);
   } else {
@@ -89,7 +89,7 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
   status = get_data_info(datatype, dim, &classid, &ComplexFlag, &dsize, &array);
   if (status < 0)
     return status;
-  if (dim == 0 || size == NULL || size[0] > 0) {
+  if (dim == 0 || (size != NULL && size[0] > 0)) {
     if (datatype != CHAR_DATA) {
       //           **** NUMERIC DATA ****
       // Avoid creating empty arrays for scalars
