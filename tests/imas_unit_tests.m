@@ -24,8 +24,11 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       %
       ntime = 3;
       for name = IDS_list.'
-        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},ntime,false);
-        testCase.TestData.IDS_slice.(name{1}) = ids_rand(name{1},ntime,true );
+        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},ntime,0);
+        testCase.TestData.IDS_slice.(name{1}) = cell(ntime,1);
+        for itime = 1:ntime
+          testCase.TestData.IDS_slice.(name{1}){itime} = ids_rand(name{1},ntime,itime);
+        end
       end
       %
     end
@@ -50,30 +53,38 @@ classdef imas_unit_tests < matlab.unittest.TestCase
     function testPutGetSlice(testCase, IDSname)
       idx = testCase.TestData.idx;
       ids = testCase.TestData.IDS.(IDSname);
-      time = 1.0;
+      itime = 2;
       interp = 1; % closest sample
       ids_slice = testCase.TestData.IDS_slice.(IDSname);
       ids_put(idx,IDSname,ids);
-      sdi = ids_get_slice(idx,IDSname,time,interp);
-      comparator(ids_slice,sdi,IDSname);
+      sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
+      comparator(ids_slice{itime},sdi,IDSname);
     end
     
     function testPutSliceGet(testCase, IDSname)
       idx = testCase.TestData.idx;
+      ids = testCase.TestData.IDS.(IDSname);
       ids_slice = testCase.TestData.IDS_slice.(IDSname);
-      ids_put(idx,IDSname,ids_slice);
+      ids_put(idx,IDSname,ids_slice{1});
+      for itime=2:numel(ids_slice)
+        ids_put_slice(idx,IDSname,ids_slice{itime});
+      end
       sdi = ids_get(idx,IDSname);
-      comparator(ids_slice,sdi,IDSname);
+      comparator(ids,sdi,IDSname);
     end
 
     function testPutSliceGetSlice(testCase, IDSname)
       idx = testCase.TestData.idx;
-      time = 1.0;
-      interp = 1; % closest sample
+      ids = testCase.TestData.IDS.(IDSname);
       ids_slice = testCase.TestData.IDS_slice.(IDSname);
-      ids_put(idx,IDSname,ids_slice);
-      sdi = ids_get_slice(idx,IDSname,time,interp);
-      comparator(ids_slice,sdi,IDSname);
+      ids_put(idx,IDSname,ids_slice{1});
+      for itime=2:numel(ids_slice)
+        ids_put_slice(idx,IDSname,ids_slice{itime});
+      end
+      itime = 2;
+      interp = 1; % closest sample
+      sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
+      comparator(ids_slice{itime},sdi,IDSname);
     end
 
   end

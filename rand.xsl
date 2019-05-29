@@ -53,7 +53,7 @@
       }
       <xsl:if test="@maxoccur='unbounded' and @type='dynamic'">
 	if (slice)
-	if (slice_dataTree_array("<xsl:value-of select="@name"/>", 0) &lt; 0) {
+	if (slice_dataTree_array("<xsl:value-of select="@name"/>", slice-1) &lt; 0) {
 	return -1;
 	}
       </xsl:if>

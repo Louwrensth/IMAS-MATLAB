@@ -41,7 +41,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   // Check for three input arguments  
   if(nrhs != 3) {
     mexErrMsgIdAndTxt("IMAS:ids_rand:nargin",
-                      "Three input required.");
+                      "Three inputs required.");
   }
 
   // make sure IDSname is a string
@@ -57,7 +57,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   // make sure ntime is scalar
   if( !mxIsNumeric(prhs[1]) ||
       !mxIsScalar(prhs[1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_rand:notScalar",
                         "Input ntime must be a scalar.");
   }
   // Get the value of ntime
@@ -69,14 +69,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if( (!mxIsNumeric(prhs[2]) ||
        !mxIsScalar(prhs[2])) &amp;&amp;
        !mxIsLogicalScalar(prhs[2]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_rand:notScalar",
                         "Input slice must be a scalar.");
   }
   // Get the value of slice
   int slice = (int) mxGetScalar(prhs[2]);
   if (params.verbosity >= 4)
   mexPrintf("The input slice is:  %d\n", slice);
-
+    
   // Check for one output argument
   if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_rand:nargout",
@@ -126,6 +126,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
      int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
      int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
      mxArray* data;
+     if (slice &amp;&amp; (slice &lt; 1 || slice &gt; ntime))
+      mexErrMsgIdAndTxt("IMAS:ids_rand:invalid_slice",
+      "If slice is non-zero, it should be between 1 and ntime");     
      srandom(0);
      if (init_dataTree_read() &lt; 0)
      return -1;

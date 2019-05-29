@@ -25,7 +25,7 @@ mxArray * rand_time(size_t ntime, int slice)
   int i;
 
   if (slice) {
-    data = mxCreateDoubleScalar(1);
+    data = mxCreateDoubleScalar((double) slice);
   } else {
     data = mxCreateNumericMatrix(ntime, 1, mxDOUBLE_CLASS, mxREAL);
     array = mxGetData(data);
@@ -46,6 +46,7 @@ mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice
   mwSize ndims;
   size_t numel = 1;
   void * array;
+  void * array_slice;
   mxArray * data;
   int i;
 
@@ -69,7 +70,10 @@ mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice
     for (i=0;i<numel;i++)
       ((int *) array)[i] = rand_integer();
     if (slice && dynamic && dim > 0) {
-      mxSetData(data, mxRealloc(array, numel/ntime*sizeof(int)));
+      array_slice = mxMalloc(numel/ntime*sizeof(int));
+      memcpy(array_slice,&((int *) array)[numel/ntime*(slice-1)],numel/ntime*sizeof(int));
+      mxFree(array);
+      mxSetData(data, array_slice);
       ndims = (dim > 1) ? dim-1 : 1;
       size[dim-1] = 1;
       mxSetDimensions(data, size, ndims);
@@ -81,7 +85,10 @@ mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice
     for (i=0;i<numel;i++)
       ((double *) array)[i] = rand_double();
     if (slice && dynamic && dim > 0) {
-      mxSetData(data, mxRealloc(array, numel/ntime*sizeof(double)));
+      array_slice = mxMalloc(numel/ntime*sizeof(double));
+      memcpy(array_slice,&((double *) array)[numel/ntime*(slice-1)],numel/ntime*sizeof(double));
+      mxFree(array);
+      mxSetData(data, array_slice);
       ndims = (dim > 1) ? dim-1 : 1;
       size[dim-1] = 1;
       mxSetDimensions(data, size, ndims);
@@ -98,7 +105,7 @@ mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice
       }
       if (dynamic && slice) {
 	data = mxCreateCellMatrix(1,1);
-	mxSetCell(data, (mwIndex) 0, mxCreateString(((char **) array)[0]));
+	mxSetCell(data, (mwIndex) 0, mxCreateString(((char **) array)[slice-1]));
       } else {
 	data = mxCreateCellMatrix(numel,1);
 	for (i=0;i<numel;i++)
