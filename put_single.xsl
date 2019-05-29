@@ -48,7 +48,7 @@
       </xsl:if>
       <xsl:choose>	
 	<xsl:when test="@type='dynamic'"> <!-- Type 3 -->
-	  if (homogeneousTime) 
+	  if (homogeneousTime == 1) 
           field.timebasePath = "/time";
        	  else
 	  field.timebasePath = &quot;<xsl:value-of select="$AosRelativePath"/>/time&quot;;

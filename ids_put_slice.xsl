@@ -164,7 +164,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int putSliceOpCtx = -1;
     int ctx = -1;
     int homogeneousTime = EMPTY_INT;
-    double sliceTime = -1.0;
     int isEmpty;
 
 #ifndef NO_GLOBAL_CONVERSION
@@ -197,6 +196,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT_SLICE quits with no action.");
     return 0;
     }
+    if ( homogeneousTime == 1 ) {
     // Top-level ids_put_slice functions check that ids is a scalar struct
     ifield = mxGetFieldNumber(ids, "time");
     ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
@@ -205,11 +205,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
       "Unable to retrieve ids%%time");
     if (mxGetNumberOfElements(ptime) &lt; 1)
     mexErrMsgIdAndTxt("IMAS:ids_put_slice:empty_time",
-    "ids%%time must have at least one element");
-    sliceTime = mxGetScalar(ptime);
+    "If time is homogeneous, ids%%time must have at least one element");
+    }
 
     // Open put context
-    putSliceOpCtx = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, sliceTime, UNDEFINED_INTERP);
+    putSliceOpCtx = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP);
     if(putSliceOpCtx &lt; 0) 
     return putSliceOpCtx;
     ctx = putSliceOpCtx;
