@@ -106,19 +106,20 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
       memcpy(mxGetData(*data), array, numel * dsize);
     } else {
       //           **** CHAR DATA ****
-      if (dim == 1)
-	*data = mxCreateString((const char *) array);
-      else {
+      if (dim == 1) {
+        dims[0] = 1;
+	dims[1] = size[0];
+      } else {
 	// Size is [nb of strings, string length] (???)
 	dims[0] = (mwSize) size[0];
 	dims[1] = (mwSize) size[1];
-        *data = mxCreateCharArray(2, dims);
-	// We need to transpose the character array
-	chararray = mxGetData(*data);
-	for (i = 0; i < dims[0]; i++)
-	  for (j = 0; j < dims[1]; j++)
-	    chararray[j*dims[0]+i] = (mxChar) ((char *) array)[i*dims[1]+j];
       }
+      *data = mxCreateCharArray(2, dims);
+      // We need to transpose the character array
+      chararray = mxGetData(*data);
+      for (i = 0; i < dims[0]; i++)
+	for (j = 0; j < dims[1]; j++)
+	  chararray[j*dims[0]+i] = (mxChar) ((char *) array)[i*dims[1]+j];
     }
   } else {
       if (datatype == CHAR_DATA) {
