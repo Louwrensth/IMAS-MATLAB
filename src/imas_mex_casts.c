@@ -204,6 +204,9 @@ int castCellToChar(mxArray ** data)
   }
 
   charData = mxCreateCharMatrixFromStrings((mwSize) numel, (const char **) strings);
+  for (i = 0; i < numel; i++)
+    mxFree(strings[i]);
+  free(strings);
 #endif
 
   *data = charData;
@@ -261,6 +264,7 @@ int castCharToCell(mxArray ** data)
     cell = mxCreateString(outChars);
     mxSetCell(cellData, (mwIndex) i, cell);
   }
+  free(outChars);
 #endif
 
   *data = cellData;
