@@ -150,7 +150,7 @@ $(LIB_DIR)/ids_get_slice.mexa64:     $(BUILD_DIR)/int_to_double_ids.o $(BUILD_DI
 $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DIR)/nan_to_empty_ids.o 
 $(LIB_DIR)/ids_put_slice.mexa64:     $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DIR)/nan_to_empty_ids.o
 $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o
-$(LIB_DIR)/ids_put_non_timed.mexa64: $(BUILD_DIR)/delete_ids.o
+$(LIB_DIR)/ids_put_slice.mexa64:     $(BUILD_DIR)/delete_ids.o
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o | $(LIB_DIR) $(LIB_DIR)/libimas-mex.so
 	$(CC) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -limas-mex $(LIBS) $(LDFLAGS)
 
