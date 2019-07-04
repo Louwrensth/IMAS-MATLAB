@@ -155,7 +155,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
      int empty_to_nan_<xsl:value-of select="@name"/>(mxArray* ids);
 #endif
 
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE_H"/>
 
     int get_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, double inTime, int interpolMode, mxArray** ids)
     {
@@ -187,7 +187,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return -1;
     }
 
-    <xsl:apply-templates select="field" mode="GET_SINGLE"/>
+    <xsl:apply-templates select="field" mode="GET_SINGLE">
+      <xsl:with-param name="slice" select="'yes'"/>
+    </xsl:apply-templates>
 
     ual_end_action(ctx);
     if (get_data_from_dataTree(NULL, ids) &lt; 0)
@@ -209,17 +211,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return 0; // TODO: Should we return status of ual_end_action?
     }
 
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE"/>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
-<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
-int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
+<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE_H">
+int get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
 
-<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
+<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE">
   <xsl:call-template name="COMMENT_FIELD"/>
-  int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
+  int get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
   {
   struct imas_mex_actionInfo action;
   struct imas_mex_fieldInfo field;
@@ -230,7 +232,9 @@ int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int h
   int aosCtx = -1;
   action.context = ctx;
 
-  <xsl:apply-templates select="field" mode="GET_SINGLE"/>
+  <xsl:apply-templates select="field" mode="GET_SINGLE">
+    <xsl:with-param name="slice" select="'yes'"/>
+  </xsl:apply-templates>
 
   return 0;
   }

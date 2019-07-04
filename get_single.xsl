@@ -17,9 +17,17 @@
 <!--=================================================-->
 
 <xsl:template match="field" mode="GET_SINGLE">
+  <xsl:param name="slice"/>
 
 <xsl:variable name="AosRelativePath">
   <xsl:call-template name="printAosRelativePath"/>
+</xsl:variable>
+
+<xsl:variable name="method_name">
+  <xsl:choose>
+    <xsl:when test="$slice='yes'">get_slice</xsl:when>
+    <xsl:otherwise>get</xsl:otherwise>
+  </xsl:choose>
 </xsl:variable>
 
 <xsl:call-template name="COMMENT_FIELD"/>
@@ -61,7 +69,7 @@
       ual_end_action(ctx);
       return -1;
       }
-      status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
+      status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
       if (status &lt; 0) {
       <!-- ual_end_action(aosCtx) is taken care of in get_... -->
       ual_end_action(ctx);
@@ -92,7 +100,7 @@
       ual_end_action(ctx);
       return -1;
       }
-      status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
+      status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
       if (status &lt; 0) {
       <!-- ual_end_action(ctx) is taken care of in get_... -->
       return status;
