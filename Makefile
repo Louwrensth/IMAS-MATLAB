@@ -54,7 +54,7 @@ IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
 # Generated sources (excluding static sources)
 ## This template takes care of most of the dependencies
 ## Additional dependencies should be added in the init/build section
-define TEMPLATE =
+define TEMPLATE
 $(1)_SOURCES = $(1)_ids.c.in ids_$(1).c.in ids_$(1).h.in
 ALL_SOURCES += $$($(1)_SOURCES)
 $(1)_SRC_FILES = $$(addprefix $(IDS_SRC_DIR)/,$$($(1)_SOURCES))
