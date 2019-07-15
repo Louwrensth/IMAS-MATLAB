@@ -14,7 +14,7 @@ classdef imas_unit_tests < matlab.unittest.TestCase
   %% Class-level setup
   methods (TestClassSetup)
     function createIMASDb(testCase, useCache)
-      idx = imas_create_env('ids',9999,9999,0,0,'g2amerle','test','3');
+      idx = imas_create_env('ids',9999,9999,0,0,getenv('USER'),'test','3');
       testCase.addTeardown(@imas_close,idx);
       if useCache
         imas_enable_mem_cache(idx);

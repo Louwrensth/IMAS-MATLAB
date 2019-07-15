@@ -7,7 +7,8 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   end
 
   properties (ClassSetupParameter)
-    useCache = struct('yes',true,'no',false);
+    % useCache = struct('yes',true,'no',false); % Disabled for now ...
+    useCache = struct('no',false);
     ntime = struct('small',3,'medium',24,'large',192)
   end
 
@@ -15,8 +16,8 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   methods (TestClassSetup)
     function createIMASDb(testCase, useCache, ntime)
       run = imas_perf_tests.getRunNumber(ntime);
-      idxr = imas_open_env('ids',9999,run,0,0,'g2amerle','test','3');
-      idxw = imas_create_env('ids',9999,run+9900,'g2amerle','test','3');
+      idxr = imas_open_env('ids',9999,run,0,0,getenv('USER'),'test','3');
+      idxw = imas_create_env('ids',9999,run+9900,getenv('USER'),'test','3');
       testCase.addTeardown(@imas_close,idx);
       if useCache
         imas_enable_mem_cache(idx);
