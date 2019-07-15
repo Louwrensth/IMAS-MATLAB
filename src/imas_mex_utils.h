@@ -20,6 +20,10 @@ const double EMPTY_DOUBLE;
 #include <string.h>
 #include <stdio.h>
 
+#ifdef NO_MXISSCALAR
+#define mxIsScalar(a) (mxGetNumberOfElements(a)==1)
+#endif
+
 #define MAXERRMSGIDSIZE 129
 #define MAXERRMSGTXTSIZE 1025
 

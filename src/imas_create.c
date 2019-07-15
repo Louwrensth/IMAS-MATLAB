@@ -36,7 +36,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     // Check for one output argument
     if (nlhs > 1) {
-        mexErrMsgIdAndTxt("IMAS:imas_create:nargout", "One output mximum required.");
+        mexErrMsgIdAndTxt("IMAS:imas_create:nargout", "One output maximum required.");
     }
     // Get the value of the name
     char *name = mxArrayToString(prhs[0]);

@@ -9,24 +9,19 @@ all sources sources_install install clean clean-src:
 	$(warning "Ignoring mexinterface (IMAS_MEX=no).")
 else
 
+include Makefile.flags # Defines CFLAGS, LDFLAGS (also with _DEBUG/_OPTIM suffix) and MEXSRC
+
 MEX_SO_NUM=1
 
-CFLAGS_DEBUG = -g
-LDFLAGS_DEBUG = -g
-CFLAGS_OPTIM = -O -DNDEBUG
-LDFLAGS_OPTIM =
-
-CFLAGS_EXTRA = $(CFLAGS_DEBUG)
+CFLAGS_EXTRA = $(CFLAGS_DEBUG)# -DDO_NOT_CALL_MATLAB
 LDFLAGS_EXTRA = $(LDFLAGS_DEBUG)
+
+CFLAGS+= -D__USE_XOPEN2K8 $(CFLAGS_EXTRA)
+LDFLAGS+= $(LDFLAGS_EXTRA)
 
 ifeq "$(strip $(CC))" "icc"
  CC=icc
- CFLAGS=-DTARGET_API_VERSION=700  -DUSE_MEX_CMD -D__USE_XOPEN2K8 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread $(CFLAGS_EXTRA)
- LDFLAGS= $(LDFLAGS_EXTRA) -pthread -fPIC -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lstdc++
-else
- CC=gcc
- CFLAGS=-DTARGET_API_VERSION=700  -DUSE_MEX_CMD -D__USE_XOPEN2K8 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include" -fexceptions -fPIC -fno-omit-frame-pointer -pthread $(CFLAGS_EXTRA)
- LDFLAGS= $(LDFLAGS_EXTRA) -pthread -fPIC -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++
+ LDFLAGS=$(filter-out -lm,$LDFLAGS)
 endif
 
 BUILD_DIR:=./build
@@ -104,6 +99,9 @@ TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c.in=.mexa64))
 TARGETS+= $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
 
+ifneq ("","$(MEXSRC)")
+  MEX_ADD_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(subst .c,.o,$(notdir $(MEXSRC))))
+endif
 
 all: $(SOURCES) $(TARGETS)
 
@@ -151,7 +149,7 @@ $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DI
 $(LIB_DIR)/ids_put_slice.mexa64:     $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DIR)/nan_to_empty_ids.o
 $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o
 $(LIB_DIR)/ids_put_slice.mexa64:     $(BUILD_DIR)/delete_ids.o
-$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(BUILD_DIR)/c_mexapi_version.o | $(LIB_DIR) $(LIB_DIR)/libimas-mex.so
+$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(MEX_ADD_OBJ_FILES) | $(LIB_DIR) $(LIB_DIR)/libimas-mex.so
 	$(CC) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -limas-mex $(LIBS) $(LDFLAGS)
 
 $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM): $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FILES:.c=.o)) | $(LIB_DIR)
@@ -160,7 +158,7 @@ $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM): $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FIL
 $(LIB_DIR)/libimas-mex.so: $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
 	ln -sf $(notdir $<) $@
 
-$(BUILD_DIR)/c_mexapi_version.o: $(MATLAB)/extern/version/c_mexapi_version.c | $(BUILD_DIR)
+$(MEX_ADD_OBJ_FILES): $(MEXSRC) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $(@)
 
 $(OBJ_FILES): $(BUILD_DIR)/%.o : %.c |  $(BUILD_DIR)

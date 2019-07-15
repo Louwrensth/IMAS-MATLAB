@@ -1,0 +1,67 @@
+<= R2006a - mxAddField
+<= R2006a - mxArray
+<= R2006a - mxArrayToString
+<= R2006a - mxChar
+<= R2006a - mxCHAR_CLASS
+<= R2006a - mxClassID
+<= R2006a - mxCOMPLEX
+<= R2006a - mxComplexity
+<= R2006a - mxCreateCellMatrix
+<= R2006a - mxCreateCharArray
+<= R2006a - mxCreateCharMatrixFromStrings
+<= R2006a - mxCreateDoubleMatrix
+<= R2006a - mxCreateDoubleScalar
+<= R2006a - mxCreateLogicalScalar
+<= R2006a - mxCreateNumericArray
+<= R2006a - mxCreateNumericMatrix
+<= R2006a - mxCreateString
+<= R2006a - mxCreateStructMatrix
+<= R2006a - mxDestroyArray
+<= R2006a - mxDOUBLE_CLASS
+<= R2006a - mxDuplicateArray
+<= R2006a - mxFree
+<= R2006a - mxGetCell
+<= R2006a - mxGetChars
+<= R2006a - mxGetData (behavior changed in R2018a)
+<= R2006a - mxGetDimensions
+<= R2006a - mxGetFieldByNumber
+<= R2006a - mxGetFieldNameByNumber
+<= R2006a - mxGetFieldNumber
+<= R2006a - mxGetM
+<= R2006a - mxGetN
+<= R2006a - mxGetNaN
+<= R2006a - mxGetNumberOfDimensions
+<= R2006a - mxGetNumberOfElements
+<= R2006a - mxGetNumberOfFields
+<= R2006a - mxGetPr (not recommended since R2018a)
+   R2008a - mxGetProperty
+<= R2006a - mxGetScalar
+<= R2006a - mxINT32_CLASS
+<= R2006a - mxIsCell
+<= R2006a - mxIsChar
+<= R2006a - mxIsDouble
+<= R2006a - mxIsEmpty
+<= R2006a - mxIsInt32
+<= R2006a - mxIsLogicalScalar
+<= R2006a - mxIsNaN
+<= R2006a - mxIsNumeric
+   R2015a - mxIsScalar
+<= R2006a - mxIsStruct
+<= R2006a - mxLogical
+<= R2006a - mxMalloc
+<= R2006a - mxREAL
+<= R2006a - mxRealloc
+<= R2006a - mxSetCell
+<= R2006a - mxSetData (behavior changed in R2018a)
+<= R2006a - mxSetDimensions
+<= R2006a - mxSetFieldByNumber
+<= R2006a - mxSetM
+<= R2006a - mxSetPr (not recommended since R2018a)
+
+<= R2006a - mwIndex
+<= R2006a - mwSize
+
+   R2008b - mexCallMATLABWithTrap
+<= R2006a - mexErrMsgIdAndTxt
+<= R2006a - mexPrintf
+<= R2006a - mexWarnMsgIdAndTxt

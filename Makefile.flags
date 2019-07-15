@@ -1,0 +1,187 @@
+
+# Check we have a valid version
+ifeq ("","$(MATLAB)")
+  $(error Empty MATLAB variable. Please specify your MATLAB root directory using the MATLAB variable.)
+endif
+
+# Try to guess MATLAB_VERSION from the loaded module
+ifeq ("","$(MATLAB_VERSION)")
+  MATLAB_VERSION=$(shell module list -t 2>&1 | grep '^matlab' -i | cut -d '/' -f2 | tr AB ab | tr -d rR || echo "")
+endif
+
+# Check we have a valid version
+ifeq ("","$(MATLAB_VERSION)")
+  $(error Empty MATLAB_VERSIONvariable . Please specify your MATLAB version using the MATLAB_VERSION variable.)
+endif
+ifneq ("$(MATLAB_VERSION)","$(findstring $(MATLAB_VERSION),2008b 2010a 2011a 2011b 2012b 2013a 2013b 2015a 2015b 2017a 2017b 2018a 2018b)")
+  $(error This MATLAB version (MATLAB_VERSION: $(MATLAB_VERSION)) has not been tested yet. Please add the necessary compiler information in the Makefile.flags file.)
+endif
+
+# R2008b 7.7.0
+ifeq ("2008b","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE -DNO_MXISSCALAR
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=$(MATLAB)/extern/src/mexversion.c
+endif
+
+# R2010a 7.10.0
+ifeq ("2010a","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE -DNO_MXISSCALAR
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2011a 7.12.0
+ifeq ("2011a","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE -DNO_MXISSCALAR
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2011b 7.13.0
+ifeq ("2011b","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE -DNO_MXISSCALAR
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2012b 8.0.0
+ifeq ("2012b","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE -DNO_MXISSCALAR
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2013a 8.1.0
+ifeq ("2013a","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE -DNO_MXISSCALAR
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2013b 8.2.0
+ifeq ("2013b","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE -DNO_MXISSCALAR
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2015a 8.5.0
+ifeq ("2015a","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2015b 8.6.0
+ifeq ("2015b","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-std=c99 -fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -D_GNU_SOURCE -DMATLAB_MEX_FILE
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/mexFunction.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=
+endif
+
+# R2017a 9.2.0
+ifeq ("2017a","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -DTARGET_API_VERSION=700 -DUSE_MEX_CMD -D_GNU_SOURCE -DMATLAB_MEX_FILE
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=$(MATLAB)/extern/version/c_mexapi_version.c
+endif
+
+# R2017b 9.3.0
+ifeq ("2017b","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -DUSE_MEX_CMD -D_GNU_SOURCE -DMATLAB_MEX_FILE
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=$(MATLAB)/extern/version/c_mexapi_version.c
+endif
+
+# R2018a 9.4.0
+ifeq ("2018a","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -DMATLAB_DEFAULT_RELEASE=R2017b -DUSE_MEX_CMD -D_GNU_SOURCE -DMATLAB_MEX_FILE
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=$(MATLAB)/extern/version/c_mexapi_version.c
+endif
+
+# R2018b 9.5.0
+ifeq ("2018b","$(strip $(MATLAB_VERSION))")
+  CFLAGS=-fexceptions -fPIC -fno-omit-frame-pointer -pthread
+  CFLAGS+= -DMATLAB_DEFAULT_RELEASE=R2017b -DUSE_MEX_CMD -D_GNU_SOURCE -DMATLAB_MEX_FILE
+  CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
+  CFLAGS_OPTIM=-O2 -fwrapv -DNDEBUG
+  CFLAGS_DEBUG=-g
+  LDFLAGS=-pthread -Wl,--no-undefined -Wl,-rpath-link,$(MATLAB)/bin/glnxa64 -shared  -L"$(MATLAB)/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++ -Wl,--version-script,"$(MATLAB)/extern/lib/glnxa64/c_exportsmexfileversion.map"
+  LDFLAGS_OPTIM=-O
+  LDFLAGS_DEBUG=-g
+  MEXSRC=$(MATLAB)/extern/version/c_mexapi_version.c
+endif
