@@ -7,7 +7,8 @@ classdef imas_unit_tests < matlab.unittest.TestCase
   end
 
   properties (ClassSetupParameter)
-    useCache = struct('yes',true,'no',false);
+    % useCache = struct('yes',true,'no',false); % Disabled for now ...
+    useCache = struct('no',false);
   end
 
   %% Class-level setup
