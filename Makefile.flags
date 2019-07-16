@@ -11,7 +11,7 @@ endif
 
 # Check we have a valid version
 ifeq ("","$(MATLAB_VERSION)")
-  $(error Empty MATLAB_VERSIONvariable . Please specify your MATLAB version using the MATLAB_VERSION variable.)
+  $(error Empty MATLAB_VERSION variable . Please specify your MATLAB version using the MATLAB_VERSION variable.)
 endif
 ifneq ("$(MATLAB_VERSION)","$(findstring $(MATLAB_VERSION),2008b 2010a 2011a 2011b 2012b 2013a 2013b 2015a 2015b 2017a 2017b 2018a 2018b)")
   $(error This MATLAB version (MATLAB_VERSION: $(MATLAB_VERSION)) has not been tested yet. Please add the necessary compiler information in the Makefile.flags file.)
