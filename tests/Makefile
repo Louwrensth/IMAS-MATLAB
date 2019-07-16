@@ -28,7 +28,7 @@ test:
 perf_tools: run_perf_f90 imas_mex_c_workflow_tests
 
 %.o: %.f90
-	gfortran -O0 -g -c $^ -ffree-line-length-none $$(pkg-config --cflags imas-gfortran)
+	gfortran -O0 -g -c $^ -ffree-line-length-none  $(shell pkg-config --cflags imas-gfortran) -o $@
 
 run_perf_f90: run_perf_f90.o IDS_list.o IDS_test_f90.o
 	gfortran -O0 -g $^ -o $@ $$(pkg-config --libs imas-gfortran)
