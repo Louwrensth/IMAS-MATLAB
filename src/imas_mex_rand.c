@@ -50,10 +50,10 @@ mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice
   mxArray * data;
   int i;
 
-  // newLL: string scalar == (dim == 1), string array == (dim == 2)
+  /* newLL: string scalar == (dim == 1), string array == (dim == 2) */
   if (datatype == CHAR_DATA)
     dim = dim-1;
-  // Avoid creating empty arrays for scalars
+  /* Avoid creating empty arrays for scalars */
   ndims = (dim > 0) ? dim : 1;
   size[0] = 1;
   for (i=0;i<dim;i++)

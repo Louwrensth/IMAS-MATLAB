@@ -47,7 +47,7 @@
       }
       <xsl:apply-templates select = "field" mode = "RAND"/>
       }
-      // Finished processing array of structure <xsl:value-of select="@name"/>
+      /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (end_dataTree_array_action() &lt; 0) {
       return -1;
       }
@@ -64,7 +64,7 @@
       if (begin_dataTree_read("<xsl:value-of select="@name"/>") &lt; 0)
       return -1;
       <xsl:apply-templates select="field" mode="RAND"/>
-      // Finished processing structure <xsl:value-of select="@name"/>
+      /* Finished processing structure <xsl:value-of select="@name"/> */
       if (end_dataTree_action() &lt; 0)
       return -1;
     </xsl:when>

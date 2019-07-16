@@ -38,29 +38,29 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for three or four input arguments  
+  /* Check for three or four input arguments   */
   if(nrhs != 4 &amp;&amp; nrhs != 3) {
     mexErrMsgIdAndTxt("IMAS:ids_put_slice:nargin",
                       "Three or four inputs required.");
   }
 
-  // make sure idx is scalar
+  /* make sure idx is scalar */
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
                         "Input idx must be a scalar.");
   }
-  // Get the value of idx
+  /* Get the value of idx */
   int idx = (int) mxGetScalar(prhs[0]);
   if (params.verbosity >= 4)
   mexPrintf("The input idx is:  %d\n", idx);
 
-  // make sure IDSpath is a string
+  /* make sure IDSpath is a string */
   if( !mxIsChar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put_slice:notChar",
                         "Input IDSpath must be a string.");
   }
-  // Get the value of IDSpath
+  /* Get the value of IDSpath */
   char *IDSpath = mxArrayToString(prhs[1]);
   if (params.verbosity >= 4)
   mexPrintf("The input IDSpath is:  %s\n", IDSpath);
@@ -68,13 +68,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if(nrhs == 4) {
   int occ;
   size_t pathlen;
-  // make sure occ is scalar
+  /* make sure occ is scalar */
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
                         "Input occurence must be a scalar.");
   }
-  // Get the value of occ
+  /* Get the value of occ */
   occ = (int) mxGetScalar(prhs[2]);
   if (params.verbosity >= 4)
   mexPrintf("The input occurence is:  %d\n", occ);
@@ -85,43 +85,43 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   }
 
-  // make sure ids is scalar struct
+  /* make sure ids is scalar struct */
   if( !mxIsStruct(prhs[nrhs-1]) ||
       !mxIsScalar(prhs[nrhs-1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_put_slice:notScalar",
                         "Input ids must be a scalar structure.");
   }
-  // Get the value of ids
+  /* Get the value of ids */
   if (params.verbosity >= 4)
   mexPrintf("The input ids is:  %s\n", "SKIPPED");
 
-  // Check for no output argument
+  /* Check for no output argument */
   if(nlhs > 0) {
     mexErrMsgIdAndTxt("IMAS:ids_put_slice:nargout",
                       "No output required.");
   }
   
-  // Extract IDS name
+  /* Extract IDS name */
   char* IDSpathcopy = strdup(IDSpath);
   char* name = strtok(IDSpathcopy, "/");
 
-  // Declare Function Pointer
+  /* Declare Function Pointer */
   int(*put_slice)(int, char*, const mxArray*) = NULL;
-  // Assign pointer based on IDS name
+  /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">put_slice</xsl:with-param>
   </xsl:apply-templates>
-  // Error if there was no match
+  /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_put_slice:unknown_ids",
            "Unknown IDS name: %s", name);
 
-  // free now as name uses the same memory
+  /* free now as name uses the same memory */
   free(IDSpathcopy);
 
-  // Clean-up previous errors
+  /* Clean-up previous errors */
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
-  // Call function
+  /* Call function */
   int err = put_slice(idx, IDSpath, prhs[nrhs-1]);
   if (err) 
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_put_slice:");
@@ -168,16 +168,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 #ifndef NO_GLOBAL_CONVERSION
     if (params.convert_whole_ids == 1) {
-    // Conversion of INT fields from double
+    /* Conversion of INT fields from double */
     if (params.put_int_from_double) {
     ids_conv = mxDuplicateArray(ids);
     if (double_to_int_<xsl:value-of select="@name"/>(ids_conv) &lt; 0)
     return -1;
     ids = ids_conv;
     }
-    // Conversion of NaN values for FLT fields to EMPTY_DOUBLE
+    /* Conversion of NaN values for FLT fields to EMPTY_DOUBLE */
     if (params.put_empty_from_nan) {
-    if (ids_conv == NULL) // if input was not already duplicated
+    if (ids_conv == NULL) /* if input was not already duplicated */
     ids_conv = mxDuplicateArray(ids);
     if (nan_to_empty_<xsl:value-of select="@name"/>(ids_conv) &lt; 0)
     return -1;
@@ -197,7 +197,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return 0;
     }
     if ( homogeneousTime == 1 ) {
-    // Top-level ids_put_slice functions check that ids is a scalar struct
+    /* Top-level ids_put_slice functions check that ids is a scalar struct */
     ifield = mxGetFieldNumber(ids, "time");
     ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
     if (ptime == NULL)
@@ -208,7 +208,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     "If time is homogeneous, ids%%time must have at least one element");
     }
 
-    // Open put context
+    /* Open put context */
     putSliceOpCtx = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP);
     if(putSliceOpCtx &lt; 0) 
     return putSliceOpCtx;
@@ -220,7 +220,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     </xsl:apply-templates>
 
     ual_end_action(ctx);
-    return 0; // TODO: Should we return status of ual_end_action?
+    return 0; /* TODO: Should we return status of ual_end_action? */
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE"/>

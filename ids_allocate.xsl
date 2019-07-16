@@ -38,66 +38,66 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for three input arguments  
+  /* Check for three input arguments   */
   if(nrhs != 3) {
     mexErrMsgIdAndTxt("IMAS:ids_allocate:nargin",
                       "Three inputs required.");
   }
 
-  // make sure IDSname is a string
+  /* make sure IDSname is a string */
   if( !mxIsChar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_allocate:notChar",
                         "Input IDSname must be a string.");
   }
-  // Get the value of IDSname
+  /* Get the value of IDSname */
   char *IDSname = mxArrayToString(prhs[0]);
   if (params.verbosity >= 4)
   mexPrintf("The input IDSname is:  %s\n", IDSname);
 
-  // make sure pathInIDS is a string
+  /* make sure pathInIDS is a string */
   if( !mxIsChar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_allocate:notChar",
                         "Input pathInIDS must be a string.");
   }
-  // Get the value of pathInIDS
+  /* Get the value of pathInIDS */
   char *pathInIDS = mxArrayToString(prhs[1]);
   if (params.verbosity >= 4)
   mexPrintf("The input pathInIDS is:  %s\n", pathInIDS);
 
-  // make sure n is scalar
+  /* make sure n is scalar */
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_allocate:notScalar",
                         "Input n must be a scalar.");
   }
-  // Get the value of n
+  /* Get the value of n */
   int n = (int) mxGetScalar(prhs[2]);
   if (params.verbosity >= 4)
   mexPrintf("The input n is:  %d\n", n);
 
-  // Check for one output argument
+  /* Check for one output argument */
   if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_allocate:nargout",
                       "One output maximum required.");
   }
   
-  // Extract IDS name
+  /* Extract IDS name */
   char* name = IDSname;
 
-  // Declare Function Pointer
+  /* Declare Function Pointer */
   int(*allocate)(char *, int, mxArray**) = NULL;
-  // Assign pointer based on IDS name
+  /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">allocate</xsl:with-param>
   </xsl:apply-templates>
-  // Error if there was no match
+  /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_allocate:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   
-  // Clean-up previous errors
+  /* Clean-up previous errors */
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
-  // Call function
+  /* Call function */
   int err = allocate(pathInIDS, n, &amp;plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_allocate:");

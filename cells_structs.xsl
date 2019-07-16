@@ -33,7 +33,7 @@
 	  <xsl:with-param name="method_name" select="$method_name"/>
 	</xsl:apply-templates>
 	}
-	// Finished processing structure <xsl:value-of select="@name"/>
+	/* Finished processing structure <xsl:value-of select="@name"/> */
 	if (end_dataTree_action() &lt; 0)
 	return -1;
       </xsl:when>
@@ -84,7 +84,7 @@
 	    <xsl:with-param name="method_name" select="$method_name"/>
 	  </xsl:apply-templates>
 	  }
-	  // Finished processing array of structure <xsl:value-of select="@name"/>
+	  /* Finished processing array of structure <xsl:value-of select="@name"/> */
 	  if (end_dataTree_array_action() &lt; 0)
 	  return -1;
 	</xsl:if>

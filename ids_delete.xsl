@@ -38,29 +38,29 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for two or three input arguments  
+  /* Check for two or three input arguments   */
   if(nrhs != 3 &amp;&amp; nrhs != 2) {
     mexErrMsgIdAndTxt("IMAS:ids_delete:nargin",
                       "Two or three inputs required.");
   }
 
-  // make sure idx is scalar
+  /* make sure idx is scalar */
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_delete:notScalar",
                         "Input idx must be a scalar.");
   }
-  // Get the value of idx
+  /* Get the value of idx */
   int idx = (int) mxGetScalar(prhs[0]);
   if (params.verbosity >= 4)
   mexPrintf("The input idx is:  %d\n", idx);
 
-  // make sure IDSpath is a string
+  /* make sure IDSpath is a string */
   if( !mxIsChar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_delete:notChar",
                         "Input IDSpath must be a string.");
   }
-  // Get the value of IDSpath
+  /* Get the value of IDSpath */
   char *IDSpath = mxArrayToString(prhs[1]);
   if (params.verbosity >= 4)
   mexPrintf("The input IDSpath is:  %s\n", IDSpath);
@@ -68,13 +68,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if(nrhs == 3) {
   int occ;
   size_t pathlen;
-  // make sure occ is scalar
+  /* make sure occ is scalar */
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_delete:notScalar",
                         "Input occurence must be a scalar.");
   }
-  // Get the value of occ
+  /* Get the value of occ */
   occ = (int) mxGetScalar(prhs[2]);
   if (params.verbosity >= 4)
   mexPrintf("The input occurence is:  %d\n", occ);
@@ -85,30 +85,30 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   }
 
-  // Check for one output argument
+  /* Check for one output argument */
   if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_delete:nargout",
                       "One output maximum required.");
   }
   
-  // Extract IDS name
+  /* Extract IDS name */
   char* IDSpathcopy = strdup(IDSpath);
   char* name = strtok(IDSpathcopy, "/");
  
-  // Declare Function Pointer
+  /* Declare Function Pointer */
   int(*delete)(int, char*) = NULL;
-  // Assign pointer based on IDS name
+  /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">delete</xsl:with-param>
   </xsl:apply-templates>
-  // Error if there was no match
+  /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_delete:unknown_ids",
            "Unknown IDS name: %s", name);
-  // Call function
+  /* Call function */
   plhs[0] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
   *(int *)mxGetData(plhs[0]) = delete(idx, IDSpath);
 
-  // free now as name uses the same memory
+  /* free now as name uses the same memory */
   free(IDSpathcopy);
 
 }
@@ -128,13 +128,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     int delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName)
     {
-    // Paths-specific variables
+    /* Paths-specific variables */
     char *fieldPath;
     int status = -1;
     int deleteOpCtx = -1;
     int ctx = -1;
 
-    // Open delete context
+    /* Open delete context */
     deleteOpCtx = ual_begin_global_action(expIdx, idsFullName, WRITE_OP);
     if(deleteOpCtx &lt; 0) 
     return deleteOpCtx;
@@ -143,7 +143,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:apply-templates select="field" mode="DELETE"/>
 
     ual_end_action(ctx);
-    return 0; // TODO: Should we return status of ual_end_action?
+    return 0; /* TODO: Should we return status of ual_end_action? */
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure']" mode="METHOD_DELETE"/>
@@ -158,7 +158,7 @@ int delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx);</
   <xsl:call-template name="COMMENT_FIELD"/>
   int delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx)
   {
-  // Paths-specific variables
+  /* Paths-specific variables */
   char *fieldPath = "";
   int status = -1;
 

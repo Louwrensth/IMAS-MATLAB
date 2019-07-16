@@ -41,7 +41,7 @@
 	  return -1;
 	</xsl:otherwise>
       </xsl:choose>
-      // Finished processing array of structure <xsl:value-of select="@name"/>
+      /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (end_dataTree_array_action() &lt; 0)
       return -1;
     </xsl:when>
@@ -53,7 +53,7 @@
       <xsl:apply-templates select = "field" mode = "ALLOCATE">
 	<xsl:with-param name="scalar_aos" select="$scalar_aos"/>
       </xsl:apply-templates>
-      // Finished processing structure <xsl:value-of select="@name"/>
+      /* Finished processing structure <xsl:value-of select="@name"/> */
       if (end_dataTree_action() &lt; 0)
       return -1;
     </xsl:when>

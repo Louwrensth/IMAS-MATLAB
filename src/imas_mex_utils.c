@@ -86,7 +86,7 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
     return 0;
     }
   */
-  return -1; // TODO: Should we use a unique status ID?
+  return -1; /* TODO: Should we use a unique status ID? */
 }
 
 int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data)
@@ -106,31 +106,31 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
     return status;
   if (dim == 0 || (size != NULL && size[0] > 0)) {
     if (datatype != CHAR_DATA) {
-      //           **** NUMERIC DATA ****
-      // Avoid creating empty arrays for scalars
+      /*           **** NUMERIC DATA **** */
+      /* Avoid creating empty arrays for scalars */
       ndims = (dim > 0) ? dim : 1;
       dims[0] = 1;
-      // Convert array size and compute total number of elements
+      /* Convert array size and compute total number of elements */
       for (i = 0; i < dim; i++) {
 	dims[i] = (mwSize) size[i];
 	numel = numel * dims[i];
       }
-      if (!numel) ndims=0; // True empty arrays
+      if (!numel) ndims=0; /* True empty arrays */
       *data = mxCreateNumericArray(ndims, dims, classid, ComplexFlag);
-      // integer and double data map directly to MATLAB types
+      /* integer and double data map directly to MATLAB types */
       memcpy(mxGetData(*data), array, numel * dsize);
     } else {
-      //           **** CHAR DATA ****
+      /*           **** CHAR DATA **** */
       if (dim == 1) {
         dims[0] = 1;
 	dims[1] = size[0];
       } else {
-	// Size is [nb of strings, string length] (???)
+	/* Size is [nb of strings, string length] (???) */
 	dims[0] = (mwSize) size[0];
 	dims[1] = (mwSize) size[1];
       }
       *data = mxCreateCharArray(2, dims);
-      // We need to transpose the character array
+      /* We need to transpose the character array */
       chararray = mxGetData(*data);
       for (i = 0; i < dims[0]; i++)
 	for (j = 0; j < dims[1]; j++)
@@ -138,11 +138,11 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
     }
   } else {
       if (datatype == CHAR_DATA) {
-	// Create an empty string (0x0 char array)
+	/* Create an empty string (0x0 char array) */
         *data = mxCreateCharArray(0, NULL);
       }
       else if (datatype == INTEGER_DATA || datatype == DOUBLE_DATA || datatype == COMPLEX_DATA)
-	// Create an empty array of correct class
+	/* Create an empty array of correct class */
 	*data = mxCreateNumericArray(0, NULL, classid, ComplexFlag);
   }
 
@@ -160,29 +160,29 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
 
   ndims = mxGetNumberOfDimensions(data);
   dims = mxGetDimensions(data);
-  // Convert array size and compute total number of elements
+  /* Convert array size and compute total number of elements */
   for (i = 0; i < dim; i++) {
     size[i] = ndims > i ? (int) dims[i] : 1;
     numel = numel * size[i];
   }
-  // Allow for 1D row vectors 
+  /* Allow for 1D row vectors  */
   if (dim == 1 && dims[0] == 1) {
     size[0] = dims[1];
     numel = dims[1];
   }
-  // Get pointer to data
+  /* Get pointer to data */
   if (datatype != CHAR_DATA) {
-    //           **** NUMERIC DATA ****
-    // integer and double data map directly to MATLAB types
+    /*           **** NUMERIC DATA **** */
+    /* integer and double data map directly to MATLAB types */
     *array = mxGetData(data);
   } else {
-    //           **** CHAR DATA ****
-    // MATLAB uses mxChar (uint16) to represent char arrays
+    /*           **** CHAR DATA **** */
+    /* MATLAB uses mxChar (uint16) to represent char arrays */
     if (dim == 1)
       *array = mxArrayToString(data);
     else {
-      // Size is [nb of strings, string length] (???)
-      // We need to transpose the character array
+      /* Size is [nb of strings, string length] (???) */
+      /* We need to transpose the character array */
       chararray = (mxChar *) mxGetChars(data);
       *array = malloc(numel*sizeof(char));
       for (i = 0; i < size[1]; i++)
@@ -239,7 +239,7 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
   if (read_status < 0)
     return 0;
 
-  // Free arrays 
+  /* Free arrays  */
   if (!read_status)
     free(array);
 
@@ -272,7 +272,7 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
 #endif
   
   if (field->datatype == CHAR_DATA && field->dim == 2) {
-    // For STR_1D cast to cell array of strings
+    /* For STR_1D cast to cell array of strings */
     data_old = *data;
     cast_status = castCharToCell(data);
     if (cast_status < 0) {
@@ -309,7 +309,7 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
 	    snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to int32", field->fieldPath);
 	    return -1;
 	  }
-	  // Check again field validity
+	  /* Check again field validity */
 	  if (!is_field_valid(field->datatype, field->dim, data))
 	    return 0;
 	}
@@ -324,7 +324,7 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
 	    snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to replace NaNs by EMPTY_FLOATs for field %s", field->fieldPath);
 	    return -1;
 	  }
-	  // Check again field validity
+	  /* Check again field validity */
 	  if (!is_field_valid(field->datatype, field->dim, data))
 	    return 0;
 	}

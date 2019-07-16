@@ -38,68 +38,68 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for three input arguments  
+  /* Check for three input arguments   */
   if(nrhs != 3) {
     mexErrMsgIdAndTxt("IMAS:ids_rand:nargin",
                       "Three inputs required.");
   }
 
-  // make sure IDSname is a string
+  /* make sure IDSname is a string */
   if( !mxIsChar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_rand:notChar",
                         "Input IDSname must be a string.");
   }
-  // Get the value of IDSname
+  /* Get the value of IDSname */
   char *IDSname = mxArrayToString(prhs[0]);
   if (params.verbosity >= 4)
   mexPrintf("The input IDSname is:  %s\n", IDSname);
 
-  // make sure ntime is scalar
+  /* make sure ntime is scalar */
   if( !mxIsNumeric(prhs[1]) ||
       !mxIsScalar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_rand:notScalar",
                         "Input ntime must be a scalar.");
   }
-  // Get the value of ntime
+  /* Get the value of ntime */
   int ntime = (int) mxGetScalar(prhs[1]);
   if (params.verbosity >= 4)
   mexPrintf("The input ntime is:  %d\n", ntime);
 
-  // make sure slice is scalar
+  /* make sure slice is scalar */
   if( (!mxIsNumeric(prhs[2]) ||
        !mxIsScalar(prhs[2])) &amp;&amp;
        !mxIsLogicalScalar(prhs[2]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_rand:notScalar",
                         "Input slice must be a scalar.");
   }
-  // Get the value of slice
+  /* Get the value of slice */
   int slice = (int) mxGetScalar(prhs[2]);
   if (params.verbosity >= 4)
   mexPrintf("The input slice is:  %d\n", slice);
     
-  // Check for one output argument
+  /* Check for one output argument */
   if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_rand:nargout",
                       "One output maximum required.");
   }
   
-  // Extract IDS name
+  /* Extract IDS name */
   char* name = IDSname;
 
-  // Declare Function Pointer
+  /* Declare Function Pointer */
   int(*rand)(mxArray**, int, int) = NULL;
-  // Assign pointer based on IDS name
+  /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">rand</xsl:with-param>
   </xsl:apply-templates>
-  // Error if there was no match
+  /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_rand:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   
-  // Clean-up previous errors
+  /* Clean-up previous errors */
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
-  // Call function
+  /* Call function */
   int err = rand(&amp;plhs[0], ntime, slice);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_rand:");
@@ -122,7 +122,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
      {
      int status;
      void *array;
-     // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
+     /* AoS-specific variables */<xsl:for-each select=".//field[@data_type='struct_array']">
      int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
      int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
      mxArray* data;

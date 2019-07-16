@@ -92,7 +92,7 @@
       return status; 
       }
       }
-      // Finished processing array of structure <xsl:value-of select="@name"/>
+      /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (end_dataTree_array_action() &lt; 0) {
       ual_end_action(ctx);
       return -1;
@@ -112,7 +112,7 @@
       return status;
       }
       }
-      // Finished processing structure <xsl:value-of select="@name"/>
+      /* Finished processing structure <xsl:value-of select="@name"/> */
       if (end_dataTree_action() &lt; 0) {
       ual_end_action(ctx);
       return -1;
@@ -152,7 +152,7 @@
 
   <!--========== Unknown type ===========-->
     <xsl:otherwise>
-      // PROBLEM : UNIDENTIFIED TYPE !!! <!-- for comment only -->
+      /* PROBLEM : UNIDENTIFIED TYPE !!! */ <!-- for comment only -->
     </xsl:otherwise>
 </xsl:choose>
 </xsl:if>

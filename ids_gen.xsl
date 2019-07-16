@@ -39,45 +39,45 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for one input arguments  
+  /* Check for one input arguments   */
   if(nrhs != 1) {
     mexErrMsgIdAndTxt("IMAS:ids_gen:nargin",
                       "One input required.");
   }
 
-  // make sure IDSname is a string
+  /* make sure IDSname is a string */
   if( !mxIsChar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_gen:notChar",
                         "Input IDSname must be a string.");
   }
-  // Get the value of IDSname
+  /* Get the value of IDSname */
   char *IDSname = mxArrayToString(prhs[0]);
   if (params.verbosity >= 4)
   mexPrintf("The input IDSname is:  %s\n", IDSname);
 
-  // Check for one output argument
+  /* Check for one output argument */
   if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_gen:nargout",
                       "One output maximum required.");
   }
   
-  // Extract IDS name
+  /* Extract IDS name */
   char* name = IDSname;
 
-  // Declare Function Pointer
+  /* Declare Function Pointer */
   int(*gen)(mxArray**) = NULL;
-  // Assign pointer based on IDS name
+  /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">gen</xsl:with-param>
   </xsl:apply-templates>
-  // Error if there was no match
+  /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_gen:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   
-  // Clean-up previous errors
+  /* Clean-up previous errors */
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
-  // Call function
+  /* Call function */
   int err = gen(&amp;plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_gen:");

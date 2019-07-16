@@ -90,7 +90,7 @@ int init_dataTree_array_read(int aosArraySize) {
   }
   
   if (aosArraySize == 0) {
-    // Special case for empty arrays
+    /* Special case for empty arrays */
     if (params.use_cell_array_for_array_of_structures) {
       data = mxCreateCellMatrix(0, 0);
     } else {
@@ -215,7 +215,7 @@ int begin_dataTree_array_read(char * name, int aosArraySize) {
   mwIndex i;
   
   if (aosArraySize == 0) {
-    // Special case for empty arrays
+    /* Special case for empty arrays */
     if (params.use_cell_array_for_array_of_structures) {
       data = mxCreateCellMatrix(0, 0);
     } else {
@@ -317,7 +317,7 @@ int end_dataTree_array_action() {
   }
 
   if (params.use_cell_array_for_array_of_structures) {
-    if (dataTree->data!=NULL && !mxIsCell(dataTree->data)) { // We have already iterated on this array
+    if (dataTree->data!=NULL && !mxIsCell(dataTree->data)) { /* We have already iterated on this array */
       parent = dataTree->parent;
       free(dataTree);
       dataTree = parent;
@@ -347,7 +347,7 @@ int iterate_dataTree_array(size_t index) {
   }
 
   if (params.use_cell_array_for_array_of_structures) {
-    if (!mxIsCell(dataTree->data)) { // We have already iterated on this array
+    if (!mxIsCell(dataTree->data)) { /* We have already iterated on this array */
       parent = dataTree->parent;
       free(dataTree);
       dataTree = parent;
@@ -592,14 +592,14 @@ int getSimpleFieldStruct(char *path, const mxArray ** data)
   if (!dataTree)
     return -1;
 
-  // Extract path after last closing bracket
+  /* Extract path after last closing bracket */
   token = strtok(pathcopy, ")");
   while (token != NULL) {
     relative_path = token;
     token = strtok(NULL, ")");
   }
 
-  // Structure unroll
+  /* Structure unroll */
   token = strtok(relative_path, "/");
   if (dataTree->aosParent) {
     *data = (const mxArray *) dataTree->aosParent->data;
@@ -623,7 +623,7 @@ int getSimpleFieldStruct(char *path, const mxArray ** data)
     }
     *data = (const mxArray *) mxGetFieldByNumber(*data, index, ifield);
     token = strtok(NULL, "/");
-    index = 0; // Only the first item can be an array
+    index = 0; /* Only the first item can be an array */
   }
   free(pathcopy);
   return status;

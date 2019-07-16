@@ -38,29 +38,29 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for two or three input arguments  
+  /* Check for two or three input arguments   */
   if(nrhs != 3 &amp;&amp; nrhs != 2) {
     mexErrMsgIdAndTxt("IMAS:ids_get:nargin",
                       "Two or three inputs required.");
   }
 
-  // make sure idx is scalar
+  /* make sure idx is scalar */
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
                         "Input idx must be a scalar.");
   }
-  // Get the value of idx
+  /* Get the value of idx */
   int idx = (int) mxGetScalar(prhs[0]);
   if (params.verbosity >= 4)
   mexPrintf("The input idx is:  %d\n", idx);
 
-  // make sure IDSpath is a string
+  /* make sure IDSpath is a string */
   if( !mxIsChar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_get:notChar",
                         "Input IDSpath must be a string.");
   }
-  // Get the value of IDSpath
+  /* Get the value of IDSpath */
   char *IDSpath = mxArrayToString(prhs[1]);
   if (params.verbosity >= 4)
   mexPrintf("The input IDSpath is:  %s\n", IDSpath);
@@ -68,13 +68,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if(nrhs == 3) {
   int occ;
   size_t pathlen;
-  // make sure occ is scalar
+  /* make sure occ is scalar */
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_get:notScalar",
                         "Input occurence must be a scalar.");
   }
-  // Get the value of occ
+  /* Get the value of occ */
   occ = (int) mxGetScalar(prhs[2]);
   if (params.verbosity >= 4)
   mexPrintf("The input occurence is:  %d\n", occ);
@@ -85,33 +85,33 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   }
 
-  // Check for one output argument
+  /* Check for one output argument */
   if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_get:nargout",
                       "One output maximum required.");
   }
   
-  // Extract IDS name
+  /* Extract IDS name */
   char* IDSpathcopy = strdup(IDSpath);
   char* name = strtok(IDSpathcopy, "/");
  
-  // Declare Function Pointer
+  /* Declare Function Pointer */
   int(*get)(int, char*, mxArray**) = NULL;
-  // Assign pointer based on IDS name
+  /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">get</xsl:with-param>
   </xsl:apply-templates>
-  // Error if there was no match
+  /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_get:unknown_ids",
            "Unknown IDS name: %s", name);
 
-  // free now as name uses the same memory
+  /* free now as name uses the same memory */
   free(IDSpathcopy);
 
-  // Clean-up previous errors
+  /* Clean-up previous errors */
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
-  // Call function
+  /* Call function */
   int err = get(idx, IDSpath, &amp;plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_get:");
@@ -149,7 +149,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int ctx = -1;
     int homogeneousTime = EMPTY_INT;
 
-    // Open get context
+    /* Open get context */
     getOpCtx = ual_begin_global_action(expIdx, idsFullName, READ_OP);
     if(getOpCtx &lt; 0) 
     return getOpCtx;
@@ -173,19 +173,19 @@ void mexFunction(int nlhs, mxArray *plhs[],
     return -1;
 #ifndef NO_GLOBAL_CONVERSION
     if (params.convert_whole_ids == 1) {
-    // Conversion of INT fields to double
+    /* Conversion of INT fields to double */
     if (params.get_int_as_double) {
     if (int_to_double_<xsl:value-of select="@name"/>(*ids) &lt; 0)
     return -1;
     }
-    // Conversion of EMPTY_DOUBLE values for FLT fields to NaN
+    /* Conversion of EMPTY_DOUBLE values for FLT fields to NaN */
     if (params.get_empty_as_nan) {
     if (empty_to_nan_<xsl:value-of select="@name"/>(*ids) &lt; 0)
     return -1;
     }
     }
 #endif
-    return 0; // TODO: Should we return status of ual_end_action?
+    return 0; /* TODO: Should we return status of ual_end_action? */
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>

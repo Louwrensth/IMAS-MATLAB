@@ -80,61 +80,61 @@
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-  // Check for one input arguments  
+  /* Check for one input arguments   */
   if(nrhs != 2) {
     mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:nargin",
                       "Two inputs required.");
   }
 
-  // make sure IDSpath is a string
+  /* make sure IDSpath is a string */
   if( !mxIsChar(prhs[0]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:notChar",
                         "Input IDSpath must be a string.");
   }
-  // Get the value of IDSpath
+  /* Get the value of IDSpath */
   char *IDSpath = mxArrayToString(prhs[0]);
   if (params.verbosity >= 4)
   mexPrintf("The input IDSpath is:  %s\n", IDSpath);
 
-  // make sure ids is scalar struct
+  /* make sure ids is scalar struct */
   if( !mxIsStruct(prhs[1]) ||
       !mxIsScalar(prhs[1]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:notScalar",
                         "Input ids must be a scalar structure.");
   }
-  // Get the value of ids
+  /* Get the value of ids */
   if (params.verbosity >= 4)
   mexPrintf("The input ids is:  %s\n", "SKIPPED");
 
-  // Check for one output argument
+  /* Check for one output argument */
   if(nlhs > 1) {
     mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:nargout",
                       "One output maximum required.");
   }
   
-  // Extract IDS name
+  /* Extract IDS name */
   char* IDSpathcopy = strdup(IDSpath);
   char* name = strtok(IDSpathcopy, "/");
 
   plhs[0] = mxDuplicateArray(prhs[1]);
 
-  // Declare Function Pointer
+  /* Declare Function Pointer */
   int(*<xsl:value-of select="$conversion"/>)(mxArray*) = NULL;
-  // Assign pointer based on IDS name
+  /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name"><xsl:value-of select="$conversion"/></xsl:with-param>
   </xsl:apply-templates>
-  // Error if there was no match
+  /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:unknown_ids",
            "Unknown IDS path: %s", IDSpath);
 
-  // free now as name uses the same memory
+  /* free now as name uses the same memory */
   free(IDSpathcopy);
   
-  // Clean-up previous errors
+  /* Clean-up previous errors */
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
-  // Call function
+  /* Call function */
   int err = <xsl:value-of select="$conversion"/>(plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_<xsl:value-of select="$conversion"/>:");
@@ -157,7 +157,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       int status;
       int aosArraySize;
       int isEmpty;
-      // AoS-specific variables<xsl:for-each select=".//field[@data_type='struct_array']">
+      /* AoS-specific variables */<xsl:for-each select=".//field[@data_type='struct_array']">
       int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
       int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
       int ifield;
