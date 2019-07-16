@@ -45,12 +45,15 @@ void my_exceptionGetReport(mxArray* exception)
 
 int is_field_valid(int datatype, int dim, const mxArray * data)
 {
+  /* Note that this will be checked again after necessary casts 
+     So integer fields with double values will be declared valid
+     even if their (double) value matches EMPTY_INT */
   return (data != NULL && !mxIsEmpty(data) && 
 	  (dim != 0 || 
 	   (mxIsScalar(data) && 
 	    (
-	     (datatype == INTEGER_DATA && mxIsInt32(data)  && ((int *)    mxGetData(data))[0] != EMPTY_INT) ||
-	     (datatype == DOUBLE_DATA  && mxIsDouble(data) && ((double *) mxGetData(data))[0] != EMPTY_DOUBLE)
+	     (datatype == INTEGER_DATA && (!mxIsInt32(data) || ((int *)    mxGetData(data))[0] != EMPTY_INT)) ||
+	     (datatype == DOUBLE_DATA  && (mxIsDouble(data) && ((double *) mxGetData(data))[0] != EMPTY_DOUBLE))
 	     )
 	    )
 	   )
