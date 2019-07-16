@@ -43,6 +43,21 @@ void my_exceptionGetReport(mxArray* exception)
 
 }
 
+int is_field_valid(int datatype, int dim, const mxArray * data)
+{
+  return (data != NULL && !mxIsEmpty(data) && 
+	  (dim != 0 || 
+	   (mxIsScalar(data) && 
+	    (
+	     (datatype == INTEGER_DATA && mxIsInt32(data)  && ((int *)    mxGetData(data))[0] != EMPTY_INT) ||
+	     (datatype == DOUBLE_DATA  && mxIsDouble(data) && ((double *) mxGetData(data))[0] != EMPTY_DOUBLE)
+	     )
+	    )
+	   )
+	  );
+}
+  
+
 int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * ComplexFlag, size_t * dsize, void ** pdefault)
 {
   if (datatype == INTEGER_DATA) {
@@ -283,57 +298,61 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
 
   int i;
 
-  if (data != NULL && !mxIsEmpty(data)) {
 #ifndef NO_LOCAL_CONVERSION
-    if (!params.convert_whole_ids) {
-      if (params.put_int_from_double)
-	if (field->datatype == INTEGER_DATA) {
-	  if (mxIsNumeric(data) && mxIsDouble(data)) {
-	    cast_status = castDoubleToInt32((mxArray **) &data);
-	    if (cast_status < 0) {
-	      mex_errmsgid = "cast_failed";
-	      snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to int32", field->fieldPath);
-	      return -1;
-	    }
+  if (!params.convert_whole_ids) {
+    if (params.put_int_from_double)
+      if (field->datatype == INTEGER_DATA) {
+	if (mxIsNumeric(data) && mxIsDouble(data)) {
+	  cast_status = castDoubleToInt32((mxArray **) &data);
+	  if (cast_status < 0) {
+	    mex_errmsgid = "cast_failed";
+	    snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to int32", field->fieldPath);
+	    return -1;
 	  }
-	}
-
-      if (params.put_empty_from_nan)
-	if (field->datatype == DOUBLE_DATA) {
-	  if (mxIsNumeric(data) && mxIsDouble(data)) {
-	    cast_status = castNaNToEmpty((mxArray **) &data);
-	    if (cast_status < 0) {
-	      mex_errmsgid = "cast_failed";
-	      snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to replace NaNs by EMPTY_FLOATs for field %s", field->fieldPath);
-	      return -1;
-	    }
-	  }
-	}
-    }
-#endif
-
-    if (field->datatype == CHAR_DATA && field->dim == 2) {
-      if (mxIsCell(data)) {
-	cast_status = castCellToChar((mxArray **) &data);
-	if (cast_status < 0) {
-	  mex_errmsgid = "cast_failed";
-	  snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to char", field->fieldPath);
-	  return -1;
+	  // Check again field validity
+	  if (!is_field_valid(field->datatype, field->dim, data))
+	    return 0;
 	}
       }
-    }
-
-    status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
-
-    status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
     
-    if (field->datatype == CHAR_DATA)
-      if (array != NULL)
-	(field->dim == 1) ? mxFree(array) : free(array);
-
-    if (cast_status == 0)
-      mxDestroyArray((mxArray *) data);
+    if (params.put_empty_from_nan)
+      if (field->datatype == DOUBLE_DATA) {
+	if (mxIsNumeric(data) && mxIsDouble(data)) {
+	  cast_status = castNaNToEmpty((mxArray **) &data);
+	  if (cast_status < 0) {
+	    mex_errmsgid = "cast_failed";
+	    snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to replace NaNs by EMPTY_FLOATs for field %s", field->fieldPath);
+	    return -1;
+	  }
+	  // Check again field validity
+	  if (!is_field_valid(field->datatype, field->dim, data))
+	    return 0;
+	}
+      }
   }
+#endif
+  
+  if (field->datatype == CHAR_DATA && field->dim == 2) {
+    if (mxIsCell(data)) {
+      cast_status = castCellToChar((mxArray **) &data);
+      if (cast_status < 0) {
+	mex_errmsgid = "cast_failed";
+	snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to char", field->fieldPath);
+	return -1;
+      }
+    }
+  }
+  
+  status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
+  
+  status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+  
+  if (field->datatype == CHAR_DATA)
+    if (array != NULL)
+      (field->dim == 1) ? mxFree(array) : free(array);
+  
+  if (cast_status == 0)
+    mxDestroyArray((mxArray *) data);
 
   return status;
 }

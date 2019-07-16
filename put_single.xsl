@@ -127,7 +127,7 @@
     ual_end_action(ctx);
     return -1;
     }
-    if  (data != NULL &amp;&amp; !mxIsEmpty(data)) {
+    if (is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
     field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
     <xsl:choose>
       <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
