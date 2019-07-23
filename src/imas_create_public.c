@@ -76,7 +76,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     int status;
 
     idx = ual_begin_pulse_action(UDA_BACKEND, shot, run, 
-				 "", "", ""); 
+				 "", expName, ""); 
 
     if (idx < 0)
       status = idx;
