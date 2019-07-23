@@ -4,6 +4,7 @@
 const char EMPTY_CHAR = '\0';
 const int EMPTY_INT = -999999999;
 const double EMPTY_DOUBLE = -9.0E40;
+const double EMPTY_COMPLEX[2] = {-9.0E40, -9.0E40};
 
 const char * mex_errmsgid;
 char mex_errmsgtxt[MAXERRMSGTXTSIZE];
@@ -53,7 +54,8 @@ int is_field_valid(int datatype, int dim, const mxArray * data)
 	   (mxIsScalar(data) && 
 	    (
 	     (datatype == INTEGER_DATA && (!mxIsInt32(data) || ((int *)    mxGetData(data))[0] != EMPTY_INT)) ||
-	     (datatype == DOUBLE_DATA  && (mxIsDouble(data) && ((double *) mxGetData(data))[0] != EMPTY_DOUBLE))
+	     (datatype == DOUBLE_DATA  && (mxIsDouble(data) && ((double *) mxGetData(data))[0] != EMPTY_DOUBLE)) ||
+	     (datatype == COMPLEX_DATA && (mxIsDouble(data) && (((double *) mxGetData(data))[0] != EMPTY_DOUBLE || ((double *) mxGetImagData(data))[0] != EMPTY_DOUBLE)))
 	     )
 	    )
 	   )
@@ -81,14 +83,12 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
     *dsize = 2*sizeof(char);
     return 0;
   }
-  /*
-    if (datatype == COMPLEX_DATA) {
+  if (datatype == COMPLEX_DATA) {
     *classid = mxDOUBLE_CLASS;
     *ComplexFlag = mxCOMPLEX;
     *dsize = sizeof(double);
     return 0;
-    }
-  */
+  }
   return -1; /* TODO: Should we use a unique status ID? */
 }
 
@@ -103,6 +103,7 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
   mwSize numel = 1;
   mxChar * chararray;
   int i, j;
+  double *pr, *pi;
 
   status = get_data_info(datatype, dim, &classid, &ComplexFlag, &dsize, &array);
   if (status < 0)
@@ -120,8 +121,23 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
       }
       if (!numel) ndims=0; /* True empty arrays */
       *data = mxCreateNumericArray(ndims, dims, classid, ComplexFlag);
-      /* integer and double data map directly to MATLAB types */
-      memcpy(mxGetData(*data), array, numel * dsize);
+      if (datatype != COMPLEX_DATA)
+	/* integer and double data map directly to MATLAB types */
+	memcpy(mxGetData(*data), array, numel * dsize);
+      else {
+#if MX_HAS_INTERLEAVED_COMPLEX
+#error IMAS_MEX builds with interleaved complex API is not supported yet
+	memcpy(mxGetData(*data), array, numel * dsize * 2);
+#else
+	/* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
+	pr = mxGetData(*data);
+	pi = mxGetImagData(*data);
+	for (i = 0; i < numel; i++) {
+	  pr[i] = ((double *) array)[2*i];
+	  pi[i] = ((double *) array)[2*i+1];
+	}
+#endif
+      }
     } else {
       /*           **** CHAR DATA **** */
       if (dim == 1) {
@@ -144,7 +160,7 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
 	/* Create an empty string (0x0 char array) */
         *data = mxCreateCharArray(0, NULL);
       }
-      else if (datatype == INTEGER_DATA || datatype == DOUBLE_DATA || datatype == COMPLEX_DATA)
+      else
 	/* Create an empty array of correct class */
 	*data = mxCreateNumericArray(0, NULL, classid, ComplexFlag);
   }
@@ -160,6 +176,7 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
   const mwSize *dims;
   mwSize numel = 1;
   int i,j;
+  double *pr, *pi;
 
   ndims = mxGetNumberOfDimensions(data);
   dims = mxGetDimensions(data);
@@ -176,8 +193,24 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
   /* Get pointer to data */
   if (datatype != CHAR_DATA) {
     /*           **** NUMERIC DATA **** */
-    /* integer and double data map directly to MATLAB types */
-    *array = mxGetData(data);
+    if (datatype != COMPLEX_DATA)
+      /* integer and double data map directly to MATLAB types */
+      *array = mxGetData(data);
+    else {
+#if MX_HAS_INTERLEAVED_COMPLEX
+#error IMAS_MEX builds with interleaved complex API is not supported yet
+      *array = mxGetData(data);
+#else
+      /* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
+      *array = malloc(numel*2*sizeof(double));
+      pr = mxGetData(data);
+      pi = mxGetImagData(data);
+      for (i = 0; i < numel; i++) {
+	((double *) *array)[2*i] = pr[i];
+	((double *) *array)[2*i+1] = pi[i];
+      }
+#endif
+    }
   } else {
     /*           **** CHAR DATA **** */
     /* MATLAB uses mxChar (uint16) to represent char arrays */
@@ -229,10 +262,8 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
       array = malloc(sizeof(int));
     else if (field->datatype == DOUBLE_DATA)
       array = malloc(sizeof(double));
-    /*
     else if (field->datatype == COMPLEX_DATA)
-      array = malloc(sizeof(Complex));
-    */
+      array = malloc(sizeof(double _Complex));
   }
 
   read_status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
@@ -350,9 +381,14 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
   
   status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
   
-  if (field->datatype == CHAR_DATA)
+  if (field->datatype == CHAR_DATA) {
     if (array != NULL)
       (field->dim == 1) ? mxFree(array) : free(array);
+  } else if (field->datatype == COMPLEX_DATA) {
+    if (array != NULL)
+      free(array);
+  }
+    
   
   if (cast_status == 0)
     mxDestroyArray((mxArray *) data);

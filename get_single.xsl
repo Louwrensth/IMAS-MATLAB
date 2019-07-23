@@ -115,7 +115,8 @@
   <!--========== Simple types ===========-->
     <xsl:when test="my:get_datatype(@data_type)='CHAR_DATA' or 
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
-		    my:get_datatype(@data_type)='DOUBLE_DATA'">
+		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
+		    my:get_datatype(@data_type)='COMPLEX_DATA'">
       field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
       <xsl:choose>
 	<xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">

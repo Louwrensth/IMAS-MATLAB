@@ -61,12 +61,15 @@
   <!--========== Simple types ===========-->
     <xsl:when test="my:get_datatype(@data_type)='CHAR_DATA' or 
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
-		    my:get_datatype(@data_type)='DOUBLE_DATA'">
+		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
+		    my:get_datatype(@data_type)='COMPLEX_DATA'">
       <xsl:choose>
 	<xsl:when test="@data_type='int_type' or @data_type='INT_0D'">
 	array = (int *) &amp;EMPTY_INT;</xsl:when>
 	<xsl:when test="@data_type='flt_type' or @data_type='FLT_0D'">
 	array = (double *) &amp;EMPTY_DOUBLE;</xsl:when>
+	<xsl:when test="@data_type='cpx_type' or @data_type='CPX_0D'">
+	array = (double *) &amp;EMPTY_COMPLEX[0];</xsl:when>
 	<xsl:otherwise>
 	array = NULL;</xsl:otherwise>
       </xsl:choose>

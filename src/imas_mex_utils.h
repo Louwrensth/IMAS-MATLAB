@@ -10,6 +10,7 @@
 const char EMPTY_CHAR;
 const int EMPTY_INT;
 const double EMPTY_DOUBLE;
+const double EMPTY_COMPLEX[2];
 
 #include "mex.h"
 #include "imas_mex_params.h"

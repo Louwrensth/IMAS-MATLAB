@@ -122,7 +122,8 @@
   <!--========== Simple types ===========-->
   <xsl:when test="my:get_datatype(@data_type)='CHAR_DATA' or 
 		  my:get_datatype(@data_type)='INTEGER_DATA' or 
-		  my:get_datatype(@data_type)='DOUBLE_DATA'">
+		  my:get_datatype(@data_type)='DOUBLE_DATA' or 
+		  my:get_datatype(@data_type)='COMPLEX_DATA'">
     if (get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data) &lt; 0) {
     ual_end_action(ctx);
     return -1;

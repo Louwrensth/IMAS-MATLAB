@@ -89,6 +89,13 @@
 		    $data_type='FLT_6D'">
       <xsl:sequence select="'DOUBLE_DATA'"/>
     </xsl:when>
+    <xsl:when test="$data_type='cpx_type' or $data_type='CPX_0D' or
+		    $data_type='cpx_1d_type' or $data_type='CPX_1D' or
+		    $data_type='CPX_2D' or $data_type='CPX_3D' or
+		    $data_type='CPX_4D' or $data_type='CPX_5D' or
+		    $data_type='CPX_6D'">
+      <xsl:sequence select="'COMPLEX_DATA'"/>
+    </xsl:when>
     <xsl:when test="$data_type='structure' or $data_type='struct_array'">
       <xsl:sequence select="'UNKNOWN_DATA'"/>
     </xsl:when>
@@ -101,29 +108,31 @@
 <xsl:function name="my:get_dim" as="xs:integer">
   <xsl:param name="data_type" as="xs:string"/>
   <xsl:choose>
-    <xsl:when test="$data_type='int_type' or $data_type='INT_0D' or
-		    $data_type='flt_type' or $data_type='FLT_0D'">
+    <xsl:when test="$data_type='flt_type' or $data_type='FLT_0D' or
+		    $data_type='int_type' or $data_type='INT_0D' or
+		    $data_type='cpx_type' or $data_type='CPX_0D'">
       <xsl:sequence select="0"/>
     </xsl:when>
     <xsl:when test="$data_type='str_type' or $data_type='STR_0D' or
 		    $data_type='flt_1d_type' or $data_type='FLT_1D' or
-		    $data_type='int_1d_type' or $data_type='INT_1D'">
+		    $data_type='int_1d_type' or $data_type='INT_1D' or
+		    $data_type='cpx_1d_type' or $data_type='CPX_1D'">
       <xsl:sequence select="1"/>
     </xsl:when>
     <xsl:when test="$data_type='str_1d_type' or $data_type='STR_1D' or
-		    $data_type='FLT_2D' or $data_type='INT_2D'">
+		    $data_type='FLT_2D' or $data_type='INT_2D' or $data_type='CPX_2D'">
       <xsl:sequence select="2"/>
     </xsl:when>
-    <xsl:when test="$data_type='FLT_3D' or $data_type='INT_3D'">
+    <xsl:when test="$data_type='FLT_3D' or $data_type='INT_3D' or $data_type='CPX_3D'">
       <xsl:sequence select="3"/>
     </xsl:when>
-    <xsl:when test="$data_type='FLT_4D' or $data_type='INT_4D'">
+    <xsl:when test="$data_type='FLT_4D' or $data_type='INT_4D' or $data_type='CPX_4D'">
       <xsl:sequence select="4"/>
     </xsl:when>
-    <xsl:when test="$data_type='FLT_5D' or $data_type='INT_5D'">
+    <xsl:when test="$data_type='FLT_5D' or $data_type='INT_5D' or $data_type='CPX_5D'">
       <xsl:sequence select="5"/>
     </xsl:when>
-    <xsl:when test="$data_type='FLT_6D' or $data_type='INT_6D'">
+    <xsl:when test="$data_type='FLT_6D' or $data_type='INT_6D' or $data_type='CPX_6D'">
       <xsl:sequence select="6"/>
     </xsl:when>
     <xsl:when test="$data_type='structure' or $data_type='struct_array'">

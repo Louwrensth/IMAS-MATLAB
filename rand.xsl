@@ -95,7 +95,8 @@
 
     <xsl:when test="my:get_datatype(@data_type)='CHAR_DATA' or 
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
-		    my:get_datatype(@data_type)='DOUBLE_DATA'">
+		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
+		    my:get_datatype(@data_type)='COMPLEX_DATA'">
       data = rand_array(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, <xsl:value-of select="$dynamic"/>, ntime, slice);
       if (data == NULL)
       return -1;

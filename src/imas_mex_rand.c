@@ -1,4 +1,5 @@
 #include "imas_mex_utils.h"
+#include <complex.h>
 
 int powint(int base, unsigned int exp) {
   int result=1;
@@ -16,6 +17,11 @@ int rand_integer(void) {
 
 double rand_double(void) {
   return 2*(((double) random())/RAND_MAX)-1;
+}
+
+void rand_complex(double * z) {
+  z[0] = 2*(((double) random())/RAND_MAX)-1;
+  z[1] = 2*(((double) random())/RAND_MAX)-1;
 }
 
 mxArray * rand_time(size_t ntime, int slice)
@@ -45,7 +51,9 @@ mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice
   mwSize size[MAXDIM];
   mwSize ndims;
   size_t numel = 1;
+  double z[2];
   void * array;
+  void * array_imag;
   void * array_slice;
   mxArray * data;
   int i;
@@ -89,6 +97,29 @@ mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice
       memcpy(array_slice,&((double *) array)[numel/ntime*(slice-1)],numel/ntime*sizeof(double));
       mxFree(array);
       mxSetData(data, array_slice);
+      ndims = (dim > 1) ? dim-1 : 1;
+      size[dim-1] = 1;
+      mxSetDimensions(data, size, ndims);
+    }
+  }
+  else if (datatype == COMPLEX_DATA) {
+    data = mxCreateNumericArray(ndims, size, mxDOUBLE_CLASS, mxCOMPLEX);
+    array = mxGetData(data);
+    array_imag = mxGetImagData(data);
+    for (i=0;i<numel;i++) {
+      rand_complex(&z[0]);
+      ((double *) array)[i]      = z[0];
+      ((double *) array_imag)[i] = z[1];
+    }
+    if (slice && dynamic && dim > 0) {
+      array_slice = mxMalloc(numel/ntime*sizeof(double));
+      memcpy(array_slice,&((double *) array)[numel/ntime*(slice-1)],numel/ntime*sizeof(double));
+      mxFree(array);
+      mxSetData(data, array_slice);
+      array_slice = mxMalloc(numel/ntime*sizeof(double));
+      memcpy(array_slice,&((double *) array_imag)[numel/ntime*(slice-1)],numel/ntime*sizeof(double));
+      mxFree(array_imag);
+      mxSetImagData(data, array_slice);
       ndims = (dim > 1) ? dim-1 : 1;
       size[dim-1] = 1;
       mxSetDimensions(data, size, ndims);
