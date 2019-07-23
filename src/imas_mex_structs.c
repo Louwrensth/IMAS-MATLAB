@@ -1,17 +1,40 @@
+/** \addtogroup utils MEX-utils
+ *  @{
+ */
+
+/**
+   \file src/imas_mex_structs.c
+   Browsing data structures
+ */
+
+/** @}*/
+
+#if defined(CELL_AOS) && defined(STRUCT_AOS)
+#error "CELL_AOS and STRUCT_AOS cannot be defined at the same time"
+#endif
 
 #include "imas_mex_utils.h"
-
+/**
+   Linked list containing information about IDS structure in its MATLAB form.
+ */
 struct data_struct {
-  struct data_struct * parent;
-  struct data_struct * aosParent;
-  mxArray * data;
-  size_t index;
-  size_t size;
-  int isArray;
+  struct data_struct * parent;    /*!< pointer to parent data object */
+  struct data_struct * aosParent; /*!< pointer to closest parent of type 'struct_array' */
+  mxArray * data;                 /*!< pointer to the mxArray object containing the data */
+  size_t index;                   /*!< For array of structures, indicates which index is currently opened */
+  size_t size;                    /*!< For array of structures, indicates the size of the array */
+  int isArray;                    /*!< Indicates if current object is an array of structures */
 };
 
+/**
+   Global variable for the current data_struct object
+ */
 struct data_struct * dataTree;
 
+
+/**
+   Clears the dataTree variable
+ */
 void free_dataTree() {
 
   struct data_struct * dataTree_old;
@@ -22,8 +45,13 @@ void free_dataTree() {
     free(dataTree_old);
   }
 
-}  
+}
 
+/**
+   Initialises dataTree for a reading action.
+   The current object in dataTree is freed and then a new empty one is created starting from a scalar structure containing no fields. The fields will be later created and filled, for example from reading the IDS pulse file.
+   \returns error flag.
+ */
 int init_dataTree_read() {
 
   mxArray * data;
@@ -51,6 +79,12 @@ int init_dataTree_read() {
 
 }
 
+/**
+   Initialises dataTree for a writing action.
+   The current object in dataTree is freed and then a new empty one is created starting from a given structure. Its fields will be later used, for example to write to an IDS pulse file.
+   @param[in] data contains the original structure.
+   \returns error flag.
+ */
 int init_dataTree_write(mxArray * data) {
   
   if (dataTree != NULL)
@@ -74,6 +108,13 @@ int init_dataTree_write(mxArray * data) {
 
 } 
 
+/**
+   Initialises dataTree with an array for a reading action.
+   The current object in dataTree is freed and then a new empty one is created starting from a cell array containing a given number of scalar structures containing no fields.
+   \returns error flag.
+   \note This is currently used only in the ids_allocate MEX-file.
+   \note This seems like a bit of a hack ...
+ */
 int init_dataTree_array_read(int aosArraySize) {
 
   mxArray * data;
@@ -116,6 +157,12 @@ int init_dataTree_array_read(int aosArraySize) {
 
 }
 
+/**
+   Initialises dataTree with an array for a writing action.
+   The current object in dataTree is freed and then a new empty one is created starting from the input cell array.
+   \returns error flag.
+   \note This is currently not used and was created only to match the #init_dataTree_array_read function.
+ */
 int init_dataTree_array_write(mxArray * data, int * aosArraySize) {
   
   if (dataTree != NULL)
@@ -141,6 +188,12 @@ int init_dataTree_array_write(mxArray * data, int * aosArraySize) {
 
 } 
 
+/**
+   Adds a new structure to the current dataTree object.
+   A new scalar structure is created and added to the current dataTree object under the name given in input. A new data_struct object is created and prepended to the start of the dataTree list.
+   \param[in] name String containing the structure's name.
+   \returns error flag.
+ */
 int begin_dataTree_read(char * name) {
 
   mxArray * data;
@@ -171,6 +224,13 @@ int begin_dataTree_read(char * name) {
   return 0;
 }
 
+/**
+   Recurses into an existing structure from the current dataTree object.
+   The field "name" is extracted from the current dataTree object. The mxArray must be a scalar structure. A new data_struct object is created and prepended to the start of the dataTree list.
+   \param[in] name String containing the structure's name.
+   \param[out] isEmpty Flag indicating if the extracted structure is empty.
+   \returns error flag.
+ */
 int begin_dataTree_write(char * name, int * isEmpty) {
 
   mxArray * data;
@@ -208,6 +268,13 @@ int begin_dataTree_write(char * name, int * isEmpty) {
   return 0;
 }
 
+/**
+   Adds a new array of structures to the current dataTree object.
+   A new cell/structure array is created and added to the current dataTree object under the name given in input. A new data_struct object is created and prepended to the start of the dataTree list.
+   \param[in] name String containing the structure's name.
+   \param[in] aosArraySize Size of the array.
+   \returns error flag.
+ */
 int begin_dataTree_array_read(char * name, int aosArraySize) {
 
   mxArray * data;
@@ -252,6 +319,13 @@ int begin_dataTree_array_read(char * name, int aosArraySize) {
   return 0;
 }
 
+/**
+   Recurses into an existing array of structure from the current dataTree object.
+   The field "name" is extracted from the current dataTree object. The mxArray must be a cell/structure array. A new data_struct object is created and prepended to the start of the dataTree list.
+   \param[in] name String containing the array's name.
+   \param[out] aosArraySize Size of the array.
+   \returns error flag.
+ */
 int begin_dataTree_array_write(char * name, int * aosArraySize) {
 
   mxArray * data;
@@ -289,6 +363,11 @@ int begin_dataTree_array_write(char * name, int * aosArraySize) {
   return 0;
 }
 
+/**
+   Ends action on the current structure.
+   The first element of the dataTree list is removed (dataTree now points to its parent) and freed.
+   \returns error flag.
+ */
 int end_dataTree_action() {
 
   struct data_struct * parent;
@@ -306,6 +385,11 @@ int end_dataTree_action() {
   return 0;
 }
 
+/**
+   Ends action on the current array of structure.
+   The first element of the dataTree list is removed (dataTree now points to its parent) and freed.
+   \returns error flag.
+ */
 int end_dataTree_array_action() {
 
   struct data_struct * parent;
@@ -334,6 +418,11 @@ int end_dataTree_array_action() {
   return 0;
 }
 
+/**
+   Selects a given index in the current array of structure.
+   
+   \returns error flag.
+ */
 int iterate_dataTree_array(size_t index) {
 
   struct data_struct * child;
@@ -403,6 +492,13 @@ int iterate_dataTree_array(size_t index) {
   return 0;
 }
 
+/**
+   Extracts data from the current dataTree object
+
+   \param[in] name Name of the field to retrieve.
+   \param[out] data mxArray containing the data.
+   \returns error flag.
+ */
 int get_data_from_dataTree(char * name, mxArray ** data) {
 
   int ifield;
@@ -428,6 +524,13 @@ int get_data_from_dataTree(char * name, mxArray ** data) {
 
 }
 
+/**
+   Puts data in the current dataTree object
+   A new field is created if needed and filled with the given data.
+   \param[in] name Name of the field to fill.
+   \param[in] data mxArray containing the data.
+   \returns error flag.
+ */
 int put_data_in_dataTree(char * name, mxArray * data) {
 
   int ifield;
@@ -437,7 +540,7 @@ int put_data_in_dataTree(char * name, mxArray * data) {
   else {
     if (!dataTree->isArray || dataTree->index == 0) {
       ifield = mxAddField(dataTree->data, name);
-
+      
       if (ifield < 0) {
         mex_errmsgid = "setfield_failed";
         snprintf(mex_errmsgtxt, 34+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to add field %s to structure", name);
@@ -454,6 +557,13 @@ int put_data_in_dataTree(char * name, mxArray * data) {
 
 }
 
+/**
+   Replaces data in the current dataTree object
+   The old data is retrieved using #get_data_from_dataTree and destroyed (freed). The new data is put in its place using #put_data_in_dataTree.
+   \param[in] name Name of the field to replace.
+   \param[in] data mxArray containing the data.
+   \returns error flag.
+ */
 int replace_data_in_dataTree(char * name, mxArray * data) {
 
   int ifield;
@@ -472,6 +582,15 @@ int replace_data_in_dataTree(char * name, mxArray * data) {
 
 }
 
+/**
+   Replaces an array of structures under the current dataTree object by one of its element.
+   If name is NULL then it is assumed that dataTree points to the array of structures to modify.
+   \param[in] name Name of the array of structures to replace.
+   \param[in] index Index of the element to select.
+   \returns error flag.
+
+   \note This is currently only used in ids_rand where to generate a type 3 Aos, the full array is created before being replaced by a given slice (the first).
+ */
 int slice_dataTree_array(char * name, mwSize index) {
 
   int aosArraySize;
@@ -522,6 +641,15 @@ int slice_dataTree_array(char * name, mwSize index) {
   return 0;
 }
 
+/**
+   Replicates a scalar array of structures.
+   If name is NULL then it is assumed that dataTree points to the array of structures to modify.
+   \param[in] name Name of the array of structures to replace.
+   \param[in] aosArraySize Number of elements for the resulting array of structures.
+   \returns error flag.
+
+   \note This is currently only used in ids_allocate where a single element is generated and is then replicated to obtain the desired size.
+ */
 int replicate_dataTree_array(char * name, mwSize aosArraySize) {
 
   mxArray * array_old;
@@ -578,6 +706,13 @@ int replicate_dataTree_array(char * name, mwSize aosArraySize) {
 
 }
 
+/**
+   Extracts data from the current dataTree (multi-level)
+   
+   \param[in] path Path to the element to be read in doc-style format.
+   \param[out] data mxArray containing the data.
+   \returns error flag.
+ */
 int getSimpleFieldStruct(char *path, const mxArray ** data)
 {
   /* Extracts field from structure AosParent following '/'-separated path */
@@ -629,6 +764,12 @@ int getSimpleFieldStruct(char *path, const mxArray ** data)
   return status;
 }
 
+/**
+   Reads ids_properties/homogeneous_time from an IDS in MATLAB format.
+   
+   \param[out] homogeneousTime Value of ids_properties/homogeneous_time.
+   \returns error flag.
+ */
 int getHomogeneousTime(int *homogeneousTime)
 {
   int status = -1;

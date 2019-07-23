@@ -1,13 +1,29 @@
-
-/*
- * imas_get_mex_params.c - get parameters for IMAS MEX interface
- *
- *              params = imas_get_mex_params()
- *
- * This is a MEX file for MATLAB.
+/** \addtogroup interface MEX-interface
+ *  @{
  */
+
+/**
+   \file imas_get_mex_params.c
+   get parameters for IMAS MEX interface
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m} 
+   params = imas_get_mex_params()
+   \endcode
+
+   MATLAB help:
+   \include matlab/imas_get_mex_params.m
+ */
+
+/** @}*/
+
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
   int ifield;

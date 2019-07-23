@@ -1,13 +1,30 @@
-
-/*
- * imas_open_env.c - open IMAS database in MATLAB External Interfaces
- *
- *              idx = imas_open_env(name, shot, run, user, tokamak, version)
- *
- * This is a MEX file for MATLAB.
+/** \defgroup interface MEX-interface
+ * MEX functions defined in the MEX HLI.
+ *  @{
  */
+
+/**
+   \file imas_open_env.c
+   open IMAS database using the MDSplus backend in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m} 
+   idx = imas_open_env(name, shot, run, user, tokamak, version)
+   \endcode
+
+   MATLAB help:
+   \include matlab/imas_open_env.m
+ */
+
+/** @}*/
+
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
     /* Check for six input arguments   */

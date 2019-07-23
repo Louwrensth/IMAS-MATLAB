@@ -25,16 +25,33 @@
 
 <xsl:template match = "/IDSs">
  <xsl:result-document href="src/ids/ids_delete.c.in" standalone="yes" method="text">
-/*
- * ids_delete.c - delete IDS in MATLAB External Interfaces
- *
- *		status = ids_delete(idx, IDSpath[, occ])
- *
- * This is a MEX file for MATLAB.
-*/
+/** \addtogroup interface MEX-interface
+ *  @{
+ */
+
+/**
+   \file ids_delete.c
+   delete IDS in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m}
+   status = ids_delete(idx, IDSpath[, occ])
+   \endcode
+
+   MATLAB help:
+   \include matlab/ids_delete.m
+ */
+
+/** @}*/
+
 #include "ids_delete.h"
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {

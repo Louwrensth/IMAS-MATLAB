@@ -10,4 +10,5 @@ tests/IDS_test_f90.f90
 tests/IDS_list.f90
 tests/IDS_list.h
 *~
-/doc/
+/html/
+/latex/

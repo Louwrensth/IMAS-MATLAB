@@ -1,14 +1,30 @@
-
-/*
- * imas_set_mex_params.c - set parameters for IMAS MEX interface
- *
- *              imas_set_mex_params(name, value, ...)
- *              imas_set_mex_params(struct)
- *
- * This is a MEX file for MATLAB.
+/** \addtogroup interface MEX-interface
+ *  @{
  */
+
+/**
+   \file imas_set_mex_params.c
+   set parameters for IMAS MEX interface
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m} 
+   imas_set_mex_params(name, value, ...)
+   imas_set_mex_params(struct)
+   \endcode
+
+   MATLAB help:
+   \include matlab/imas_set_mex_params.m
+ */
+
+/** @}*/
+
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
   int ifield;

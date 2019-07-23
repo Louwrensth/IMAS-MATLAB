@@ -170,7 +170,7 @@ $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c  $(addprefix $(SRC_DIR)/
 #              INSTALL
 #################################################
 
-install: all pkgconfig_install
+install: all pkgconfig_install doc_install
 	$(mkdir_p) $(prefix)/mex $(libdir)
 	$(INSTALL) $(filter %.mexa64,$(TARGETS)) $(prefix)/mex
 	$(INSTALL_DATA) $(patsubst $(LIB_DIR)/%,matlab/%,$(patsubst %.mexa64,%.m,$(filter %.mexa64,$(TARGETS)))) matlab/IDS_list.m $(prefix)/mex	
@@ -182,6 +182,10 @@ sources_install: $(SOURCES)
 	$(INSTALL_DATA) $(IDS_SRC_DIR)/*.c $(IDS_SRC_DIR)/*.h $(datadir)/src/mexinterface/ids
 	$(INSTALL_DATA) $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(datadir)/src/mexinterface
 
+doc_install: doc
+	$(mkdir_p) $(datadir)/src/mexinterface
+	cp -r html latex $(datadir)/src/mexinterface
+
 #################################################
 #              CLEAN
 #################################################
@@ -191,8 +195,19 @@ clean: test-clean pkgconfig_clean
 	$(RM) $(OBJ_FILES) $(addprefix $(BUILD_DIR)/,c_mexapi_version.o)
 	$(RM) $(TARGETS)
 
-clean-src: test-clean-src clean
+clean-src: test-clean-src clean-doc clean
 	$(RM) $(GENSOURCES) $(GENSOURCES:.in=)
+
+#################################################
+#              DOCUMENTATION
+#################################################
+
+doc: latex/files.tex html/files.html
+latex/files.tex html/files.html: Doxyfile README.md $(SOURCES) 
+	doxygen Doxyfile || $(RM) -r latex html
+
+clean-doc:
+	$(RM) -r latex html
 
 #################################################
 #                 TESTS

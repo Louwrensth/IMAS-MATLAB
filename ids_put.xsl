@@ -25,16 +25,33 @@
 
 <xsl:template match = "/IDSs">
  <xsl:result-document href="src/ids/ids_put.c.in" standalone="yes" method="text">
-/*
- * ids_put.c - write IDS in MATLAB External Interfaces
- *
- *		ids = ids_put(idx, IDSpath[, occ], ids)
- *
- * This is a MEX file for MATLAB.
-*/
+/** \addtogroup interface MEX-interface
+ *  @{
+ */
+
+/**
+   \file ids_put.c
+   write IDS in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m}
+   ids_put(idx, IDSpath[, occ], ids)
+   \endcode
+
+   MATLAB help:
+   \include matlab/ids_put.m
+ */
+
+/** @}*/
+
 #include "ids_put.h"
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {

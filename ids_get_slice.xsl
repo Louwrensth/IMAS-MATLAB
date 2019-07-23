@@ -25,16 +25,33 @@
 
 <xsl:template match = "/IDSs">
  <xsl:result-document href="src/ids/ids_get_slice.c.in" standalone="yes" method="text">
-/*
- * ids_get_slice.c - read IDS in MATLAB External Interfaces
- *
- *		ids = ids_get_slice(idx, IDSpath[, occ], inTime, interpolMode)
- *
- * This is a MEX file for MATLAB.
-*/
+/** \addtogroup interface MEX-interface
+ *  @{
+ */
+
+/**
+   \file ids_get_slice.c
+   read IDS slice in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m} 
+   ids = ids_get_slice(idx, IDSpath[, occ], inTime, interpolMode)
+   \endcode
+
+   MATLAB help:
+   \include matlab/ids_get_slice.m
+ */
+
+/** @}*/
+
 #include "ids_get_slice.h"
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {

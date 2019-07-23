@@ -1,15 +1,31 @@
+/** \defgroup utils MEX-utils
+ *  Utility functions for IMAS MEX-files.
+ *  @{
+ */
+
+/**
+   \file src/imas_mex_utils.c
+   Interaction with UAL
+ */
+
+/** @}*/
 
 #include "imas_mex_utils.h"
 
-const char EMPTY_CHAR = '\0';
-const int EMPTY_INT = -999999999;
-const double EMPTY_DOUBLE = -9.0E40;
-const double EMPTY_COMPLEX[2] = {-9.0E40, -9.0E40};
+const int EMPTY_INT = -999999999;                   /*!< default value for integer scalars */
+const double EMPTY_DOUBLE = -9.0E40;                /*!< default value for double scalars */
+const double EMPTY_COMPLEX[2] = {-9.0E40, -9.0E40}; /*!< default value for complex scalars */
 
-const char * mex_errmsgid;
-char mex_errmsgtxt[MAXERRMSGTXTSIZE];
-int msglen = 0;
+const char * mex_errmsgid;                          /*!< MATLAB message identifier for errors */
+char mex_errmsgtxt[MAXERRMSGTXTSIZE];               /*!< Error message */
+int msglen = 0;                                     /*!< Length of the mex_errmsgtxt string */
 
+/**
+   Assembles text and identifier for an error message then throws it.
+   When the global mex_errmsgid variable is not an empty string, this function assembles the error message identifier from the prefix given in input and the content of the mex_errmsgid global variable. The text of the error message is then taken from the mex_errmsgtxt global variable. If mex_errmsgid was an empty string, the identifier and text are the default ones and contain the error code provided by the status parameter.
+   @param[in] status error code
+   @param[in] prefix string containing the prefix to the MATLAB error message identifier
+ */
 void my_mexErrMsgIdAndTxt(int status, const char * prefix)
 {
   char msgid[MAXERRMSGIDSIZE];
@@ -24,6 +40,11 @@ void my_mexErrMsgIdAndTxt(int status, const char * prefix)
   }
 }
 
+/**
+   Appends MException message to global error message text
+   Typically called if an exception occurs during a call to a MATLAB function in a MEX-file, this function will add the message of the corresponding MException object to the mex_errmsgtxt global variable.
+   @param[in] exception pointer to an mxArray of class MException
+ */
 void my_exceptionGetReport(mxArray* exception)
 {
   mxArray * report;
@@ -44,11 +65,18 @@ void my_exceptionGetReport(mxArray* exception)
 
 }
 
+/**
+   Checks if field has a different value than the default.
+   This routine is used for put and put_slice methods before calling ual_write_data, if it returns 0 (false) then ual_write_data will be skipped.
+   @param[in] datatype type of data in the current field.
+   @param[in] dim rank of the current field.
+   @param[in] data mxArray containing the data.
+   @result 1 if field value is not the default, 0 otherwise.
+
+   @note Note that this will be checked again after necessary casts, so integer fields with double values will be declared valid even if their (double) value matches EMPTY_INT.
+ */
 int is_field_valid(int datatype, int dim, const mxArray * data)
 {
-  /* Note that this will be checked again after necessary casts 
-     So integer fields with double values will be declared valid
-     even if their (double) value matches EMPTY_INT */
   return (data != NULL && !mxIsEmpty(data) && 
 	  (dim != 0 || 
 	   (mxIsScalar(data) && 
@@ -61,8 +89,20 @@ int is_field_valid(int datatype, int dim, const mxArray * data)
 	   )
 	  );
 }
-  
 
+/**
+   Gets data characteristics from datatype and dimension.
+   From the input datatype (i.e. INTEGER_DATA, DOUBLE_DATA, CHAR_DATA or COMPLEX_DATA), assigns the basic class for the mxArray objects, the complexity flag (i.e. complex or real), and the size of the basic type. These quantities will be later used when creating mxArray objects.
+   @param[in] datatype type of data in the current field.
+   @param[in] dim rank of the current field.
+   @param[out] classid class to be used in MATLAB for the data.
+   @param[out] ComplexFlag complexity flag to be used in MATLAB for the data.
+   @param[out] dsize size of an element of the underlying MATLAB type.
+   @param[out] pdefault [deprecated].
+   @result error status.
+
+   @note Should we use a unique error status?
+ */
 int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * ComplexFlag, size_t * dsize, void ** pdefault)
 {
   if (datatype == INTEGER_DATA) {
@@ -89,9 +129,19 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
     *dsize = sizeof(double);
     return 0;
   }
-  return -1; /* TODO: Should we use a unique status ID? */
+  return -1; /* TODO: Should we use a unique error status? */
 }
 
+/**
+   Stores data read by the UAL in an mxArray object.
+   This function creates an mxArray to store the data read by the UAL in a previous call. The array pointer contains the data and the parameters datatype and dim indicate the nature and rank of the data. data_to_mxArray performs a copy of the data. If the UAL read action was unsuccessful (read_status was negative) then the default value is assigned to data.
+   @param[in] datatype type of data in the current field.
+   @param[in] dim rank of the current field.
+   @param[in] array pointer to the data returned by the UAL read action.
+   @param[in] size pointer containing the dimensions of the data as returned by the UAL read action.
+   @param[out] data mxArray containing the data.
+   @result error status.
+ */
 int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data)
 {
   int status = -1;
@@ -168,6 +218,16 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
   return 0;
 }
 
+/**
+   Extracts data and size information from an mxArray object.
+   This function extracts the data pointer and computes the dimensions of the data from an mxArray object based on its type given by datatype and rank given by dim. It performs the reverse operation of data_to_mxArray.
+   @param[in] datatype type of data in the current field.
+   @param[in] dim rank of the current field.
+   @param[in] data mxArray containing the data.
+   @param[out] array pointer to the data to be used by the UAL write action.
+   @param[out] size pointer containing the dimensions of the data.
+   @result error status.
+ */
 int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size)
 {
   int status;
@@ -230,6 +290,13 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
   return status;
 }
 
+/**
+   Reads the integer field ids_properties/homogeneous_time.
+   For a given context (which must correspond to the root of an open IDS object), this function reads the integer field ids_properties/homogeneous_time.
+   @param[in] ctx Current operation context.
+   @param[out] homogeneousTime Value of ids_properties/homogeneous_time.
+   @result error status.
+ */
 int getHomogeneousTime2(int ctx, int *homogeneousTime)
 {
   int status = 0;
@@ -243,6 +310,14 @@ int getHomogeneousTime2(int ctx, int *homogeneousTime)
   return status;
 }
 
+/**
+   Reads a field and stores it in an mxArray object.
+   Combines the reading of the field data by the UAL, its encapsulation in an mxArray and its conversion (if needed).
+   @param[in] action Information about the current operation.
+   @param[in] field Information about the current field.
+   @param[out] data mxArray containing the data.
+   @result error status.
+ */
 int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data)
 {
 
@@ -320,6 +395,14 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
   return 0;
 }
 
+/**
+   Writes a field from an mxArray object.
+   Combines the conversion of the data stored in the MATLAB array (if needed), its conversion into a basic type and the writing action by the UAL.
+   @param[in] action Information about the current operation.
+   @param[in] field Information about the current field.
+   @param[in] data mxArray containing the data.
+   @result error status.
+ */
 int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data)
 {
 

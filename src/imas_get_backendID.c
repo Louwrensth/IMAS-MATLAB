@@ -1,13 +1,29 @@
-
-/*
- * imas_get_backendID.c - get backend from opened context in MATLAB External Interfaces
- *
- *              backendID = imas_get_backendID(idx)
- *
- * This is a MEX file for MATLAB.
+/** \addtogroup interface MEX-interface
+ *  @{
  */
+
+/**
+   \file imas_get_backendID.c
+   get backend from opened context in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m} 
+   backendID = imas_get_backendID(idx)
+   \endcode
+
+   MATLAB help:
+   \include matlab/imas_get_backendID.m
+ */
+
+/** @}*/
+
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
     /* Check for three input arguments   */

@@ -1,6 +1,23 @@
+/** \addtogroup utils MEX-utils
+ *  @{
+ */
+
+/**
+   \file src/imas_mex_rand.c
+   Random IDS generation
+ */
+
+/** @}*/
+
 #include "imas_mex_utils.h"
 #include <complex.h>
 
+/**
+   Exponentiation routine for integers
+   @param[in] base
+   @param[in] exp
+   @result base^(exp)
+ */
 int powint(int base, unsigned int exp) {
   int result=1;
   int i;
@@ -11,19 +28,37 @@ int powint(int base, unsigned int exp) {
   return result;
 } 
 
+/**
+   Generate a random integer (int32)
+   @result random integer
+ */
 int rand_integer(void) {
   return (int) random() - RAND_MAX/2;
 }
 
+/**
+   Generate a random double
+   @result random double
+ */
 double rand_double(void) {
   return 2*(((double) random())/RAND_MAX)-1;
 }
 
+/**
+   Generate a random complex double
+   @param[out] z random complex double
+ */
 void rand_complex(double * z) {
   z[0] = 2*(((double) random())/RAND_MAX)-1;
   z[1] = 2*(((double) random())/RAND_MAX)-1;
 }
 
+/**
+   Generate time for a random IDS
+   @param[in] ntime reference number of slices 
+   @param[in] slice 0 to get all times, >0 to get the (slice)-th time.
+   @result mxArray containing the time vector (double).
+ */
 mxArray * rand_time(size_t ntime, int slice)
 {
   void * array;
@@ -42,10 +77,23 @@ mxArray * rand_time(size_t ntime, int slice)
   return data;
 }
 
+/**
+   Generate a (not so) random string
+   @result mxArray containing the string
+ */
 mxArray * rand_string(void) {
   return mxCreateString("12 34 56 78 90");
 }
 
+/**
+   Generate a random array of the required type and size
+   @param[in] datatype data type requested using the low level convention
+   @param[in] dim number of dimensions requested (0 for scalar)
+   @param[in] dynamic flag to indicate if array depends on time or not
+   @param[in] ntime reference number of slices (only if dynamic!=0)
+   @param[in] slice 0 to get the complete array, >0 to get the (slice)-th sub-array (only if dynamic!=0)
+   @result mxArray containing the array
+ */
 mxArray * rand_array(int datatype, int dim, int dynamic, size_t ntime, int slice)
 {
   mwSize size[MAXDIM];

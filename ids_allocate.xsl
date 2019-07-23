@@ -25,16 +25,33 @@
 
 <xsl:template match = "/IDSs">
  <xsl:result-document href="src/ids/ids_allocate.c.in" standalone="yes" method="text">
-/*
- * ids_allocate.c - read IDS in MATLAB External Interfaces
- *
- *		ids = ids_allocate(IDSname, pathInIDS, n)
- *
- * This is a MEX file for MATLAB.
-*/
+/** \addtogroup extra MEX-interface-extra
+ *  @{
+ */
+
+/**
+   \file ids_allocate.c
+   Initialise array of structure in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m}
+   ids = ids = ids_allocate(IDSname, pathInIDS, n)
+   \endcode
+
+   MATLAB help:
+   \include matlab/ids_allocate.m
+ */
+
+/** @}*/
+
 #include "ids_allocate.h"
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {

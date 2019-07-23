@@ -25,16 +25,34 @@
 
 <xsl:template match = "/IDSs">
  <xsl:result-document href="src/ids/ids_rand.c.in" standalone="yes" method="text">
-/*
- * ids_rand.c -  initialise IDS in MATLAB External Interfaces
- *
- *		ids = ids_rand(IDSname)
- *
- * This is a MEX file for MATLAB.
-*/
+/** \defgroup extra MEX-interface-extra
+ *  Extra MEX functions defined in the MEX HLI.
+ *  @{
+ */
+
+/**
+   \file ids_rand.c
+   Generate random IDS in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m}
+   ids = ids_rand(IDSname, ntime, islice)
+   \endcode
+
+   MATLAB help:
+   \include matlab/ids_rand.m
+ */
+
+/** @}*/
+
 #include "ids_rand.h"
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {

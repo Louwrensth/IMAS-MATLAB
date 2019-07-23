@@ -26,16 +26,33 @@
 <xsl:template match = "/IDSs">
  <!-- Second Version: Empty AOS -->
  <xsl:result-document href="src/ids/ids_gen2.c.in" standalone="yes" method="text">
-/*
- * ids_gen2.c -  initialise IDS in MATLAB External Interfaces
- *
- *		ids = ids_gen2(IDSname)
- *
- * This is a MEX file for MATLAB.
-*/
+/** \addtogroup extra MEX-interface-extra
+ *  @{
+ */
+
+/**
+   \file ids_gen2.c
+   Initialise IDS in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m}
+   ids = ids_gen2(IDSname)
+   \endcode
+
+   MATLAB help:
+   \include matlab/ids_gen2.m
+ */
+
+/** @}*/
+
 #include "ids_gen2.h"
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {

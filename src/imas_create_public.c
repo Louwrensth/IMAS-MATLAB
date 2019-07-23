@@ -1,13 +1,29 @@
-
-/*
- * imas_create_public.c - create public IMAS database in MATLAB External Interfaces
- *
- *              idx = imas_create_public(name, shot, run, refShot, refRun, expName)
- *
- * This is a MEX file for MATLAB.
+/** \addtogroup interface MEX-interface
+ *  @{
  */
+
+/**
+   \file imas_open_public.c
+   create IMAS database using the UDA backend in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m} 
+   idx = imas_create_public(name, shot, run, refShot, refRun, expName)
+   \endcode
+
+   MATLAB help:
+   \include matlab/imas_create_public.m
+ */
+
+/** @}*/
+
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
     /* Check for six input arguments   */

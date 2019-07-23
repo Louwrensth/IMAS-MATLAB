@@ -67,16 +67,33 @@
   <xsl:param name="conversion" select="concat($src,'_to_',$dest)" />
 
  <xsl:result-document href="src/ids/ids_{$conversion}.c.in" standalone="yes" method="text">
-/*
- * ids_<xsl:value-of select="$conversion"/>.c - convert IDS in MATLAB External Interfaces
- *
- *		ids = ids_<xsl:value-of select="$conversion"/>(IDSpath, ids)
- *
- * This is a MEX file for MATLAB.
-*/
+/** \addtogroup extra MEX-interface-extra
+ *  @{
+ */
+
+/**
+   \file ids_<xsl:value-of select="$conversion"/>.c
+   Convert IDS in MATLAB External Interfaces
+   
+   This is a MEX file for MATLAB.
+
+   Usage:
+   \code{.m}
+   ids = ids_<xsl:value-of select="$conversion"/>(IDSname, ids)
+   \endcode
+
+   MATLAB help:
+   \include matlab/ids_<xsl:value-of select="$conversion"/>.m
+ */
+
+/** @}*/
+
 #include "ids_<xsl:value-of select="$conversion"/>.h"
 #include "imas_mex_utils.h"
 
+/**
+   Entry point to C/C++ MEX function built with C Matrix API
+ */
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {

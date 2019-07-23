@@ -1,6 +1,24 @@
+/** \addtogroup utils MEX-utils
+ *  @{
+ */
+
+/**
+   \file src/imas_mex_casts.c
+   MATLAB type casting
+
+   Functions used to cast MATLAB variables to new types. The default option is to use a call to a MATLAB function via the mexCallMATLABWithTrap C function but if the code is compiled with -DDO_NOT_CALL_MATLAB, then the casting is done manually (except for transformations from cell arrays to structure arrays). This is useful in case one wants to use the MEX HLI outside of a MATLAB session.
+   A copy of the original mxArray pointer must be kept in case the data is not needed anymore and one needs to destroy it using mxDestroyArray.
+ */
+
+/** @}*/
 
 #include "imas_mex_utils.h"
 
+/**
+   Cast a double array to an int32 array.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castDoubleToInt32(mxArray ** data)
 {
   mxArray * doubleData = (mxArray *) *data;
@@ -44,6 +62,11 @@ int castDoubleToInt32(mxArray ** data)
   return 0;
 }
 
+/**
+   Cast an int32 array to a double array.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castInt32ToDouble(mxArray ** data)
 {
   mxArray *intData = (mxArray *) * data;
@@ -87,6 +110,12 @@ int castInt32ToDouble(mxArray ** data)
   return 0;
 }
 
+
+/**
+   Replace NaN values with EMPTY_DOUBLE in double arrays.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castNaNToEmpty(mxArray ** data)
 {
   mxArray *inData = (mxArray *) * data;
@@ -128,6 +157,11 @@ int castNaNToEmpty(mxArray ** data)
   return 0;
 }
 
+/**
+   Replace EMPTY_DOUBLE values with NaN in double arrays.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castEmptyToNaN(mxArray ** data)
 {
   mxArray *inData = (mxArray *) * data;
@@ -168,6 +202,11 @@ int castEmptyToNaN(mxArray ** data)
   return 0;
 }
 
+/**
+   Cast a cell array of strings to a char matrix.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castCellToChar(mxArray ** data)
 {
   mxArray * cellData = (mxArray *) *data;
@@ -213,6 +252,11 @@ int castCellToChar(mxArray ** data)
   return 0;
 }
 
+/**
+   Cast a char matrix to a cell array of strings.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castCharToCell(mxArray ** data)
 {
   mxArray *charData = (mxArray *) * data;
@@ -271,6 +315,12 @@ int castCharToCell(mxArray ** data)
   return 0;
 }
 
+/**
+   Cast a cell array of structure to a 1D structure array.
+   All structures in the cell array must have the same fields, otherwise an error will be triggered.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castCellToStruct(mxArray ** data)
 {
   mxArray *cellData = (mxArray *) * data;
@@ -291,6 +341,11 @@ int castCellToStruct(mxArray ** data)
   return 0;
 }
 
+/**
+   Cast 1D structure array to a cell array of structures.
+   @param[inout] data mxArray handle
+   @result error code
+ */
 int castStructToCell(mxArray ** data)
 {
   mxArray *structData = (mxArray *) * data;
