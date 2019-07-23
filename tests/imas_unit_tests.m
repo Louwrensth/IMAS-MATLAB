@@ -9,11 +9,12 @@ classdef imas_unit_tests < matlab.unittest.TestCase
   properties (ClassSetupParameter)
     % useCache = struct('yes',true,'no',false); % Disabled for now ...
     useCache = struct('no',false);
+    homogeneousTime = struct('yes',true,'no',false);
   end
 
   %% Class-level setup
   methods (TestClassSetup)
-    function createIMASDb(testCase, useCache)
+    function createIMASDb(testCase, useCache,homogeneousTime)
       idx = imas_create_env('ids',9999,9999,0,0,getenv('USER'),'test','3');
       testCase.addTeardown(@imas_close,idx);
       if useCache
@@ -24,11 +25,14 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       testCase.TestData.idx = idx;
       %
       ntime = 3;
+      hT = int32(homogeneousTime);
       for name = IDS_list.'
-        testCase.TestData.IDS.(name{1})       = ids_rand(name{1},ntime,0);
+        testCase.TestData.IDS.(name{1}) = ids_rand(name{1},ntime,0);
+        testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = hT;
         testCase.TestData.IDS_slice.(name{1}) = cell(ntime,1);
         for itime = 1:ntime
           testCase.TestData.IDS_slice.(name{1}){itime} = ids_rand(name{1},ntime,itime);
+          testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = hT;
         end
       end
       %
