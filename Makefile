@@ -84,7 +84,7 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_get_backendID \
 				imas_get_mex_params imas_set_mex_params \
 				)
-SOURCES = $(GENSOURCES)
+SOURCES = $(GENSOURCES:.in=)
 UTL_SRC_FILES = $(addsuffix .c, imas_mex_utils imas_mex_structs imas_mex_params imas_mex_casts imas_mex_rand)
 SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES) $(UTL_SRC_FILES))
 
