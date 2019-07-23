@@ -76,15 +76,14 @@ GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(HEADER_FILES))
 GENSOURCES+= matlab/IDS_list.m
 
 # Add static sources
-MEX_SRC_FILES = $(addsuffix .c, imas_open imas_open_env \
+MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_open_public \
-				imas_create imas_create_env \
+				imas_create_env \
 				imas_create_public \
 				imas_close \
 				imas_get_backendID \
 				imas_get_mex_params imas_set_mex_params \
 				)
-# TODO/DEPRECATED: imas_open_hdf5 imas_create_hdf5 imas_enable_mem_cache imas_disable_mem_cache imas_flush_mem_cache imas_discard_mem_cache
 SOURCES = $(GENSOURCES)
 UTL_SRC_FILES = $(addsuffix .c, imas_mex_utils imas_mex_structs imas_mex_params imas_mex_casts imas_mex_rand)
 SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES) $(UTL_SRC_FILES))

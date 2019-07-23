@@ -36,9 +36,6 @@ The standard functions have been implemented:
         + ids_gen
 
 The following additional functions are also provided
-    - Functions to open/create/close a pulse file (requires fiddling with the environment)
-        + imas_open
-        + imas_create
     - Functions to query/modify the global parameters for the MEX interface (see 4.)
         + imas_get_mex_params
         + imas_set_mex_params
