@@ -183,8 +183,8 @@ sources_install: $(SOURCES)
 	$(INSTALL_DATA) $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(datadir)/src/mexinterface
 
 doc_install: doc
-	$(mkdir_p) $(datadir)/src/mexinterface
-	cp -r html latex $(datadir)/src/mexinterface
+	$(mkdir_p) $(docdir)/dev/mexinterface
+	cp -r html latex $(docdir)/dev/mexinterface
 
 #################################################
 #              CLEAN
@@ -202,9 +202,11 @@ clean-src: test-clean-src clean-doc clean
 #              DOCUMENTATION
 #################################################
 
-doc: latex/files.tex html/files.html
+doc: latex/refman.pdf html/files.html
 latex/files.tex html/files.html: Doxyfile README.md $(SOURCES) 
 	doxygen Doxyfile || $(RM) -r latex html
+latex/refman.pdf: latex/files.tex
+	$(MAKE) -C latex
 
 clean-doc:
 	$(RM) -r latex html
