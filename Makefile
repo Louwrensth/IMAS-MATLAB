@@ -173,7 +173,7 @@ $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c  $(addprefix $(SRC_DIR)/
 install: all pkgconfig_install doc_install
 	$(mkdir_p) $(prefix)/mex $(libdir)
 	$(INSTALL) $(filter %.mexa64,$(TARGETS)) $(prefix)/mex
-	$(INSTALL_DATA) $(patsubst $(LIB_DIR)/%,matlab/%,$(patsubst %.mexa64,%.m,$(filter %.mexa64,$(TARGETS)))) matlab/IDS_list.m $(prefix)/mex	
+	$(INSTALL_DATA) $(patsubst $(LIB_DIR)/%,matlab/%,$(patsubst %.mexa64,%.m,$(filter %.mexa64,$(TARGETS)))) matlab/IDS_list.m matlab/nan_to_empty.m matlab/empty_to_nan.m $(prefix)/mex	
 	$(INSTALL) -T $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so.$(MEX_SO_NUM)
 	ln -sf libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so
 
