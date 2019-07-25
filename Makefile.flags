@@ -1,3 +1,12 @@
+# If your MATLAB version is not listed in here, here is how to determine the compilation flags
+# Try to run the mex command on one of the files (e.g. src/imas_close.c) and look at the flags used in the commands (for the mex command the -v flag - to display more information - and the -n flag - to perform a dry-run only - may be useful).
+# For versions prior to R2015a, the define flag -DNO_MXISSCALAR needs to be added.
+# If present, replace the -ansi flag with -std=c99.
+# For old versions (~< 2015a) use the -largeArrayDims with the mex command on 64-bit platforms.
+# Sometimes an additional file from the matlab directory is compiled and added to the binary at link time. The path of this file needs to be added to the MEXSRC variable. Look for example to R2008b and R2017a-R2018b.
+# Note also that generally MEX-files compiled with one version of MATLAB will be compatible with future versions. The inverse is not guaranteed.
+
+
 
 # Check we have a valid version
 ifeq ("","$(MATLAB)")
@@ -176,7 +185,7 @@ endif
 # R2018b 9.5.0
 ifeq ("2018b","$(strip $(MATLAB_VERSION))")
   CFLAGS=-fexceptions -fPIC -fno-omit-frame-pointer -pthread
-  CFLAGS+= -DMATLAB_DEFAULT_RELEASE=R2017b -DUSE_MEX_CMD -D_GNU_SOURCE -DMATLAB_MEX_FILE
+  CFLAGS+= -DMX_COMPAT_64 -DMATLAB_DEFAULT_RELEASE=R2017b -DUSE_MEX_CMD -D_GNU_SOURCE -DMATLAB_MEX_FILE
   CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
   CFLAGS_OPTIM=-O2 -fwrapv -DNDEBUG
   CFLAGS_DEBUG=-g
