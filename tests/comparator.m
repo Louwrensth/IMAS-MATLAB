@@ -14,7 +14,7 @@ function comparator(ids1,ids2,path,strict)
   n1 = numel(ids1);
   n2 = numel(ids2);
   assert(n1 == n2,'%s: Incompatible number of elements : %d/%d', path, n1, n2);
-  switch class(ids1),
+  switch class(ids1)
     case 'cell'
       for ii = 1:n1
         comparator(ids1{ii},ids2{ii},sprintf('%s{%d}',path,ii),strict);

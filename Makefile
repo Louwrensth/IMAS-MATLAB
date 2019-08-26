@@ -127,7 +127,7 @@ $(cell_to_struct_SRC_FILES): cells_structs.xsl
 $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 $(GENSOURCES): $(IDSDEF)
-	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
+	java net.sf.saxon.Transform -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
 
 $(IDS_SRC_DIR)/%.c: $(IDS_SRC_DIR)/%.c.in
 	$(BEAUTIFY) $< -o $@

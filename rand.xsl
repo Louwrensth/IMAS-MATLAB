@@ -71,6 +71,24 @@
 
   <!--========== Simple types ===========-->
   
+    <xsl:when test="@path='ids_properties/version_put/data_dictionary'">
+      data = mxCreateString("<xsl:value-of select="$DD_GIT_DESCRIBE"/>");
+      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
+      return -1;
+    </xsl:when>
+    
+    <xsl:when test="@path='ids_properties/version_put/access_layer'">
+      data = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
+      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
+      return -1;
+    </xsl:when>
+    
+    <xsl:when test="@path='ids_properties/version_put/access_layer_language'">
+      data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
+      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
+      return -1;
+    </xsl:when>
+
     <xsl:when test = "@name='homogeneous_time' and (@data_type='int_type' or @data_type='INT_0D')">
       data = mxCreateNumericMatrix(1,1,mxINT32_CLASS,mxREAL);
       *((int *) mxGetData(data)) = 1;

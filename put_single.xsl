@@ -124,10 +124,23 @@
 		  my:get_datatype(@data_type)='INTEGER_DATA' or 
 		  my:get_datatype(@data_type)='DOUBLE_DATA' or 
 		  my:get_datatype(@data_type)='COMPLEX_DATA'">
-    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data) &lt; 0) {
-    ual_end_action(ctx);
-    return -1;
-    }
+    <xsl:choose>
+      <xsl:when test="@path='ids_properties/version_put/data_dictionary'">
+	data = mxCreateString("<xsl:value-of select="$DD_GIT_DESCRIBE"/>");
+      </xsl:when>
+      <xsl:when test="@path='ids_properties/version_put/access_layer'">
+	data = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
+      </xsl:when>
+      <xsl:when test="@path='ids_properties/version_put/access_layer_language'">
+	data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
+      </xsl:when>
+      <xsl:otherwise>
+	if (get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data) &lt; 0) {
+	ual_end_action(ctx);
+	return -1;
+	}
+      </xsl:otherwise>
+    </xsl:choose>
     if (is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
     field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
     <xsl:choose>
