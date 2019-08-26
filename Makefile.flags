@@ -10,7 +10,11 @@
 
 # Check we have a valid version
 ifeq ("","$(MATLAB)")
-  $(error Empty MATLAB variable. Please specify your MATLAB root directory using the MATLAB variable.)
+  ifneq ("","$(EBROOTMATLAB)")
+    MATLAB=$(EBROOTMATLAB)
+  else
+    $(error Empty MATLAB variable. Please specify your MATLAB root directory using the MATLAB variable.)
+  endif
 endif
 
 # Try to guess MATLAB_VERSION from the loaded module
