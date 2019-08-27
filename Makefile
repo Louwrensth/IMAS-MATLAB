@@ -126,7 +126,7 @@ $(struct_to_cell_SRC_FILES): cells_structs.xsl
 $(cell_to_struct_SRC_FILES): cells_structs.xsl
 $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
-$(GENSOURCES): $(IDSDEF)
+$(GENSOURCES): $(IDSDEF) | saxonicajar
 	java net.sf.saxon.Transform -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
 
 $(IDS_SRC_DIR)/%.c: $(IDS_SRC_DIR)/%.c.in
@@ -202,11 +202,12 @@ clean-src: test-clean-src clean-doc clean
 #              DOCUMENTATION
 #################################################
 
+PDFLATEX?=$(shell which pdflatex 2>/dev/null)
 doc: latex/refman.pdf html/files.html
 latex/files.tex html/files.html: Doxyfile README.md $(SOURCES) 
 	doxygen Doxyfile || $(RM) -r latex html
 latex/refman.pdf: latex/files.tex
-	$(MAKE) -C latex
+	$(if $(PDFLATEX),$(MAKE) -C latex,$(warning Skipping make -C latex: pdflatex does not exist.))
 
 clean-doc:
 	$(RM) -r latex html
