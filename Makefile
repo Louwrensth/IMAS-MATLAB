@@ -102,6 +102,9 @@ ifneq ("","$(MEXSRC)")
   MEX_ADD_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(subst .c,.o,$(notdir $(MEXSRC))))
 endif
 
+# Enforcing serial builds only until problem with parallel generation of sources is solved.
+.NOTPARALLEL:
+
 all: $(SOURCES) $(TARGETS)
 
 #################################################
