@@ -42,6 +42,26 @@ VPATH = $(SRC_DIR) $(IDS_SRC_DIR) build lib
 # Get a list of IDS from IDSDEF file
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
 
+all: _all
+# Generated sources (excluding static sources)
+## This template takes care of most of the dependencies
+## Additional dependencies should be added in the init/build section
+define TEMPLATE
+$(1)_SOURCES = $(1)_ids.c.in ids_$(1).c.in ids_$(1).h.in
+ALL_SOURCES += $$($(1)_SOURCES)
+$(1)_SRC_FILES = $$(addprefix $(IDS_SRC_DIR)/,$$($(1)_SOURCES))
+ifeq (_to_,$(findstring _to_,$(1)))
+$$($(1)_SRC_FILES): ids_converter.xsl mex_tools.xsl
+else
+$$($(1)_SRC_FILES): ids_$(1).xsl mex_tools.xsl
+endif
+$(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
+$(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
+endef
+
+METHODS = get get_slice put put_slice delete allocate gen gen2 double_to_int int_to_double nan_to_empty empty_to_nan struct_to_cell cell_to_struct rand
+
+$(foreach method,$(METHODS),$(eval $(call TEMPLATE,$(method))))
 
 IDS_C_FILES   = $(filter-out ids_%     , $(ALL_SOURCES))
 MEX_IDS_FILES = $(filter     ids_%.c.in, $(ALL_SOURCES))
@@ -82,27 +102,8 @@ endif
 # Enforcing serial builds only until problem with parallel generation of sources is solved.
 .NOTPARALLEL:
 
-all: $(SOURCES) $(TARGETS)
+_all: $(SOURCES) $(TARGETS)
 
-# Generated sources (excluding static sources)
-## This template takes care of most of the dependencies
-## Additional dependencies should be added in the init/build section
-define TEMPLATE
-$(1)_SOURCES = $(1)_ids.c.in ids_$(1).c.in ids_$(1).h.in
-ALL_SOURCES += $$($(1)_SOURCES)
-$(1)_SRC_FILES = $$(addprefix $(IDS_SRC_DIR)/,$$($(1)_SOURCES))
-ifeq (_to_,$(findstring _to_,$(1)))
-$$($(1)_SRC_FILES): ids_converter.xsl mex_tools.xsl
-else
-$$($(1)_SRC_FILES): ids_$(1).xsl mex_tools.xsl
-endif
-$(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
-$(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
-endef
-
-METHODS = get get_slice put put_slice delete allocate gen gen2 double_to_int int_to_double nan_to_empty empty_to_nan struct_to_cell cell_to_struct rand
-
-$(foreach method,$(METHODS),$(eval $(call TEMPLATE,$(method))))
 
 #################################################
 #                 INIT: SOURCE GENERATION
