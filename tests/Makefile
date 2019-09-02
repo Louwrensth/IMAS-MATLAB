@@ -1,6 +1,17 @@
+include ../../Makefile.common
+
+ifeq (,$(UAL_BUILD))
+UAL_BUILD=../..
+$(warning UAL_BUILD variable unset, probably not running 'make ual_test' from the Installer. Assuming UAL_BUILD=$(UAL_BUILD).)
+endif
+
 # This Makefile expects you've got UAL already built (using the installer), but not yet installed, so we're testing the current build.
 
 IDSDEF= ../../xml/IDSDef.xml
+
+# Test environment (mimics loaded imas environment), write ids to tmp dir
+ids_path = $(realpath $(UAL_BUILD)/models/mdsplus)
+test_ENV = LD_LIBRARY_PATH=$(UAL_BUILD)/mexinterface/lib:$(UAL_BUILD)/lowlevel:$$LD_LIBRARY_PATH ids_path="$$PWD/tmp;$(ids_path)"
 
 # Get a list of IDS from IDSDEF file
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
@@ -21,7 +32,7 @@ $(GENSOURCES): test_utils.xsl $(IDSDEF)
 	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$<
 
 test:
-	LD_LIBRARY_PATH=$(realpath $(CURDIR)/../lib):$$LD_LIBRARY_PATH matlab -nodisplay -r "addpath ../lib ../matlab;res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
+	$(test_ENV) matlab -nodisplay -r "addpath ../lib ../matlab;res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
 
 .PHONY: all install clean clean-src perf_tools
 
