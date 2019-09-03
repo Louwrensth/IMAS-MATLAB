@@ -18,9 +18,9 @@
 #define TIMED       1
 #define TIMED_CLEAR 2
 
-const int EMPTY_INT;
-const double EMPTY_DOUBLE;
-const double EMPTY_COMPLEX[2];
+extern const int EMPTY_INT;
+extern const double EMPTY_DOUBLE;
+extern const double EMPTY_COMPLEX[2];
 
 #include "mex.h"
 #include "imas_mex_params.h"
