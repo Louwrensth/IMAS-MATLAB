@@ -171,7 +171,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if(getOpCtx &lt; 0) 
     return getOpCtx;
     ctx = getOpCtx;
-    status = getHomogeneousTime2(ctx, &amp;homogeneousTime);
+    status = getHomogeneousTimeCtx(ctx, &amp;homogeneousTime);
     if(status &lt; 0) 
     {
     ual_end_action(ctx);

@@ -192,7 +192,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if(getSliceOpCtx &lt; 0) 
     return getSliceOpCtx;
     ctx = getSliceOpCtx;
-    status = getHomogeneousTime2(ctx, &amp;homogeneousTime);
+    status = getHomogeneousTimeCtx(ctx, &amp;homogeneousTime);
     if(status &lt; 0) 
     {	
     ual_end_action(ctx);

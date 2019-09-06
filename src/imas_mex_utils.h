@@ -67,7 +67,7 @@ void my_exceptionGetReport(mxArray* exception);
 
 int is_field_valid(int datatype, int dim, const mxArray * data);
 
-int getHomogeneousTime2(int ctx, int *homogeneousTime);
+int getHomogeneousTimeCtx(int ctx, int *homogeneousTime);
 
 int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data);
 

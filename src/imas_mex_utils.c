@@ -297,7 +297,7 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
    @param[out] homogeneousTime Value of ids_properties/homogeneous_time.
    @result error status.
  */
-int getHomogeneousTime2(int ctx, int *homogeneousTime)
+int getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
 {
   int status = 0;
   char *fieldPath = "ids_properties/homogeneous_time";
