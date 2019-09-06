@@ -19,6 +19,11 @@ extern const int EMPTY_INT;
 extern const double EMPTY_DOUBLE;
 extern const double EMPTY_COMPLEX[2];
 
+extern const int IDS_TIME_MODE_UNKNOWN;
+extern const int IDS_TIME_MODE_HETEROGENEOUS;
+extern const int IDS_TIME_MODE_HOMOGENEOUS;
+extern const int IDS_TIME_MODE_INDEPENDENT;
+
 #include "mex.h"
 #include "imas_mex_params.h"
 #include "imas_mex_casts.h"

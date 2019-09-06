@@ -41,6 +41,9 @@
   <!-- Type 2 arrays of structure -->
   <!-- Type 3 arrays of structure, with a unique time base -->
     <xsl:when test = "@data_type = 'struct_array'">
+      <xsl:if test="$dynamic_only !='yes' and @type='dynamic'"> <!-- This could be put in the same statement as aosArraySize>0  -->
+	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
+      </xsl:if>
       field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
       <xsl:if test="ancestor::field[@data_type='struct_array']">
 	//<xsl:value-of select="ancestor::field[@data_type='struct_array'][1]/@path"/>
@@ -48,7 +51,7 @@
       </xsl:if>
       <xsl:choose>	
 	<xsl:when test="@type='dynamic'"> <!-- Type 3 -->
-	  if (homogeneousTime == 1) 
+	  if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) 
           field.timebasePath = "/time";
        	  else
 	  field.timebasePath = &quot;<xsl:value-of select="$AosRelativePath"/>/time&quot;;
@@ -97,6 +100,9 @@
       ual_end_action(ctx);
       return -1;
       }
+      <xsl:if test="$dynamic_only !='yes' and @type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
+	}
+      </xsl:if>
     </xsl:when>
 
   <!--========== Regular structure ===========-->
@@ -124,6 +130,9 @@
 		  my:get_datatype(@data_type)='INTEGER_DATA' or 
 		  my:get_datatype(@data_type)='DOUBLE_DATA' or 
 		  my:get_datatype(@data_type)='COMPLEX_DATA'">
+    <xsl:if test="$dynamic_only !='yes' and @type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])"> <!-- This could be put in the same statement as is_field_valid -->
+      if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
+    </xsl:if>
     <xsl:choose>
       <xsl:when test="@path='ids_properties/version_put/data_dictionary'">
 	data = mxCreateString("<xsl:value-of select="$DD_GIT_DESCRIBE"/>");
@@ -145,7 +154,7 @@
     field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
     <xsl:choose>
       <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
-	if (homogeneousTime == 1) 
+	if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) 
         field.timebasePath = "/time";
        	else
 	field.timebasePath = &quot;<xsl:value-of select="@timebasepath"/>&quot;;
@@ -162,6 +171,9 @@
     return status;
     }
     }
+    <xsl:if test="$dynamic_only !='yes' and @type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
+      }
+    </xsl:if>
   </xsl:when>
 
   <!--========== Unknown type ===========-->

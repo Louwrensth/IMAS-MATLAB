@@ -180,7 +180,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int aosCtx = -1;
     int putOpCtx = -1;
     int ctx = -1;
-    int homogeneousTime = EMPTY_INT;
+    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
     int isEmpty;
 
 #ifndef NO_GLOBAL_CONVERSION
@@ -208,12 +208,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (getHomogeneousTime(&amp;homogeneousTime) &lt; 0) 
       mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
       "Unable to retrieve ids%%ids_properties%%homogeneous_time");
-    if( homogeneousTime == EMPTY_INT )
+    if( homogeneousTime == IDS_TIME_MODE_UNKNOWN )
     {
     mexWarnMsgIdAndTxt("IMAS:ids_put:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT quits with no action.");
     return 0;
     }
-    if ( homogeneousTime == 1 ) {
+    else if ( homogeneousTime ==  IDS_TIME_MODE_HOMOGENEOUS ) {
     /* Top-level ids_put functions check that ids is a scalar struct */
     ifield = mxGetFieldNumber(ids, "time");
     ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);

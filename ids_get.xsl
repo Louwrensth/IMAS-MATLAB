@@ -164,7 +164,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int aosCtx = -1;
     int getOpCtx = -1;
     int ctx = -1;
-    int homogeneousTime = EMPTY_INT;
+    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
     /* Open get context */
     getOpCtx = ual_begin_global_action(expIdx, idsFullName, READ_OP);

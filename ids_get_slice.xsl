@@ -185,7 +185,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int aosCtx = -1;
     int getSliceOpCtx = -1;
     int ctx = -1;
-    int homogeneousTime = EMPTY_INT;
+    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
     /* Open getSlice context */
     getSliceOpCtx = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode);

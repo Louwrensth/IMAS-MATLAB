@@ -16,6 +16,11 @@ const int EMPTY_INT = -999999999;                   /*!< default value for integ
 const double EMPTY_DOUBLE = -9.0E40;                /*!< default value for double scalars */
 const double EMPTY_COMPLEX[2] = {-9.0E40, -9.0E40}; /*!< default value for complex scalars */
 
+const int IDS_TIME_MODE_UNKNOWN = -999999999;       /*!< IDS time mode unset */
+const int IDS_TIME_MODE_HETEROGENEOUS = 0;          /*!< IDS in heterogeneous time mode */
+const int IDS_TIME_MODE_HOMOGENEOUS = 1;            /*!< IDS in homogeneous time mode  */
+const int IDS_TIME_MODE_INDEPENDENT = 2;            /*!< IDS with time independent data only */
+
 const char * mex_errmsgid;                          /*!< MATLAB message identifier for errors */
 char mex_errmsgtxt[MAXERRMSGTXTSIZE];               /*!< Error message */
 int msglen = 0;                                     /*!< Length of the mex_errmsgtxt string */
