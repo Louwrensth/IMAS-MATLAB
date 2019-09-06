@@ -291,6 +291,32 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
 }
 
 /**
+   Returns an mxArray containing the default value for the specified type and rank.
+   @param[in] datatype type of data in the current field.
+   @param[in] dim rank of the current field.
+   @param[out] data mxArray containing the data.
+   @result error status.
+ */
+int mxArray_default_value(int datatype, int dim, mxArray **data)
+{
+  int status = -1;
+  void * array = NULL;
+
+  if (dim == 0) {
+    if (datatype == INTEGER_DATA)
+      array = (int *) &EMPTY_INT;
+    else if (datatype == DOUBLE_DATA)
+      array = (int *) &EMPTY_DOUBLE;
+    else if (datatype == COMPLEX_DATA)
+      array = (int *) &EMPTY_COMPLEX[0];
+  }
+
+  status = data_to_mxArray(datatype, dim, array, NULL, data);
+
+  return status;
+}
+
+/**
    Reads the integer field ids_properties/homogeneous_time.
    For a given context (which must correspond to the root of an open IDS object), this function reads the integer field ids_properties/homogeneous_time.
    @param[in] ctx Current operation context.
