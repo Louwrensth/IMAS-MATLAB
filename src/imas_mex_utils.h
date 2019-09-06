@@ -14,9 +14,6 @@
 #define IMAS_MEX_UTILS_H
 
 /** \cond */
-#define NON_TIMED   0
-#define TIMED       1
-#define TIMED_CLEAR 2
 
 extern const int EMPTY_INT;
 extern const double EMPTY_DOUBLE;
