@@ -63,10 +63,8 @@
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
 		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
 		    my:get_datatype(@data_type)='COMPLEX_DATA'">
-      mxArray_default_value(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, &amp;data);
-      if (status) {
-      return status;
-      }
+      if (mxArray_default_value(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, &amp;data) &lt; 0)
+      return -1;
       if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
       return -1;
     </xsl:when>
