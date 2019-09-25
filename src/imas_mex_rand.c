@@ -12,6 +12,11 @@
 #include "imas_mex_utils.h"
 #include <complex.h>
 
+#ifdef _WIN32
+#define random rand
+#endif
+
+
 /**
    Exponentiation routine for integers
    @param[in] base
