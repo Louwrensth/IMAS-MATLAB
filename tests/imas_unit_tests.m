@@ -47,26 +47,22 @@ classdef imas_unit_tests < matlab.unittest.TestCase
   %% Test Method Block
   methods (Test)
 
-    function testPutGet(testCase, IDSname)
+    function testPut(testCase, IDSname)
       idx = testCase.TestData.idx;
       ids = testCase.TestData.IDS.(IDSname);
-      ids_put(idx,IDSname,ids);
-      sdi = ids_get(idx,IDSname);
-      comparator(ids,sdi,IDSname);
-    end
-    
-    function testPutGetSlice(testCase, IDSname)
-      idx = testCase.TestData.idx;
-      ids = testCase.TestData.IDS.(IDSname);
-      itime = 2;
-      interp = 1; % closest sample
       ids_slice = testCase.TestData.IDS_slice.(IDSname);
       ids_put(idx,IDSname,ids);
+      % Test get
+      sdi = ids_get(idx,IDSname);
+      comparator(ids,sdi,IDSname);
+      % Test get_slice
+      itime = 2;
+      interp = 1; % closest sample
       sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
       comparator(ids_slice{itime},sdi,IDSname);
     end
     
-    function testPutSliceGet(testCase, IDSname)
+    function testPutSlice(testCase, IDSname)
       idx = testCase.TestData.idx;
       ids = testCase.TestData.IDS.(IDSname);
       ids_slice = testCase.TestData.IDS_slice.(IDSname);
@@ -74,18 +70,10 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       for itime=2:numel(ids_slice)
         ids_put_slice(idx,IDSname,ids_slice{itime});
       end
+      % Test get
       sdi = ids_get(idx,IDSname);
       comparator(ids,sdi,IDSname);
-    end
-
-    function testPutSliceGetSlice(testCase, IDSname)
-      idx = testCase.TestData.idx;
-      ids = testCase.TestData.IDS.(IDSname);
-      ids_slice = testCase.TestData.IDS_slice.(IDSname);
-      ids_put(idx,IDSname,ids_slice{1});
-      for itime=2:numel(ids_slice)
-        ids_put_slice(idx,IDSname,ids_slice{itime});
-      end
+      % Test get_slice
       itime = 2;
       interp = 1; % closest sample
       sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
