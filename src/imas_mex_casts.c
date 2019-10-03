@@ -267,7 +267,10 @@ int castCharToCell(mxArray ** data)
   if (!mxIsChar(*data))
     return -1;
 
-  exception = mexCallMATLABWithTrap(1, &cellData, 1, &charData, "cellstr");
+  if (mxGetM(*data) == 0)
+    cellData = mxCreateCellMatrix(0, 0);
+  else
+    exception = mexCallMATLABWithTrap(1, &cellData, 1, &charData, "cellstr");
 
   if (exception != NULL) {
     my_exceptionGetReport(exception);
@@ -291,7 +294,10 @@ int castCharToCell(mxArray ** data)
   inChars = mxGetChars(*data);
   outChars = malloc((n+1)*sizeof(char));
 
-  cellData = mxCreateCellMatrix(m, 1);
+  if (m == 0)
+    cellData = mxCreateCellMatrix(0, 0);
+  else
+    cellData = mxCreateCellMatrix(m, 1);
   for (i=0; i<m; i++) {
     for (j=n-1; j>0; j--)
       if (!(inChars[j*m+i] > 8 && inChars[j*m+i] < 14) /* TAB LF VT FF CR */

@@ -305,7 +305,9 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
 int mxArray_default_value(int datatype, int dim, mxArray **data)
 {
   int status = -1;
+  int cast_status = -1;
   void * array = NULL;
+  mxArray * data_old;
 
   if (dim == 0) {
     if (datatype == INTEGER_DATA)
@@ -317,6 +319,18 @@ int mxArray_default_value(int datatype, int dim, mxArray **data)
   }
 
   status = data_to_mxArray(datatype, dim, array, NULL, data);
+  
+  if (datatype == CHAR_DATA && dim == 2) {
+    /* For STR_1D cast to cell array of strings */
+    data_old = *data;
+    cast_status = castCharToCell(data);
+    if (cast_status < 0) {
+      mex_errmsgid = "cast_failed";
+      snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast default string array to cell");
+      return -1;
+    }
+    mxDestroyArray(data_old);
+  }
 
   return status;
 }
