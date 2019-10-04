@@ -26,13 +26,13 @@ int castDoubleToInt32(mxArray ** data)
 #ifndef DO_NOT_CALL_MATLAB
   mxArray * exception = NULL;
 
-  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
-    return -1;
-
-  exception = mexCallMATLABWithTrap(1, &intData, 1, &doubleData, "int32");
+  if (mxIsNumeric(*data) && mxIsDouble(*data))
+    exception = mexCallMATLABWithTrap(1, &intData, 1, &doubleData, "int32");
 
   if(exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data to int32", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 #else
@@ -43,8 +43,11 @@ int castDoubleToInt32(mxArray ** data)
   double * doubleArray;
   int i;
   
-  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
+  if (!mxIsNumeric(*data) || !mxIsDouble(*data)) {
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from double to int32", MAXERRMSGTXTSIZE-msglen);
     return -1;
+  }
 
   numel = mxGetNumberOfElements(doubleData);
   ndims = mxGetNumberOfDimensions(doubleData);
@@ -74,13 +77,13 @@ int castInt32ToDouble(mxArray ** data)
 #ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
-  if (!mxIsNumeric(*data) || !mxIsInt32(*data))
-    return -1;
-
-  exception = mexCallMATLABWithTrap(1, &doubleData, 1, &intData, "double");
+  if (mxIsNumeric(*data) && mxIsInt32(*data))
+    exception = mexCallMATLABWithTrap(1, &doubleData, 1, &intData, "double");
 
   if (exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from int32 to double", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 #else
@@ -91,8 +94,11 @@ int castInt32ToDouble(mxArray ** data)
   int * intArray;
   int i;
   
-  if (!mxIsNumeric(*data) || !mxIsInt32(*data))
+  if (!mxIsNumeric(*data) || !mxIsInt32(*data)) {
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from int32 to double", MAXERRMSGTXTSIZE-msglen);
     return -1;
+  }
 
   numel = mxGetNumberOfElements(intData);
   ndims = mxGetNumberOfDimensions(intData);
@@ -123,13 +129,13 @@ int castNaNToEmpty(mxArray ** data)
 #ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
-  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
-    return -1;
-
-  exception = mexCallMATLABWithTrap(1, &outData, 1, &inData, "nan_to_empty");
+  if (mxIsNumeric(*data) && mxIsDouble(*data))
+    exception = mexCallMATLABWithTrap(1, &outData, 1, &inData, "nan_to_empty");
 
   if (exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to replace NaNs with EMPTY_DOUBLEs in data", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 #else
@@ -138,8 +144,11 @@ int castNaNToEmpty(mxArray ** data)
   double * outArray;
   int i;
   
-  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
+  if (!mxIsNumeric(*data) || !mxIsDouble(*data)) {
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to replace NaNs with EMPTY_DOUBLEs in data", MAXERRMSGTXTSIZE-msglen);
     return -1;
+  }
 
   numel = mxGetNumberOfElements(inData);
 
@@ -169,13 +178,13 @@ int castEmptyToNaN(mxArray ** data)
 #ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
-  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
-    return -1;
-
-  exception = mexCallMATLABWithTrap(1, &outData, 1, &inData, "empty_to_nan");
+  if (mxIsNumeric(*data) && mxIsDouble(*data))
+    exception = mexCallMATLABWithTrap(1, &outData, 1, &inData, "empty_to_nan");
 
   if (exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to replace EMPTY_DOUBLEs with NaNs in data", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 #else
@@ -184,8 +193,11 @@ int castEmptyToNaN(mxArray ** data)
   double * outArray;
   int i;
   
-  if (!mxIsNumeric(*data) || !mxIsDouble(*data))
+  if (!mxIsNumeric(*data) || !mxIsDouble(*data)) {
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to replace EMPTY_DOUBLEs with NaNs in data", MAXERRMSGTXTSIZE-msglen);
     return -1;
+  }
 
   numel = mxGetNumberOfElements(inData);
 
@@ -214,13 +226,13 @@ int castCellToChar(mxArray ** data)
 #ifndef DO_NOT_CALL_MATLAB
   mxArray * exception = NULL;
 
-  if (!mxIsCell(*data))
-    return -1;
-
-  exception = mexCallMATLABWithTrap(1, &charData, 1, &cellData, "char");
+  if (mxIsCell(*data))
+    exception = mexCallMATLABWithTrap(1, &charData, 1, &cellData, "char");
 
   if(exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Char", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 #else
@@ -229,8 +241,11 @@ int castCellToChar(mxArray ** data)
   char ** strings;
   int i;
 
-  if (!mxIsCell(*data))
+  if (!mxIsCell(*data)) {
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Char", MAXERRMSGTXTSIZE-msglen);
     return -1;
+  }
 
   numel = mxGetNumberOfElements(cellData);
 
@@ -264,16 +279,16 @@ int castCharToCell(mxArray ** data)
 #ifndef DO_NOT_CALL_MATLAB
   mxArray *exception = NULL;
 
-  if (!mxIsChar(*data))
-    return -1;
-
-  if (mxGetM(*data) == 0)
-    cellData = mxCreateCellMatrix(0, 0);
-  else
-    exception = mexCallMATLABWithTrap(1, &cellData, 1, &charData, "cellstr");
+  if (mxIsChar(*data))
+    if (mxGetM(*data) == 0)
+      cellData = mxCreateCellMatrix(0, 0);
+    else
+      exception = mexCallMATLABWithTrap(1, &cellData, 1, &charData, "cellstr");
 
   if (exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Char to Cell", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 #else
@@ -285,8 +300,11 @@ int castCharToCell(mxArray ** data)
   int length;
   int i, j;
 
-  if (!mxIsChar(*data))
+  if (!mxIsChar(*data)) {
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Char to Cell", MAXERRMSGTXTSIZE-msglen);
     return -1;
+  }
 
   numel = mxGetNumberOfElements(charData);
   m = mxGetM(*data);
@@ -333,13 +351,13 @@ int castCellToStruct(mxArray ** data)
   mxArray *structData = NULL;
   mxArray *exception = NULL;
 
-  if (!mxIsCell(*data))
-    return -1;
-
-  exception = mexCallMATLABWithTrap(1, &structData, 1, &cellData, "cell2mat");
+  if (mxIsCell(*data))
+    exception = mexCallMATLABWithTrap(1, &structData, 1, &cellData, "cell2mat");
 
   if (exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Struct", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 
@@ -363,28 +381,29 @@ int castStructToCell(mxArray ** data)
   mxArray *N = NULL;
   mxArray * arguments[3];
 
-  if (!mxIsStruct(*data))
-    return -1;
-
-  m = mxGetM(*data);
-  M = mxCreateDoubleMatrix(1, m, mxREAL);
-  ptr = mxGetPr(M);
-  for (i=0; i<m; i++)
-    ptr[i] = 1;
+  if (mxIsStruct(*data)) {
+    m = mxGetM(*data);
+    M = mxCreateDoubleMatrix(1, m, mxREAL);
+    ptr = mxGetPr(M);
+    for (i=0; i<m; i++)
+      ptr[i] = 1;
     
-  n = mxGetN(*data);
-  N = mxCreateDoubleMatrix(1, n, mxREAL);
-  ptr = mxGetPr(N);
-  for (i=0; i<n; i++)
-    ptr[i] = 1;
-
-  arguments[0] = structData;
-  arguments[1] = M;
-  arguments[2] = N;
-  exception = mexCallMATLABWithTrap(1, &cellData, 3, arguments, "mat2cell");
+    n = mxGetN(*data);
+    N = mxCreateDoubleMatrix(1, n, mxREAL);
+    ptr = mxGetPr(N);
+    for (i=0; i<n; i++)
+      ptr[i] = 1;
+    
+    arguments[0] = structData;
+    arguments[1] = M;
+    arguments[2] = N;
+    exception = mexCallMATLABWithTrap(1, &cellData, 3, arguments, "mat2cell");
+  }
 
   if (exception != NULL) {
     my_exceptionGetReport(exception);
+    mex_errmsgid = "cast_failed";
+    strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Struct to Cell", MAXERRMSGTXTSIZE-msglen);
     return -1;
   }
 

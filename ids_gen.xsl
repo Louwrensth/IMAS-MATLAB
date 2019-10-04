@@ -82,10 +82,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = IDSname;
 
   /* Declare Function Pointer */
-  int(*gen)(mxArray**) = NULL;
+  int(*ids_gen)(mxArray**) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name">gen</xsl:with-param>
+    <xsl:with-param name="function_name">ids_gen</xsl:with-param>
   </xsl:apply-templates>
   /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_gen:unknown_ids",
@@ -95,7 +95,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
   /* Call function */
-  int err = gen(&amp;plhs[0]);
+  int err = ids_gen(&amp;plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_gen:");
   return;
@@ -105,26 +105,28 @@ void mexFunction(int nlhs, mxArray *plhs[],
  <xsl:result-document href="src/ids/ids_gen.h.in" standalone="yes" method="text">
   #include "mex.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'int gen_'"/>
+    <xsl:with-param name="prefix" select="'int ids_gen_'"/>
     <xsl:with-param name="suffix" select="'(mxArray** ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
  <xsl:result-document href="src/ids/gen_ids.c.in" standalone="yes" method="text">
    #include "imas_mex_utils.h"
    <xsl:for-each select="IDS">
-     int gen_<xsl:value-of select="@name"/>(mxArray** ids)
+     int ids_gen_<xsl:value-of select="@name"/>(mxArray** ids)
      {
-     int status;
+     int status = 0;
      void *array;
      mxArray* data;
-     if (init_dataTree_read() &lt; 0)
-     return -1;
+     status = init_dataTree_read();
      <xsl:apply-templates select="field" mode="ALLOCATE">
        <xsl:with-param name="scalar_aos" select="'yes'"/>
      </xsl:apply-templates>
-     if (get_data_from_dataTree(NULL, ids) &lt; 0)
-     return -1;
-     return 0;
+     if (status >= 0) status = get_data_from_dataTree(NULL, ids);
+     /* Error handling */
+     if (status &lt; 0) {
+     }
+
+     return status;
      }
    </xsl:for-each>
  </xsl:result-document>

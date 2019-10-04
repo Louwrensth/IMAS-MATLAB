@@ -56,68 +56,39 @@
       <xsl:if test="@type='dynamic'">
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
-      aosCtx = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize);
-      if (aosCtx &lt; 0) {
-      ual_end_action(ctx);
-      return aosCtx;
-      }
-      <xsl:if test="@type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
+      status = aosCtx = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize);      <xsl:if test="@type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
 	} else {
-	aosCtx = 0;
+	status = aosCtx = 0;
 	aosArraySize = 0; <!-- Create an empty dynamic AOS for time-independent IDSs -->
 	}
       </xsl:if>
-      if (begin_dataTree_array_read("<xsl:value-of select="@name"/>", aosArraySize) &lt; 0) {	
-      ual_end_action(aosCtx);
-      ual_end_action(ctx);
-      return -1;
-      }
+      if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", aosArraySize);
       for (int i=0; i&lt;aosArraySize; i++) {
-      if (iterate_dataTree_array(i) &lt; 0) {	
-      ual_end_action(aosCtx);
-      ual_end_action(ctx);
-      return -1;
-      }
-      status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
-      if (status &lt; 0) {
-      <!-- ual_end_action(aosCtx) is taken care of in get_... -->
-      ual_end_action(ctx);
-      return status;
-      }
-      status = ual_iterate_over_arraystruct(aosCtx, 1);
-      if (status &lt; 0) {	
-      ual_end_action(aosCtx);
-      ual_end_action(ctx);
-      return status;
-      }
-      }
-      status = ual_end_action(aosCtx);
-      if (status &lt; 0) {
-      ual_end_action(ctx);
-      return status;
+      if (status >= 0) status = iterate_dataTree_array(i);
+      if (status >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
+      if (status >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_array_action() &lt; 0) {
-      ual_end_action(ctx);
-      return -1;
+      if (aosCtx > 0) {
+      status_end = ual_end_action(aosCtx);
+      if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no failure before */
+      }
+      if (status >= 0) status = end_dataTree_array_action();
+      /* Error handling */
+      if (status &lt; 0) {
+      return status;
       }
     </xsl:when>
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      if (begin_dataTree_read("<xsl:value-of select="@name"/>") &lt; 0) {
-      ual_end_action(ctx);
-      return -1;
-      }
-      status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
-      if (status &lt; 0) {
-      <!-- ual_end_action(ctx) is taken care of in get_... -->
-      return status;
-      }
+      status = begin_dataTree_read("<xsl:value-of select="@name"/>");
+      if (status >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_action() &lt; 0) {
-      ual_end_action(ctx);
-      return -1;
+      if (status >= 0) status = end_dataTree_action();
+      /* Error handling */
+      if (status &lt; 0) {
+      return status;
       }
     </xsl:when>
 
@@ -149,20 +120,17 @@
 	status = mxArray_default_value(field.datatype, field.dim, &amp;data);
 	}
       </xsl:if>
-      if (status &lt; 0) {	
-      ual_end_action(ctx);
+      if (status >= 0) put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
+      /* Error handling */
+      if (status &lt; 0) {
       return status;
-      }
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0) {	
-      ual_end_action(ctx);
-      return -1;
       }
       data=NULL;
     </xsl:when>
 
   <!--========== Unknown type ===========-->
     <xsl:otherwise>
-      /* PROBLEM : UNIDENTIFIED TYPE !!! */ <!-- for comment only -->
+      <xsl:message terminate="yes">ERROR: Unidentified type: <xsl:value-of select="@data_type"/> !</xsl:message>
     </xsl:otherwise>
 </xsl:choose>
 

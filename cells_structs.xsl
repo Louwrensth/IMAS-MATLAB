@@ -26,16 +26,18 @@
     <xsl:choose>
       <!--========== Regular structures ==========-->
       <xsl:when test="@data_type='structure' and .//field[@data_type='struct_array']">
-	if (begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty) &lt; 0)
-	return -1;
-	if (!isEmpty) {
+	if (status >= 0) status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
+	if (status >= 0 &amp;&amp; !isEmpty) {
 	<xsl:apply-templates select="field" mode="CELLS_STRUCTS">
 	  <xsl:with-param name="method_name" select="$method_name"/>
 	</xsl:apply-templates>
 	}
 	/* Finished processing structure <xsl:value-of select="@name"/> */
-	if (end_dataTree_action() &lt; 0)
-	return -1;
+	if (status >= 0) status = end_dataTree_action();
+	/* Error handling */
+	if (status &lt; 0) {
+	return status;
+	}
       </xsl:when>
 
       <!--========== Arrays of structures ==========-->
@@ -43,81 +45,50 @@
 	<xsl:choose>
 	  <xsl:when test="$method_name='struct_to_cell'">
 	    if (params.use_cell_array_for_array_of_structures) {
-	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
-	    return -1;
-	    if (data != NULL) {
-	    cast_status = castStructToCell(&amp;data);
-	    if (cast_status &lt; 0) {
-	    mex_errmsgid = "cast_failed";
-	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace structs by cell for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
-	    return -1;
-	    }
-	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
-	    return -1;
+	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status >= 0 &amp;&amp; data != NULL) {
+	    status = castStructToCell(&amp;data);
+	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>
 	  <xsl:when test="$method_name='cell_to_struct'">
 	    if (!params.use_cell_array_for_array_of_structures) {
-	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
-	    return -1;
-	    if (data != NULL) {
-	    cast_status = castCellToStruct(&amp;data);
-	    if (cast_status &lt; 0) {
-	    mex_errmsgid = "cast_failed";
-	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace cell by structs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
-	    return -1;
-	    }
-	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
-	    return -1;
+	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status >= 0 &amp;&amp; data != NULL) {
+	    status = castCellToStruct(&amp;data);
+	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>
 	</xsl:choose>
 	<xsl:if test=".//field[@data_type='struct_array']">
-	  if (begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;n<xsl:value-of select="$unique_name"/>) &lt; 0)
-	  return -1;
+	  if (status >= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;n<xsl:value-of select="$unique_name"/>);
 	  for (i<xsl:value-of select="$unique_name"/> = 0;i<xsl:value-of select="$unique_name"/>&lt; n<xsl:value-of select="$unique_name"/>; i<xsl:value-of select="$unique_name"/>++){
-	  if (iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>) &lt; 0)
-	  return -1;
+	  if (status >= 0) status = iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>);
 	  <xsl:apply-templates select="field" mode="CELLS_STRUCTS">
 	    <xsl:with-param name="method_name" select="$method_name"/>
 	  </xsl:apply-templates>
 	  }
 	  /* Finished processing array of structure <xsl:value-of select="@name"/> */
-	  if (end_dataTree_array_action() &lt; 0)
-	  return -1;
+	  if (status >= 0) status = end_dataTree_array_action();
 	</xsl:if>
 	<xsl:choose>
 	  <xsl:when test="$method_name='struct_to_cell'">
 	    if (!params.use_cell_array_for_array_of_structures) {
-	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
-	    return -1;
-	    if (data != NULL) {
-	    cast_status = castStructToCell(&amp;data);
-	    if (cast_status &lt; 0) {
-	    mex_errmsgid = "cast_failed";
-	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace structs by cell for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
-	    return -1;
-	    }
-	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
-	    return -1;
+	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status >= 0 &amp;&amp; data != NULL) {
+	    status = castStructToCell(&amp;data);
+	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>
 	  <xsl:when test="$method_name='cell_to_struct'">
 	    if (params.use_cell_array_for_array_of_structures) {
-	    if (get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data) &lt; 0)
-	    return -1;
-	    if (data != NULL) {
-	    cast_status = castCellToStruct(&amp;data);
-	    if (cast_status &lt; 0) {
-	    mex_errmsgid = "cast_failed";
-	    strncpy(&amp;mex_errmsgtxt[msglen], "Unable to replace cell by structs for field <xsl:value-of select="@path"/>", MAXERRMSGTXTSIZE-msglen);
-	    return -1;
-	    }
-	    if (replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data) &lt; 0)
-	    return -1;
+	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status >= 0 &amp;&amp; data != NULL) {
+	    status = castCellToStruct(&amp;data);
+	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>

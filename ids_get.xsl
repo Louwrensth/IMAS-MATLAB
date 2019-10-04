@@ -113,10 +113,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = strtok(IDSpathcopy, "/");
  
   /* Declare Function Pointer */
-  int(*get)(int, char*, mxArray**) = NULL;
+  int(*ids_get)(int, char*, mxArray**) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name">get</xsl:with-param>
+    <xsl:with-param name="function_name">ids_get</xsl:with-param>
   </xsl:apply-templates>
   /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_get:unknown_ids",
@@ -129,7 +129,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mex_errmsgid = NULL;
   mex_errmsgtxt[0] = '\000';
   /* Call function */
-  int err = get(idx, IDSpath, &amp;plhs[0]);
+  int err = ids_get(idx, IDSpath, &amp;plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_get:");
   return;
@@ -139,7 +139,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/ids_get.h.in" standalone="yes" method="text">
     #include "mex.h"
     <xsl:apply-templates select = "IDS" mode="LIST">
-      <xsl:with-param name="prefix" select="'int get_'"/>
+      <xsl:with-param name="prefix" select="'int ids_get_'"/>
       <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, mxArray** ids);'"/>
     </xsl:apply-templates>
   </xsl:result-document>
@@ -147,81 +147,69 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
 #ifndef NO_GLOBAL_CONVERSION
-     int int_to_double_<xsl:value-of select="@name"/>(mxArray* ids);
-     int empty_to_nan_<xsl:value-of select="@name"/>(mxArray* ids);
+     int ids_int_to_double_<xsl:value-of select="@name"/>(mxArray* ids);
+     int ids_empty_to_nan_<xsl:value-of select="@name"/>(mxArray* ids);
 #endif
+    
+    <xsl:apply-templates select="." mode="METHOD_GET_H"/>
 
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
-
-    int get_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids)
+    int ids_get_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids)
     {
-    struct imas_mex_actionInfo action;
-    struct imas_mex_fieldInfo field;
-    mxArray* data=NULL;
-    int ifield;
-    int status = -1;
-    int aosArraySize = -1;
-    int aosCtx = -1;
+    int status = 0;
+    int status_end = 0;
     int getOpCtx = -1;
-    int ctx = -1;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
     /* Open get context */
-    getOpCtx = ual_begin_global_action(expIdx, idsFullName, READ_OP);
-    if(getOpCtx &lt; 0) 
-    return getOpCtx;
-    ctx = getOpCtx;
-    status = getHomogeneousTimeCtx(ctx, &amp;homogeneousTime);
-    if(status &lt; 0) 
-    {
-    ual_end_action(ctx);
-    return status;
-    }
-    action.context = ctx;
-    if (init_dataTree_read() &lt; 0) {
-    ual_end_action(ctx);
-    return -1;
-    }
+    status = getOpCtx = ual_begin_global_action(expIdx, idsFullName, READ_OP);
+    if (status >= 0) status = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTime);
+    if (status >= 0) status = init_dataTree_read();
 
-    <xsl:apply-templates select="field" mode="GET_SINGLE"/>
-
-    ual_end_action(ctx);
-    if (get_data_from_dataTree(NULL, ids) &lt; 0)
-    return -1;
+    if (status >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime);
+    if (getOpCtx > 0) {
+    status_end = ual_end_action(getOpCtx);
+    if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no failure before */
+    }
+    
+    if (status >= 0) status = get_data_from_dataTree(NULL, ids);
 #ifndef NO_GLOBAL_CONVERSION
+    if (status >= 0) {
     if (params.convert_whole_ids == 1) {
     /* Conversion of INT fields to double */
-    if (params.get_int_as_double) {
-    if (int_to_double_<xsl:value-of select="@name"/>(*ids) &lt; 0)
-    return -1;
-    }
+    if (params.get_int_as_double)
+    status = ids_int_to_double_<xsl:value-of select="@name"/>(*ids);
     /* Conversion of EMPTY_DOUBLE values for FLT fields to NaN */
-    if (params.get_empty_as_nan) {
-    if (empty_to_nan_<xsl:value-of select="@name"/>(*ids) &lt; 0)
-    return -1;
+    if (params.get_empty_as_nan)
+    status = ids_empty_to_nan_<xsl:value-of select="@name"/>(*ids);
     }
     }
 #endif
-    return 0; /* TODO: Should we return status of ual_end_action? */
+    /* Error handling */
+    if (status &lt; 0) {
     }
 
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>
+    return status;
+    }
+
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
+
+    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
-<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
 int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
 
-<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
   <xsl:call-template name="COMMENT_FIELD"/>
   int get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
   {
   struct imas_mex_actionInfo action;
   struct imas_mex_fieldInfo field;
   mxArray* data=NULL;
-  int ifield;
-  int status = -1;
+  int status = 0;
+  int status_end = 0;
   int aosArraySize = -1;
   int aosCtx = -1;
   action.context = ctx;

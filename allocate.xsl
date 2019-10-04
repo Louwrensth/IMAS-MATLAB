@@ -27,35 +27,36 @@
     <xsl:when test = "@data_type = 'struct_array'">
       <xsl:choose>
 	<xsl:when test="$scalar_aos">
-	  if (begin_dataTree_array_read("<xsl:value-of select="@name"/>",1) &lt; 0)
-	  return -1;
-	  if (iterate_dataTree_array(0) &lt; 0) {
-	  return -1;
-	  }
+	  if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>",1);
+	  if (status >= 0) status = iterate_dataTree_array(0);
 	  <xsl:apply-templates select = "field" mode = "ALLOCATE">
 	    <xsl:with-param name="scalar_aos" select="$scalar_aos"/>
 	  </xsl:apply-templates>
 	</xsl:when>
 	<xsl:otherwise>
-	  if (begin_dataTree_array_read("<xsl:value-of select="@name"/>",0) &lt; 0)
-	  return -1;
+	  if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>",0);
 	</xsl:otherwise>
       </xsl:choose>
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_array_action() &lt; 0)
-      return -1;
+      if (status >= 0) status = end_dataTree_array_action();
+      /* Error handling */
+      if (status &lt; 0) {
+      return status;
+      }
     </xsl:when>
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      if (begin_dataTree_read("<xsl:value-of select="@name"/>") &lt; 0)
-      return -1;
+      if (status >= 0) status = begin_dataTree_read("<xsl:value-of select="@name"/>");
       <xsl:apply-templates select = "field" mode = "ALLOCATE">
 	<xsl:with-param name="scalar_aos" select="$scalar_aos"/>
       </xsl:apply-templates>
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_action() &lt; 0)
-      return -1;
+      if (status >= 0) status = end_dataTree_action();
+      /* Error handling */
+      if (status &lt; 0) {
+      return status;
+      }
     </xsl:when>
 
   <!--========== Simple types ===========-->
@@ -63,10 +64,12 @@
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
 		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
 		    my:get_datatype(@data_type)='COMPLEX_DATA'">
-      if (mxArray_default_value(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, &amp;data) &lt; 0)
-      return -1;
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
+      if (status >= 0) status = mxArray_default_value(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, &amp;data);
+      if (status >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
+      /* Error handling */
+      if (status &lt; 0) {
+      return status;
+      }
     </xsl:when>
 
   <!--========== Unknown type ===========-->

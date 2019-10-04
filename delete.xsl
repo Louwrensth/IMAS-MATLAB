@@ -21,15 +21,15 @@
 <xsl:choose>
     <xsl:when test="@data_type='structure'">
       status = delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(ctx);
-      if (status != 0)
+      /* Error handling */
+      if (status &lt; 0)
       return status;
     </xsl:when>
     <xsl:otherwise>
       fieldPath = "<xsl:value-of select="@path"/>";
       status = ual_delete_data(ctx, fieldPath);
-      if (status != 0)
-      {	
-      ual_end_action(ctx);
+      /* Error handling */
+      if (status &lt; 0) {
       return status; 
       }
     </xsl:otherwise>

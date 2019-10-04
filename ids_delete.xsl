@@ -113,17 +113,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = strtok(IDSpathcopy, "/");
  
   /* Declare Function Pointer */
-  int(*delete)(int, char*) = NULL;
+  int(*ids_delete)(int, char*) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name">delete</xsl:with-param>
+    <xsl:with-param name="function_name">ids_delete</xsl:with-param>
   </xsl:apply-templates>
   /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_delete:unknown_ids",
            "Unknown IDS name: %s", name);
   /* Call function */
   plhs[0] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
-  *(int *)mxGetData(plhs[0]) = delete(idx, IDSpath);
+  *(int *)mxGetData(plhs[0]) = ids_delete(idx, IDSpath);
 
   /* free now as name uses the same memory */
   free(IDSpathcopy);
@@ -133,7 +133,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/ids_delete.h.in" standalone="yes" method="text">
     #include "mex.h"
     <xsl:apply-templates select = "IDS" mode="LIST">
-      <xsl:with-param name="prefix" select="'int delete_'"/>
+      <xsl:with-param name="prefix" select="'int ids_delete_'"/>
       <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName);'"/>
     </xsl:apply-templates>
   </xsl:result-document>
@@ -141,43 +141,47 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include "imas_mex_utils.h"
    <xsl:for-each select="IDS">
 
-    <xsl:apply-templates select=".//field[@data_type='structure']" mode="METHOD_DELETE_H"/>
+    <xsl:apply-templates select="." mode="METHOD_DELETE_H"/>
 
-    int delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName)
+    int ids_delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName)
     {
     /* Paths-specific variables */
-    char *fieldPath;
-    int status = -1;
+    int status = 0;
+    int status_end = 0;
     int deleteOpCtx = -1;
-    int ctx = -1;
 
     /* Open delete context */
-    deleteOpCtx = ual_begin_global_action(expIdx, idsFullName, WRITE_OP);
-    if(deleteOpCtx &lt; 0) 
-    return deleteOpCtx;
-    ctx = deleteOpCtx;
+    status = deleteOpCtx = ual_begin_global_action(expIdx, idsFullName, WRITE_OP);
 
-    <xsl:apply-templates select="field" mode="DELETE"/>
-
-    ual_end_action(ctx);
-    return 0; /* TODO: Should we return status of ual_end_action? */
+    status = delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(deleteOpCtx);
+    if (deleteOpCtx > 0) {
+    status_end = ual_end_action(deleteOpCtx);
+    if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no failure before */
+    }
+    /* Error handling */
+    if (status &lt; 0) {
     }
 
-    <xsl:apply-templates select=".//field[@data_type='structure']" mode="METHOD_DELETE"/>
+    return status;
+    }
+
+    <xsl:apply-templates select=".//field[@data_type='structure']" mode="METHOD_DELETE_H"/>
+
+    <xsl:apply-templates select=". | .//field[@data_type='structure']" mode="METHOD_DELETE"/>
    </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
-<xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_DELETE_H">
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_DELETE_H">
 int delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx);</xsl:template>
 
-<xsl:template match="field[@data_type='structure']" mode="METHOD_DELETE">
+<xsl:template match="IDS | field[@data_type='structure']" mode="METHOD_DELETE">
   <xsl:call-template name="COMMENT_FIELD"/>
   int delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx)
   {
   /* Paths-specific variables */
   char *fieldPath = "";
-  int status = -1;
+  int status = 0;
 
   <xsl:apply-templates select="field" mode="DELETE"/>
 
