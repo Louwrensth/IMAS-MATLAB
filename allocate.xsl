@@ -21,6 +21,10 @@
 
 <xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
 
+<xsl:variable name="AosRelativePath">
+  <xsl:call-template name="printAosRelativePath"/>
+</xsl:variable>
+
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
   <!--========== Array of structure ===========-->
@@ -41,6 +45,8 @@
       if (status >= 0) status = end_dataTree_array_action();
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in Aos <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return status;
       }
     </xsl:when>
@@ -55,6 +61,8 @@
       if (status >= 0) status = end_dataTree_action();
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in structure <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return status;
       }
     </xsl:when>
@@ -68,6 +76,8 @@
       if (status >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in field <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return status;
       }
     </xsl:when>

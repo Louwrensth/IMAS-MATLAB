@@ -124,6 +124,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
      if (status >= 0) status = get_data_from_dataTree(NULL, ids);
      /* Error handling */
      if (status &lt; 0) {
+     strncat(mex_errmsgtxt,"\n ... in IDS <xsl:value-of select="@name"/>",MAXERRMSGTXTSIZE-1-msglen);
+     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
      }
 
      return status;

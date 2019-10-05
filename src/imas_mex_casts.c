@@ -33,6 +33,7 @@ int castDoubleToInt32(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data to int32", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 #else
@@ -46,6 +47,7 @@ int castDoubleToInt32(mxArray ** data)
   if (!mxIsNumeric(*data) || !mxIsDouble(*data)) {
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from double to int32", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 
@@ -84,6 +86,7 @@ int castInt32ToDouble(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from int32 to double", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 #else
@@ -97,6 +100,7 @@ int castInt32ToDouble(mxArray ** data)
   if (!mxIsNumeric(*data) || !mxIsInt32(*data)) {
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from int32 to double", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 
@@ -136,6 +140,7 @@ int castNaNToEmpty(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace NaNs with EMPTY_DOUBLEs in data", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 #else
@@ -147,6 +152,7 @@ int castNaNToEmpty(mxArray ** data)
   if (!mxIsNumeric(*data) || !mxIsDouble(*data)) {
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace NaNs with EMPTY_DOUBLEs in data", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 
@@ -185,6 +191,7 @@ int castEmptyToNaN(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace EMPTY_DOUBLEs with NaNs in data", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 #else
@@ -196,6 +203,7 @@ int castEmptyToNaN(mxArray ** data)
   if (!mxIsNumeric(*data) || !mxIsDouble(*data)) {
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace EMPTY_DOUBLEs with NaNs in data", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 
@@ -233,6 +241,7 @@ int castCellToChar(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Char", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 #else
@@ -244,6 +253,7 @@ int castCellToChar(mxArray ** data)
   if (!mxIsCell(*data)) {
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Char", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 
@@ -289,6 +299,7 @@ int castCharToCell(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Char to Cell", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 #else
@@ -303,6 +314,7 @@ int castCharToCell(mxArray ** data)
   if (!mxIsChar(*data)) {
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Char to Cell", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 
@@ -358,6 +370,7 @@ int castCellToStruct(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Struct", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 
@@ -404,6 +417,7 @@ int castStructToCell(mxArray ** data)
     my_exceptionGetReport(exception);
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Struct to Cell", MAXERRMSGTXTSIZE-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return -1;
   }
 

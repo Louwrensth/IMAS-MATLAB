@@ -18,9 +18,13 @@
 
 <xsl:template match="field" mode="RAND">
 
-<xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
+  <xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
 
-<xsl:param name="dynamic"><xsl:choose><xsl:when test="@type='dynamic' and not(ancestor::field[@data_type='struct_array' and @type='dynamic'])">1</xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="dynamic"><xsl:choose><xsl:when test="@type='dynamic' and not(ancestor::field[@data_type='struct_array' and @type='dynamic'])">1</xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+
+  <xsl:variable name="AosRelativePath">
+    <xsl:call-template name="printAosRelativePath"/>
+  </xsl:variable>
 
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
@@ -51,6 +55,8 @@
       </xsl:if>
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in Aos <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return status;
       }
     </xsl:when>
@@ -63,6 +69,8 @@
       if (status >= 0) status = end_dataTree_action();
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in structure <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return status;
       }
     </xsl:when>
@@ -111,6 +119,8 @@
       if (status >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in field <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return status;
       }
     </xsl:when>

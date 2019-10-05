@@ -202,6 +202,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
       </xsl:choose>
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in IDS <xsl:value-of select="@name"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       }
 
       return status;

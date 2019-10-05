@@ -168,7 +168,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (status >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime);
     if (getOpCtx > 0) {
     status_end = ual_end_action(getOpCtx);
-    if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no failure before */
+    if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
     }
     
     if (status >= 0) status = get_data_from_dataTree(NULL, ids);
@@ -186,6 +186,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #endif
     /* Error handling */
     if (status &lt; 0) {
+    strncat(mex_errmsgtxt,"\n ... in IDS <xsl:value-of select="@name"/>",MAXERRMSGTXTSIZE-1-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     }
 
     return status;

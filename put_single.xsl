@@ -71,12 +71,14 @@
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (aosCtx > 0) {
       status_end = ual_end_action(aosCtx);
-      if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no failure before */
+      if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
       }
       }
       if (status >= 0) end_dataTree_array_action();
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in Aos <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return -1;
       }
       <xsl:if test="$dynamic_only !='yes' and @type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
@@ -92,6 +94,8 @@
       if (status >= 0) status = end_dataTree_action();
       /* Error handling */
       if (status &lt; 0) {
+      strncat(mex_errmsgtxt,"\n ... in structure <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return status;
       }
     </xsl:when>
@@ -143,6 +147,8 @@
     </xsl:if>
     /* Error handling */
     if (status &lt; 0) {
+    strncat(mex_errmsgtxt,"\n ... in field <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
     return status;
     }
   </xsl:when>
