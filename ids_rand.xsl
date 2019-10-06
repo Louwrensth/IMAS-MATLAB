@@ -120,8 +120,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
            "Unknown IDS name: %s", IDSname);
   
   /* Clean-up previous errors */
-  mex_errmsgid = NULL;
-  mex_errmsgtxt[0] = '\000';
+  resetErrMsgIdAndTxt();
   /* Call function */
   int err = ids_rand(&amp;plhs[0], ntime, slice);
   if (err &lt; 0 )
@@ -155,8 +154,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
      if (status >= 0) status = get_data_from_dataTree(NULL, ids);
      /* Error handling */
      if (status &lt; 0) {
-     strncat(mex_errmsgtxt,"\n ... in IDS <xsl:value-of select="@name"/>",MAXERRMSGTXTSIZE-1-msglen);
-     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+     addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
      }
 
      return status;

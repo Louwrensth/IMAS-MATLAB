@@ -121,6 +121,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_delete:unknown_ids",
            "Unknown IDS name: %s", name);
+
+  /* Clean-up previous errors */
+  resetErrMsgIdAndTxt();
   /* Call function */
   plhs[0] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
   *(int *)mxGetData(plhs[0]) = ids_delete(idx, IDSpath);
@@ -160,8 +163,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
     /* Error handling */
     if (status &lt; 0) {
-    strncat(mex_errmsgtxt,"\n ... in IDS <xsl:value-of select="@name"/>",MAXERRMSGTXTSIZE-1-msglen);
-    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+    addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
     }
 
     return status;

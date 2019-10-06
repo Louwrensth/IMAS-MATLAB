@@ -24,6 +24,18 @@ const int IDS_TIME_MODE_INDEPENDENT = 2;            /*!< IDS with time independe
 const char * mex_errmsgid;                          /*!< MATLAB message identifier for errors */
 char mex_errmsgtxt[MAXERRMSGTXTSIZE];               /*!< Error message */
 int msglen = 0;                                     /*!< Length of the mex_errmsgtxt string */
+int msg_haspathinfo = 0;
+
+/**
+   Reset global variables for error message
+ */
+void resetErrMsgIdAndTxt(void)
+{
+  mex_errmsgid = NULL;
+  mex_errmsgtxt[0] = '\000';
+  msglen = 0;
+  msg_haspathinfo = 0;
+}
 
 /**
    Assembles text and identifier for an error message then throws it.
@@ -68,6 +80,21 @@ void my_exceptionGetReport(mxArray* exception)
   strncat(mex_errmsgtxt, "\n----------\n", (12 < MAXERRMSGTXTSIZE-1-msglen) ? 12 : MAXERRMSGTXTSIZE-1-msglen);
   msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
 
+}
+
+/**
+   Appends IDS path information to global error message text
+   Called after an error status is found when processing a certain field/aos/structure in one of the HLI functions. Because of the nested nature of these functions, one portion of the path could be added multiple times. To avoid this a global variable stores the status of the error message, and the path information is only added if this global status variable is not yet set. The additional argument force allows to disable this check.
+   @param[in] pathInfo String containing the path information to be added to the error message
+   @param[in] force flag which forces to add the path information if non-zero 
+ */
+void addIdsPathInfoToErrMsg(const char * pathInfo, int force)
+{
+  if (force || !msg_haspathinfo) {
+    strncat(mex_errmsgtxt, pathInfo, MAXERRMSGTXTSIZE-1-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+    msg_haspathinfo = 1;
+  }
 }
 
 /**

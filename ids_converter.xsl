@@ -149,8 +149,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   free(IDSpathcopy);
   
   /* Clean-up previous errors */
-  mex_errmsgid = NULL;
-  mex_errmsgtxt[0] = '\000';
+  resetErrMsgIdAndTxt();
   /* Call function */
   int err = ids_<xsl:value-of select="$conversion"/>(plhs[0]);
   if (err &lt; 0 )
@@ -202,8 +201,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       </xsl:choose>
       /* Error handling */
       if (status &lt; 0) {
-      strncat(mex_errmsgtxt,"\n ... in IDS <xsl:value-of select="@name"/>",MAXERRMSGTXTSIZE-1-msglen);
-      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+      addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
       }
 
       return status;

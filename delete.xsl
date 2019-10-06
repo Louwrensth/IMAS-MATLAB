@@ -28,8 +28,7 @@
       status = delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(ctx);
       /* Error handling */
       if (status &lt; 0) {
-      strncat(mex_errmsgtxt,"\n ... in structure <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
-      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+      addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
       return status;
       }
     </xsl:when>
@@ -38,8 +37,7 @@
       status = ual_delete_data(ctx, fieldPath);
       /* Error handling */
       if (status &lt; 0) {
-      strncat(mex_errmsgtxt,"\n ... in field <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
-      msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+      addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
       return status; 
       }
     </xsl:otherwise>

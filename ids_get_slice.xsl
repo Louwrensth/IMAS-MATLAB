@@ -147,8 +147,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   free(IDSpathcopy);
 
   /* Clean-up previous errors */
-  mex_errmsgid = NULL;
-  mex_errmsgtxt[0] = '\000';
+  resetErrMsgIdAndTxt();
   /* Call function */
   int err = ids_get_slice(idx, IDSpath, inTime, interpolMode, &amp;plhs[0]);
   if (err) 
@@ -207,8 +206,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #endif
     /* Error handling */
     if (status &lt; 0) {
-    strncat(mex_errmsgtxt,"\n ... in IDS <xsl:value-of select="@name"/>",MAXERRMSGTXTSIZE-1-msglen);
-    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+    addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
     }
 
     return status;

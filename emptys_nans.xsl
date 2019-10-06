@@ -41,8 +41,7 @@
 	  if (status >= 0) status = end_dataTree_action();
 	  /* Error handling */
 	  if (status &lt; 0) {
-	  strncat(mex_errmsgtxt,"\n ... in structure <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
-	  msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+	  addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
 	  return status;
 	  }
 	</xsl:if>
@@ -62,8 +61,7 @@
 	  if (status >= 0) status = end_dataTree_array_action();
 	  /* Error handling */
 	  if (status &lt; 0) {
-	  strncat(mex_errmsgtxt,"\n ... in Aos <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
-	  msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+	  addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
 	  return status;
 	  }
 	</xsl:if>
@@ -86,8 +84,7 @@
 	}
 	/* Error handling */
 	if (status &lt; 0) {
-	strncat(mex_errmsgtxt,"\n ... in field <xsl:value-of select="$AosRelativePath"/>",MAXERRMSGTXTSIZE-1-msglen);
-	msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+	addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
 	return status;
 	}
       </xsl:when>
