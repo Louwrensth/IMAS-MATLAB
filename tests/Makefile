@@ -22,6 +22,8 @@ all:
 
 install:
 
+uninstall:
+
 clean:
 	$(RM) *~ *.o *.mod
 
