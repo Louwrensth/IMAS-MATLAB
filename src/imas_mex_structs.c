@@ -472,7 +472,7 @@ int iterate_dataTree_array(size_t index) {
     
     if (data == NULL) {
       mex_errmsgid = "invalid_AoS_element";
-      snprintf(mex_errmsgtxt,MAXERRMSGTXTSIZE,"Unable to retrieve element %d in data AoS",index);
+      snprintf(mex_errmsgtxt,MAXERRMSGTXTSIZE,"Unable to select element %d in dataTree array",index);
       msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
       return -1;
     }
@@ -530,7 +530,7 @@ int get_data_from_dataTree(char * name, mxArray ** data) {
     if (ifield < 0) {
       if (params.error_on_missing_field) {
 	mex_errmsgid = "invalid_field";
-	snprintf(mex_errmsgtxt, 26+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to retrieve field %s", name);
+	snprintf(mex_errmsgtxt, 43+strnlen(name,MAXERRMSGTXTSIZE-1)+1, "Unable to get field %s from input structure", name);
 	msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
 	return -1;
       } else {
