@@ -1,7 +1,7 @@
 include ../Makefile.common
 
 ifeq ("no","$(strip $(IMAS_MEX))")
-all sources sources_install install clean clean-src:
+all sources sources_install install uninstall clean clean-src:
 	$(warning "Ignoring mexinterface (IMAS_MEX=no).")
 else
 
@@ -178,10 +178,18 @@ install: all pkgconfig_install doc_install
 	$(INSTALL) -T $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so.$(MEX_SO_NUM)
 	ln -sf libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so
 
+uninstall: sources_uninstall
+	-rm -rf $(prefix)/mex
+	-rm -f $(addprefix $(libdir)/,libimas-mex.so.$(MEX_SO_NUM) libimas-mex.so.$(MEX_SO_NUM) libimas-mex.so)
+	-rm -rf $(docdir)/dev/mexinterface
+
 sources_install: $(SOURCES)
 	$(mkdir_p) $(datadir)/src/mexinterface/ids
 	$(INSTALL_DATA) $(IDS_SRC_DIR)/*.c $(IDS_SRC_DIR)/*.h $(datadir)/src/mexinterface/ids
 	$(INSTALL_DATA) $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(datadir)/src/mexinterface
+
+sources_uninstall:
+	-rm -rf $(datadir)/src/mexinterface
 
 doc_install: doc
 	$(mkdir_p) $(docdir)/dev/mexinterface
