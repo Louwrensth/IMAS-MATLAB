@@ -104,21 +104,25 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Extract IDS name */
   char* name = IDSname;
 
+  /* Check arguments validity */
+  if (slice &amp;&amp; (slice &lt; 1 || slice &gt; ntime))
+  mexErrMsgIdAndTxt("IMAS:ids_rand:invalid_slice",
+  "If slice is non-zero, it should be between 1 and ntime"); 
+
   /* Declare Function Pointer */
-  int(*rand)(mxArray**, int, int) = NULL;
+  int(*ids_rand)(mxArray**, int, int) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name">rand</xsl:with-param>
+    <xsl:with-param name="function_name">ids_rand</xsl:with-param>
   </xsl:apply-templates>
   /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_rand:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   
   /* Clean-up previous errors */
-  mex_errmsgid = NULL;
-  mex_errmsgtxt[0] = '\000';
+  resetErrMsgIdAndTxt();
   /* Call function */
-  int err = rand(&amp;plhs[0], ntime, slice);
+  int err = ids_rand(&amp;plhs[0], ntime, slice);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_rand:");
   return;
@@ -128,7 +132,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
  <xsl:result-document href="src/ids/ids_rand.h.in" standalone="yes" method="text">
   #include "mex.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'int rand_'"/>
+    <xsl:with-param name="prefix" select="'int ids_rand_'"/>
     <xsl:with-param name="suffix" select="'(mxArray** ids, int ntime, int slice);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
@@ -136,24 +140,24 @@ void mexFunction(int nlhs, mxArray *plhs[],
    #include "imas_mex_utils.h"
    #include "imas_mex_rand.h"
    <xsl:for-each select="IDS">
-     int rand_<xsl:value-of select="@name"/>(mxArray** ids, int ntime, int slice)
+     int ids_rand_<xsl:value-of select="@name"/>(mxArray** ids, int ntime, int slice)
      {
-     int status;
+     int status = 0;
      void *array;
      /* AoS-specific variables */<xsl:for-each select=".//field[@data_type='struct_array']">
      int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
      int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
-     mxArray* data;
-     if (slice &amp;&amp; (slice &lt; 1 || slice &gt; ntime))
-      mexErrMsgIdAndTxt("IMAS:ids_rand:invalid_slice",
-      "If slice is non-zero, it should be between 1 and ntime");     
+     mxArray* data; 
      srandom(0);
-     if (init_dataTree_read() &lt; 0)
-     return -1;
+     status = init_dataTree_read();
      <xsl:apply-templates select="field" mode="RAND"/>
-     if (get_data_from_dataTree(NULL, ids) &lt; 0)
-     return -1;
-     return 0;
+     if (status >= 0) status = get_data_from_dataTree(NULL, ids);
+     /* Error handling */
+     if (status &lt; 0) {
+     addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
+     }
+
+     return status;
      }
    </xsl:for-each>
  </xsl:result-document>

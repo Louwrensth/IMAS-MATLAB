@@ -136,10 +136,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
   plhs[0] = mxDuplicateArray(prhs[1]);
 
   /* Declare Function Pointer */
-  int(*<xsl:value-of select="$conversion"/>)(mxArray*) = NULL;
+  int(*ids_<xsl:value-of select="$conversion"/>)(mxArray*) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name"><xsl:value-of select="$conversion"/></xsl:with-param>
+    <xsl:with-param name="function_name">ids_<xsl:value-of select="$conversion"/></xsl:with-param>
   </xsl:apply-templates>
   /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_<xsl:value-of select="$conversion"/>:unknown_ids",
@@ -149,10 +149,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   free(IDSpathcopy);
   
   /* Clean-up previous errors */
-  mex_errmsgid = NULL;
-  mex_errmsgtxt[0] = '\000';
+  resetErrMsgIdAndTxt();
   /* Call function */
-  int err = <xsl:value-of select="$conversion"/>(plhs[0]);
+  int err = ids_<xsl:value-of select="$conversion"/>(plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_<xsl:value-of select="$conversion"/>:");
   return;
@@ -162,16 +161,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
  <xsl:result-document href="src/ids/ids_{$conversion}.h.in" standalone="yes" method="text">
   #include "mex.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="concat('int ',$conversion,'_')"/>
+    <xsl:with-param name="prefix" select="concat('int ids_',$conversion,'_')"/>
     <xsl:with-param name="suffix" select="'(mxArray* ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
   <xsl:result-document href="src/ids/{$conversion}_ids.c.in" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
-      int <xsl:value-of select="$conversion"/>_<xsl:value-of select="@name"/>(mxArray* ids)
+      int ids_<xsl:value-of select="$conversion"/>_<xsl:value-of select="@name"/>(mxArray* ids)
       {
-      int status;
+      int status = 0;
       int aosArraySize;
       int isEmpty;
       /* AoS-specific variables */<xsl:for-each select=".//field[@data_type='struct_array']">
@@ -179,9 +178,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
       int ifield;
       mxArray* data=NULL;
-      int cast_status = -1;
-      if (init_dataTree_write(ids) &lt; 0)
-      return -1;
+      status = init_dataTree_write(ids);
       <xsl:choose>
 	<xsl:when test="$conversion='int_to_double' or $conversion='double_to_int'">
 	  <xsl:apply-templates select="field" mode="INTS_DOUBLES">
@@ -202,7 +199,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	  <xsl:message terminate="yes">ERROR: Unidentified conversion: <xsl:value-of select="$conversion"/> !</xsl:message>
 	</xsl:otherwise>
       </xsl:choose>
-      return 0;
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
+      }
+
+      return status;
       }
     </xsl:for-each>
   </xsl:result-document>

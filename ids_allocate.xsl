@@ -102,20 +102,19 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = IDSname;
 
   /* Declare Function Pointer */
-  int(*allocate)(char *, int, mxArray**) = NULL;
+  int(*ids_allocate)(char *, int, mxArray**) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name">allocate</xsl:with-param>
+    <xsl:with-param name="function_name">ids_allocate</xsl:with-param>
   </xsl:apply-templates>
   /* Error if there was no match */
   mexErrMsgIdAndTxt("IMAS:ids_allocate:unknown_ids",
            "Unknown IDS name: %s", IDSname);
   
   /* Clean-up previous errors */
-  mex_errmsgid = NULL;
-  mex_errmsgtxt[0] = '\000';
+  resetErrMsgIdAndTxt();
   /* Call function */
-  int err = allocate(pathInIDS, n, &amp;plhs[0]);
+  int err = ids_allocate(pathInIDS, n, &amp;plhs[0]);
   if (err &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_allocate:");
   return;
@@ -125,23 +124,22 @@ void mexFunction(int nlhs, mxArray *plhs[],
  <xsl:result-document href="src/ids/ids_allocate.h.in" standalone="yes" method="text">
   #include "mex.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'int allocate_'"/>
+    <xsl:with-param name="prefix" select="'int ids_allocate_'"/>
     <xsl:with-param name="suffix" select="'(char* pathInIDS, int n, mxArray** ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
  <xsl:result-document href="src/ids/allocate_ids.c.in" standalone="yes" method="text">
    #include "imas_mex_utils.h"
    <xsl:for-each select="IDS">
-     int allocate_<xsl:value-of select="@name"/>(char* pathInIDS, int n, mxArray** ids)
+     int ids_allocate_<xsl:value-of select="@name"/>(char* pathInIDS, int n, mxArray** ids)
      {
-     int status;
+     int status = 0;
      void *array;
      mxArray* data;
      int i;
-     if (init_dataTree_array_read(1) &lt; 0)
-     return -1;
-     if (iterate_dataTree_array(0) &lt; 0)
-     return -1;
+     status = init_dataTree_array_read(1);
+     if (status >= 0) status = iterate_dataTree_array(0);
+     if (status >= 0) {
      <xsl:for-each select=".//field[@data_type='struct_array']">
        if (!strncmp(pathInIDS, <xsl:value-of select="concat('&quot;',@path,'&quot;, ',string-length(@path))"/>)) {
        <xsl:apply-templates select="field" mode="ALLOCATE"/>
@@ -149,13 +147,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
      </xsl:for-each>
      mexErrMsgIdAndTxt("IMAS:ids_allocate:unknown_path",
                        "Path '%s' did not match any known AoS in <xsl:value-of select="@name"/>", pathInIDS);
-     if (end_dataTree_array_action() &lt; 0)
-     return -1;
-     if (replicate_dataTree_array(NULL, n) &lt; 0)
-     return -1;
-     if (get_data_from_dataTree(NULL, ids) &lt; 0)
-     return -1;
-     return 0;
+     }
+     if (status >= 0) status = end_dataTree_array_action();
+     if (status >= 0) status = replicate_dataTree_array(NULL, n);
+     if (status >= 0) status = get_data_from_dataTree(NULL, ids);
+     /* Error handling */
+     if (status &lt; 0) {
+     addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
+     }
+
+     return status;
      }
    </xsl:for-each>
  </xsl:result-document>

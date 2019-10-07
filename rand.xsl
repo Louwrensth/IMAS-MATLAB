@@ -18,9 +18,13 @@
 
 <xsl:template match="field" mode="RAND">
 
-<xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
+  <xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
 
-<xsl:param name="dynamic"><xsl:choose><xsl:when test="@type='dynamic' and not(ancestor::field[@data_type='struct_array' and @type='dynamic'])">1</xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+  <xsl:param name="dynamic"><xsl:choose><xsl:when test="@type='dynamic' and not(ancestor::field[@data_type='struct_array' and @type='dynamic'])">1</xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
+
+  <xsl:variable name="AosRelativePath">
+    <xsl:call-template name="printAosRelativePath"/>
+  </xsl:variable>
 
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
@@ -38,88 +42,84 @@
 	  n<xsl:value-of select="$unique_name"/> = n<xsl:value-of select="$unique_name"/> &lt; <xsl:value-of select="@maxoccur"/> ? n<xsl:value-of select="$unique_name"/> : <xsl:value-of select="@maxoccur"/>;
 	</xsl:otherwise>
       </xsl:choose>
-      if (begin_dataTree_array_read("<xsl:value-of select="@name"/>", n<xsl:value-of select="$unique_name"/>) &lt; 0) {
-      return -1;
-      }
+      if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", n<xsl:value-of select="$unique_name"/>);
       for (i<xsl:value-of select="$unique_name"/> = 0; i<xsl:value-of select="$unique_name"/> &lt; n<xsl:value-of select="$unique_name"/>; i<xsl:value-of select="$unique_name"/>++) {
-      if (iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>) &lt; 0) {
-      return -1;
-      }
+      if (status >= 0) status = iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>);
       <xsl:apply-templates select = "field" mode = "RAND"/>
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_array_action() &lt; 0) {
-      return -1;
-      }
+      if (status >= 0) status = end_dataTree_array_action();
       <xsl:if test="@maxoccur='unbounded' and @type='dynamic'">
-	if (slice)
-	if (slice_dataTree_array("<xsl:value-of select="@name"/>", slice-1) &lt; 0) {
-	return -1;
-	}
+	if (status >= 0 &amp;&amp; slice)
+	status = slice_dataTree_array("<xsl:value-of select="@name"/>", slice-1);
       </xsl:if>
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
+      return status;
+      }
     </xsl:when>
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      if (begin_dataTree_read("<xsl:value-of select="@name"/>") &lt; 0)
-      return -1;
+      if (status >= 0) status = begin_dataTree_read("<xsl:value-of select="@name"/>");
       <xsl:apply-templates select="field" mode="RAND"/>
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_action() &lt; 0)
-      return -1;
+      if (status >= 0) status = end_dataTree_action();
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
+      return status;
+      }
     </xsl:when>
 
   <!--========== Simple types ===========-->
   
-    <xsl:when test="@path='ids_properties/version_put/data_dictionary'">
-      data = mxCreateString("<xsl:value-of select="$DD_GIT_DESCRIBE"/>");
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
-    </xsl:when>
-    
-    <xsl:when test="@path='ids_properties/version_put/access_layer'">
-      data = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
-    </xsl:when>
-    
-    <xsl:when test="@path='ids_properties/version_put/access_layer_language'">
-      data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
-    </xsl:when>
-
-    <xsl:when test = "@name='homogeneous_time' and (@data_type='int_type' or @data_type='INT_0D')">
-      data = mxCreateNumericMatrix(1,1,mxINT32_CLASS,mxREAL);
-      *((int *) mxGetData(data)) = 1;
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
-    </xsl:when>
-  
-    <xsl:when test = "@name='time' and (@data_type='flt_1d_type' or @data_type='FLT_1D')">
-      data = rand_time(ntime, slice);
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
-    </xsl:when>
-  
-    <xsl:when test = "@name='time' and (@data_type='flt_type' or @data_type='FLT_0D')">
-      data = rand_time(ntime, 0);
-      *(mxGetPr(data)) = (mxGetPr(data))[i<xsl:value-of select="concat(ancestor::field[@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'][1]/@name,'_',generate-id(ancestor::field[@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'][1]))"/>];
-      mxSetPr(data,mxRealloc(mxGetPr(data),sizeof(double)));
-      mxSetM(data,1);
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
-    </xsl:when>
 
     <xsl:when test="my:get_datatype(@data_type)='CHAR_DATA' or 
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
 		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
 		    my:get_datatype(@data_type)='COMPLEX_DATA'">
-      data = rand_array(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, <xsl:value-of select="$dynamic"/>, ntime, slice);
-      if (data == NULL)
-      return -1;
-      if (put_data_in_dataTree("<xsl:value-of select="@name"/>", data) &lt; 0)
-      return -1;
+      <xsl:choose>
+	<xsl:when test="@path='ids_properties/version_put/data_dictionary'">
+	  data = mxCreateString("<xsl:value-of select="$DD_GIT_DESCRIBE"/>");
+	</xsl:when>
+	
+	<xsl:when test="@path='ids_properties/version_put/access_layer'">
+	  data = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
+	</xsl:when>
+	
+	<xsl:when test="@path='ids_properties/version_put/access_layer_language'">
+	  data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
+	</xsl:when>
+
+	<xsl:when test = "@name='homogeneous_time' and (@data_type='int_type' or @data_type='INT_0D')">
+	  data = mxCreateNumericMatrix(1,1,mxINT32_CLASS,mxREAL);
+	  *((int *) mxGetData(data)) = 1;
+	</xsl:when>
+	
+	<xsl:when test = "@name='time' and (@data_type='flt_1d_type' or @data_type='FLT_1D')">
+	  data = rand_time(ntime, slice);
+	</xsl:when>
+	
+	<xsl:when test = "@name='time' and (@data_type='flt_type' or @data_type='FLT_0D')">
+	  data = rand_time(ntime, 0);
+	  *(mxGetPr(data)) = (mxGetPr(data))[i<xsl:value-of select="concat(ancestor::field[@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'][1]/@name,'_',generate-id(ancestor::field[@data_type='struct_array' and @maxoccur='unbounded' and @type='dynamic'][1]))"/>];
+	  mxSetPr(data,mxRealloc(mxGetPr(data),sizeof(double)));
+	  mxSetM(data,1);
+	</xsl:when>
+
+	<xsl:otherwise>
+	  data = rand_array(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, <xsl:value-of select="$dynamic"/>, ntime, slice);
+	  if (data == NULL) status = -1;
+	</xsl:otherwise>
+      </xsl:choose>
+      if (status >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
+      return status;
+      }
     </xsl:when>
 
   <!--========== Unknown type ===========-->

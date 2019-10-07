@@ -62,10 +62,15 @@ struct imas_mex_fieldInfo {
 extern const char * mex_errmsgid;
 extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
 extern int msglen;
+extern int msg_haspathinfo;
+
+void resetErrMsgIdAndTxt(void);
 
 void my_mexErrMsgIdAndTxt(int status, const char * prefix);
 
 void my_exceptionGetReport(mxArray* exception);
+
+void addIdsPathInfoToErrMsg(const char * idsPathInfo, int force);
 
 int is_field_valid(int datatype, int dim, const mxArray * data);
 

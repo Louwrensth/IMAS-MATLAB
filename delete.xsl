@@ -17,19 +17,27 @@
 <!--=================================================-->
 
 <xsl:template match="field" mode="DELETE">
+
+<xsl:variable name="AosRelativePath">
+  <xsl:call-template name="printAosRelativePath"/>
+</xsl:variable>
+
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
     <xsl:when test="@data_type='structure'">
       status = delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(ctx);
-      if (status != 0)
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
       return status;
+      }
     </xsl:when>
     <xsl:otherwise>
       fieldPath = "<xsl:value-of select="@path"/>";
       status = ual_delete_data(ctx, fieldPath);
-      if (status != 0)
-      {	
-      ual_end_action(ctx);
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
       return status; 
       }
     </xsl:otherwise>

@@ -60,44 +60,24 @@
 	  field.timebasePath = "";
 	</xsl:otherwise>
       </xsl:choose>
-      if (begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize) &lt; 0) {
-      ual_end_action(ctx);
-      return -1;
-      }
+      status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
       if (aosArraySize &gt; 0) {
-      aosCtx = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize);
-      if (aosCtx &lt; 0) {
-      ual_end_action(ctx);
-      return aosCtx;
-      }
+      if (status >= 0) status = aosCtx = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize);
       for (int i=0; i&lt;aosArraySize; i++) {
-      if (iterate_dataTree_array(i) &lt; 0) {	
-      ual_end_action(aosCtx);
-      ual_end_action(ctx);
-      return -1;
-      }
-      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
-      if (status &lt; 0) {
-      <!-- ual_end_action(aosCtx) is taken care of in get_... -->	
-      ual_end_action(ctx);
-      return status;
-      }
-      status = ual_iterate_over_arraystruct(aosCtx, 1);
-      if (status &lt; 0) {	
-      ual_end_action(aosCtx);
-      ual_end_action(ctx);
-      return status;
-      }
-      }
-      status = ual_end_action(aosCtx);
-      if (status &lt; 0) {
-      ual_end_action(ctx);
-      return status; 
-      }
+      if (status >= 0) status = iterate_dataTree_array(i);
+      if (status >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
+      if (status >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_array_action() &lt; 0) {
-      ual_end_action(ctx);
+      if (aosCtx > 0) {
+      status_end = ual_end_action(aosCtx);
+      if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+      }
+      }
+      if (status >= 0) end_dataTree_array_action();
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
       return -1;
       }
       <xsl:if test="$dynamic_only !='yes' and @type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
@@ -107,21 +87,14 @@
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      if (begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty) &lt; 0) {
-      ual_end_action(ctx);
-      return -1;
-      }
-      if (!isEmpty) {
-      status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
-      if (status &lt; 0) {
-      <!-- ual_end_action(ctx) is taken care of in get_... -->
-      return status;
-      }
-      }
+      status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
+      if (!isEmpty &amp;&amp; status >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (end_dataTree_action() &lt; 0) {
-      ual_end_action(ctx);
-      return -1;
+      if (status >= 0) status = end_dataTree_action();
+      /* Error handling */
+      if (status &lt; 0) {
+      addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
+      return status;
       }
     </xsl:when>
 
@@ -136,21 +109,21 @@
     <xsl:choose>
       <xsl:when test="@path='ids_properties/version_put/data_dictionary'">
 	data = mxCreateString("<xsl:value-of select="$DD_GIT_DESCRIBE"/>");
+	status = 0;
       </xsl:when>
       <xsl:when test="@path='ids_properties/version_put/access_layer'">
 	data = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
+	status = 0;
       </xsl:when>
       <xsl:when test="@path='ids_properties/version_put/access_layer_language'">
 	data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
+	status = 0;
       </xsl:when>
       <xsl:otherwise>
-	if (get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data) &lt; 0) {
-	ual_end_action(ctx);
-	return -1;
-	}
+	status = get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data);
       </xsl:otherwise>
     </xsl:choose>
-    if (is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
+    if (status >= 0 &amp;&amp; is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
     field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
     <xsl:choose>
       <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
@@ -166,20 +139,21 @@
     field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
     field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;
     status = my_ual_write_data(&amp;action, &amp;field, data);
-    if (status &lt; 0) {	
-    ual_end_action(ctx);
-    return status;
-    }
     }
     <xsl:if test="$dynamic_only !='yes' and @type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
       }
     </xsl:if>
+    /* Error handling */
+    if (status &lt; 0) {
+    addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
+    return status;
+    }
   </xsl:when>
 
   <!--========== Unknown type ===========-->
-    <xsl:otherwise>
-      /* PROBLEM : UNIDENTIFIED TYPE !!! */ <!-- for comment only -->
-    </xsl:otherwise>
+  <xsl:otherwise>
+    <xsl:message terminate="yes">ERROR: Unidentified type: <xsl:value-of select="@data_type"/> !</xsl:message>
+  </xsl:otherwise>
 </xsl:choose>
 </xsl:if>
 </xsl:template>

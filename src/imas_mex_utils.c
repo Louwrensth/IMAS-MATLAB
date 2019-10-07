@@ -24,6 +24,18 @@ const int IDS_TIME_MODE_INDEPENDENT = 2;            /*!< IDS with time independe
 const char * mex_errmsgid;                          /*!< MATLAB message identifier for errors */
 char mex_errmsgtxt[MAXERRMSGTXTSIZE];               /*!< Error message */
 int msglen = 0;                                     /*!< Length of the mex_errmsgtxt string */
+int msg_haspathinfo = 0;
+
+/**
+   Reset global variables for error message
+ */
+void resetErrMsgIdAndTxt(void)
+{
+  mex_errmsgid = NULL;
+  mex_errmsgtxt[0] = '\000';
+  msglen = 0;
+  msg_haspathinfo = 0;
+}
 
 /**
    Assembles text and identifier for an error message then throws it.
@@ -71,6 +83,21 @@ void my_exceptionGetReport(mxArray* exception)
 }
 
 /**
+   Appends IDS path information to global error message text
+   Called after an error status is found when processing a certain field/aos/structure in one of the HLI functions. Because of the nested nature of these functions, one portion of the path could be added multiple times. To avoid this a global variable stores the status of the error message, and the path information is only added if this global status variable is not yet set. The additional argument force allows to disable this check.
+   @param[in] pathInfo String containing the path information to be added to the error message
+   @param[in] force flag which forces to add the path information if non-zero 
+ */
+void addIdsPathInfoToErrMsg(const char * pathInfo, int force)
+{
+  if (force || !msg_haspathinfo) {
+    strncat(mex_errmsgtxt, pathInfo, MAXERRMSGTXTSIZE-1-msglen);
+    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+    msg_haspathinfo = 1;
+  }
+}
+
+/**
    Checks if field has a different value than the default.
    This routine is used for put and put_slice methods before calling ual_write_data, if it returns 0 (false) then ual_write_data will be skipped.
    @param[in] datatype type of data in the current field.
@@ -114,27 +141,21 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
     *classid = mxINT32_CLASS;
     *ComplexFlag = mxREAL;
     *dsize = sizeof(int);
-    return 0;
-  }
-  if (datatype == DOUBLE_DATA) {
+  } else if (datatype == DOUBLE_DATA) {
     *classid = mxDOUBLE_CLASS;
     *ComplexFlag = mxREAL;
     *dsize = sizeof(double);
-    return 0;
-  }
-  if (datatype == CHAR_DATA) {
+  } else if (datatype == CHAR_DATA) {
     *classid = mxCHAR_CLASS;
     *ComplexFlag = mxREAL;
     *dsize = 2*sizeof(char);
-    return 0;
-  }
-  if (datatype == COMPLEX_DATA) {
+  } else if (datatype == COMPLEX_DATA) {
     *classid = mxDOUBLE_CLASS;
     *ComplexFlag = mxCOMPLEX;
     *dsize = sizeof(double);
-    return 0;
-  }
-  return -1; /* TODO: Should we use a unique error status? */
+  } else 
+    return -1; /* TODO: Should we use a unique error status? */
+  return 0;
 }
 
 /**
@@ -149,7 +170,7 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
  */
 int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data)
 {
-  int status = -1;
+  int status = 0;
   mxClassID classid;
   mxComplexity ComplexFlag;
   size_t dsize;
@@ -196,7 +217,7 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
     } else {
       /*           **** CHAR DATA **** */
       if (dim == 1) {
-        dims[0] = 1;
+	dims[0] = 1;
 	dims[1] = size[0];
       } else {
 	/* Size is [nb of strings, string length] (???) */
@@ -211,16 +232,16 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
 	  chararray[j*dims[0]+i] = (mxChar) ((char *) array)[i*dims[1]+j];
     }
   } else {
-      if (datatype == CHAR_DATA) {
-	/* Create an empty string (0x0 char array) */
-        *data = mxCreateCharArray(0, NULL);
-      }
-      else
-	/* Create an empty array of correct class */
-	*data = mxCreateNumericArray(0, NULL, classid, ComplexFlag);
+    if (datatype == CHAR_DATA) {
+      /* Create an empty string (0x0 char array) */
+      *data = mxCreateCharArray(0, NULL);
+    }
+    else
+      /* Create an empty array of correct class */
+      *data = mxCreateNumericArray(0, NULL, classid, ComplexFlag);
   }
-
-  return 0;
+  
+  return status;
 }
 
 /**
@@ -235,7 +256,7 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
  */
 int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size)
 {
-  int status;
+  int status = 0;
   mxChar *chararray;
   int ndims;
   const mwSize *dims;
@@ -291,7 +312,6 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
 	  ((char *) *array)[j*size[1]+i] = (char) chararray[i*size[0]+j];
     }
   }
-  status = 0;
   return status;
 }
 
@@ -304,8 +324,7 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
  */
 int mxArray_default_value(int datatype, int dim, mxArray **data)
 {
-  int status = -1;
-  int cast_status = -1;
+  int status = 0;
   void * array = NULL;
   mxArray * data_old;
 
@@ -323,13 +342,8 @@ int mxArray_default_value(int datatype, int dim, mxArray **data)
   if (datatype == CHAR_DATA && dim == 2) {
     /* For STR_1D cast to cell array of strings */
     data_old = *data;
-    cast_status = castCharToCell(data);
-    if (cast_status < 0) {
-      mex_errmsgid = "cast_failed";
-      snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast default string array to cell");
-      return -1;
-    }
-    mxDestroyArray(data_old);
+    if (status >= 0) status = castCharToCell(data);
+    if (status >= 0) mxDestroyArray(data_old);
   }
 
   return status;
@@ -366,9 +380,7 @@ int getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
 int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data)
 {
 
-  int status = -1;
-  int read_status = -1;
-  int cast_status = -1;
+  int status = 0;
 
   mxArray * data_old;
   void * array = NULL;
@@ -386,41 +398,27 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
       array = malloc(sizeof(double _Complex));
   }
 
-  read_status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
+  status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
 
-  status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
-
-  if (read_status < 0)
-    return 0;
+  if (status >= 0) status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
 
   /* Free arrays  */
-  if (!read_status)
-    free(array);
+  if (array) free(array);
 
 #ifndef NO_LOCAL_CONVERSION
   if (!params.convert_whole_ids) {
     if (params.get_int_as_double)
       if (field->datatype == INTEGER_DATA) {
 	data_old = *data;
-	cast_status = castInt32ToDouble(data);
-	if (cast_status < 0) {
-	  mex_errmsgid = "cast_failed";
-	  snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to double", field->fieldPath);
-	  return -1;
-	}
-	mxDestroyArray(data_old);
+	if (status >= 0) status = castInt32ToDouble(data);
+	if (status >= 0) mxDestroyArray(data_old);
       }
 
     if (params.get_empty_as_nan)
       if (field->datatype == DOUBLE_DATA) {
 	data_old = *data;
-	cast_status = castEmptyToNaN(data);
-	if (cast_status < 0) {
-	  mex_errmsgid = "cast_failed";
-	  snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to replace EMPTY_FLOATs by NaNs for field %s", field->fieldPath);
-	  return -1;
-	}
-	mxDestroyArray(data_old);
+	if (status >= 0) status = castEmptyToNaN(data);
+	if (status >= 0) mxDestroyArray(data_old);
       }
   }
 #endif
@@ -428,16 +426,11 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
   if (field->datatype == CHAR_DATA && field->dim == 2) {
     /* For STR_1D cast to cell array of strings */
     data_old = *data;
-    cast_status = castCharToCell(data);
-    if (cast_status < 0) {
-      mex_errmsgid = "cast_failed";
-      snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to cell", field->fieldPath);
-      return -1;
-    }
-    mxDestroyArray(data_old);
+    if (status >= 0) status = castCharToCell(data);
+    if (status >= 0) mxDestroyArray(data_old);
   }
 
-  return 0;
+  return status;
 }
 
 /**
@@ -452,10 +445,10 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
 {
 
   int status = 0;
-  int cast_status = -1;
+  int cast_status = -1; /* Necessary flag in case a cast was made and clean-up is required */
 
   const mxArray * ptime;
-  void * array;
+  void * array = NULL;
   int dims[MAXDIM];
 
   int i;
@@ -465,14 +458,9 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
     if (params.put_int_from_double)
       if (field->datatype == INTEGER_DATA) {
 	if (mxIsNumeric(data) && mxIsDouble(data)) {
-	  cast_status = castDoubleToInt32((mxArray **) &data);
-	  if (cast_status < 0) {
-	    mex_errmsgid = "cast_failed";
-	    snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to int32", field->fieldPath);
-	    return -1;
-	  }
+	  if (status >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
 	  /* Check again field validity */
-	  if (!is_field_valid(field->datatype, field->dim, data))
+	  if (status >= 0 && !is_field_valid(field->datatype, field->dim, data))
 	    return 0;
 	}
       }
@@ -480,14 +468,9 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
     if (params.put_empty_from_nan)
       if (field->datatype == DOUBLE_DATA) {
 	if (mxIsNumeric(data) && mxIsDouble(data)) {
-	  cast_status = castNaNToEmpty((mxArray **) &data);
-	  if (cast_status < 0) {
-	    mex_errmsgid = "cast_failed";
-	    snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to replace NaNs by EMPTY_FLOATs for field %s", field->fieldPath);
-	    return -1;
-	  }
+	  if (status >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
 	  /* Check again field validity */
-	  if (!is_field_valid(field->datatype, field->dim, data))
+	  if (status >= 0 &&!is_field_valid(field->datatype, field->dim, data))
 	    return 0;
 	}
       }
@@ -496,19 +479,15 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
   
   if (field->datatype == CHAR_DATA && field->dim == 2) {
     if (mxIsCell(data)) {
-      cast_status = castCellToChar((mxArray **) &data);
-      if (cast_status < 0) {
-	mex_errmsgid = "cast_failed";
-	snprintf(&mex_errmsgtxt[msglen], MAXERRMSGTXTSIZE-msglen, "Unable to cast field %s to char", field->fieldPath);
-	return -1;
-      }
+      if (status >= 0) status = cast_status = castCellToChar((mxArray **) &data);
     }
   }
   
-  status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
+  if (status >= 0) status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
   
-  status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+  if (status >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
   
+  /* Clean up memory allocated by data_from_mxArray */
   if (field->datatype == CHAR_DATA) {
     if (array != NULL)
       (field->dim == 1) ? mxFree(array) : free(array);
@@ -516,8 +495,8 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
     if (array != NULL)
       free(array);
   }
-    
   
+  /* Clean up data created by cast operation */
   if (cast_status == 0)
     mxDestroyArray((mxArray *) data);
 
