@@ -153,7 +153,7 @@ $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(MEX_ADD_OBJ_FILES) | $(LIB_DIR) $(LIB_DI
 	$(CC) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -limas-mex $(LIBS) $(LDFLAGS)
 
 $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM): $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FILES:.c=.o)) | $(LIB_DIR)
-	$(CC) -g -o $@ -shared -Wl,-soname,$(notdir $@) $^
+	$(CC) -g -o $@ -shared -Wl,$(SONAME_OPT),$(notdir $@) $^
 
 $(LIB_DIR)/libimas-mex.so: $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
 	ln -sf $(notdir $<) $@
