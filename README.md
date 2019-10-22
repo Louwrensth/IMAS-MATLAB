@@ -66,7 +66,6 @@ TODO
 ====
 
    - Print context info on error
-   - Decide on returning 0 (success) or status of ual_end_action
    - Decide on how to assign error codes for local (mexinterface) functions
    - Minimize use of memcpy in get methods (check that no error appears when mex are cleared)
    - Enable/Disable memory backend from MATLAB
