@@ -53,7 +53,7 @@ void my_mexErrMsgIdAndTxt(int status, const char * prefix)
     mexErrMsgIdAndTxt(msgid,mex_errmsgtxt);
   } else {
     strncat(msgid, "internal_error", MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
-    mexErrMsgIdAndTxt(msgid,"internal error occured with error code %d", status);
+    mexErrMsgIdAndTxt(msgid,"internal error occured with error code %d%s", status, mex_errmsgtxt);
   }
 }
 
