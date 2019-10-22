@@ -157,41 +157,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:for-each select="IDS">
 
     int ids_delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName);
-#ifndef NO_GLOBAL_CONVERSION
-     int ids_double_to_int_<xsl:value-of select="@name"/>(mxArray* ids);
-     int ids_nan_to_empty_<xsl:value-of select="@name"/>(mxArray* ids);
-#endif
     <xsl:apply-templates select="." mode="METHOD_PUT_H"/>
 
     int ids_put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
     {
-#ifndef NO_GLOBAL_CONVERSION
-    mxArray* ids_conv=NULL;
-#endif
     int ifield;
     const mxArray* ptime=NULL;
     int status = 0;
     int status_end = 0;
     int putOpCtx = -1;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
-
-#ifndef NO_GLOBAL_CONVERSION
-    if (params.convert_whole_ids == 1) {
-    /* Conversion of INT fields from double */
-    if (params.put_int_from_double) {
-    ids_conv = mxDuplicateArray(ids);
-    if (status >= 0) status = ids_double_to_int_<xsl:value-of select="@name"/>(ids_conv);
-    ids = ids_conv;
-    }
-    /* Conversion of NaN values for FLT fields to EMPTY_DOUBLE */
-    if (params.put_empty_from_nan) {
-    if (ids_conv == NULL) /* if input was not already duplicated */
-    ids_conv = mxDuplicateArray(ids);
-    if (status >= 0) status = ids_nan_to_empty_<xsl:value-of select="@name"/>(ids_conv);
-    ids = ids_conv;
-    }
-    }
-#endif
 
     if (status >= 0) status = init_dataTree_write((mxArray *) ids);
     /* TODO: move these checks to external function? */

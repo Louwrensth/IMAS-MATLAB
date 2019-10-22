@@ -406,21 +406,19 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
   if (array) free(array);
 
 #ifndef NO_LOCAL_CONVERSION
-  if (!params.convert_whole_ids) {
-    if (params.get_int_as_double)
-      if (field->datatype == INTEGER_DATA) {
-	data_old = *data;
-	if (status >= 0) status = castInt32ToDouble(data);
-	if (status >= 0) mxDestroyArray(data_old);
-      }
-
-    if (params.get_empty_as_nan)
-      if (field->datatype == DOUBLE_DATA) {
-	data_old = *data;
-	if (status >= 0) status = castEmptyToNaN(data);
-	if (status >= 0) mxDestroyArray(data_old);
-      }
-  }
+  if (params.get_int_as_double)
+    if (field->datatype == INTEGER_DATA) {
+      data_old = *data;
+      if (status >= 0) status = castInt32ToDouble(data);
+      if (status >= 0) mxDestroyArray(data_old);
+    }
+  
+  if (params.get_empty_as_nan)
+    if (field->datatype == DOUBLE_DATA) {
+      data_old = *data;
+      if (status >= 0) status = castEmptyToNaN(data);
+      if (status >= 0) mxDestroyArray(data_old);
+    }
 #endif
   
   if (field->datatype == CHAR_DATA && field->dim == 2) {
@@ -454,27 +452,25 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
   int i;
 
 #ifndef NO_LOCAL_CONVERSION
-  if (!params.convert_whole_ids) {
-    if (params.put_int_from_double)
-      if (field->datatype == INTEGER_DATA) {
-	if (mxIsNumeric(data) && mxIsDouble(data)) {
-	  if (status >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
-	  /* Check again field validity */
-	  if (status >= 0 && !is_field_valid(field->datatype, field->dim, data))
-	    return 0;
-	}
+  if (params.put_int_from_double)
+    if (field->datatype == INTEGER_DATA) {
+      if (mxIsNumeric(data) && mxIsDouble(data)) {
+	if (status >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
+	/* Check again field validity */
+	if (status >= 0 && !is_field_valid(field->datatype, field->dim, data))
+	  return 0;
       }
+    }
     
-    if (params.put_empty_from_nan)
-      if (field->datatype == DOUBLE_DATA) {
-	if (mxIsNumeric(data) && mxIsDouble(data)) {
-	  if (status >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
-	  /* Check again field validity */
-	  if (status >= 0 &&!is_field_valid(field->datatype, field->dim, data))
-	    return 0;
-	}
+  if (params.put_empty_from_nan)
+    if (field->datatype == DOUBLE_DATA) {
+      if (mxIsNumeric(data) && mxIsDouble(data)) {
+	if (status >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
+	/* Check again field validity */
+	if (status >= 0 &&!is_field_valid(field->datatype, field->dim, data))
+	  return 0;
       }
-  }
+    }
 #endif
   
   if (field->datatype == CHAR_DATA && field->dim == 2) {

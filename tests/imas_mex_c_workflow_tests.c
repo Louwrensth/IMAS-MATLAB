@@ -232,11 +232,6 @@ int main(int argc, const char *argv[])
 
   imas_set_mex_params(0, NULL, 2, args_set);
 
-  args_set[0] = mxCreateString("convert_whole_ids");
-  args_set[1] = mxCreateDoubleScalar(1);
-
-  imas_set_mex_params(0, NULL, 2, args_set);
-
   args_set[0] = mxCreateString("error_on_missing_field");
   args_set[1] = mxCreateDoubleScalar(0);
 

@@ -86,7 +86,8 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
       continue;
     /* convert_whole_ids */
     } else if (!strcmp(name, "convert_whole_ids")) {
-      params.convert_whole_ids = (int) mxGetScalar(data);
+      mexWarnMsgIdAndTxt("IMAS:imas_mex_set_params:obsolete_parameter",
+			 "Parameter convert_whole_ids is now obsolete. Present beahavior corresponds to the old default value (false)");
       continue;
     /* error_on_missing_field */
     } else if (!strcmp(name, "error_on_missing_field")) {

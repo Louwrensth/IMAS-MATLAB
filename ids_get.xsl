@@ -145,11 +145,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/get_ids.c.in" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
-#ifndef NO_GLOBAL_CONVERSION
-     int ids_int_to_double_<xsl:value-of select="@name"/>(mxArray* ids);
-     int ids_empty_to_nan_<xsl:value-of select="@name"/>(mxArray* ids);
-#endif
-    
     <xsl:apply-templates select="." mode="METHOD_GET_H"/>
 
     int ids_get_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids)
@@ -171,18 +166,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
     
     if (status >= 0) status = get_data_from_dataTree(NULL, ids);
-#ifndef NO_GLOBAL_CONVERSION
-    if (status >= 0) {
-    if (params.convert_whole_ids == 1) {
-    /* Conversion of INT fields to double */
-    if (params.get_int_as_double)
-    status = ids_int_to_double_<xsl:value-of select="@name"/>(*ids);
-    /* Conversion of EMPTY_DOUBLE values for FLT fields to NaN */
-    if (params.get_empty_as_nan)
-    status = ids_empty_to_nan_<xsl:value-of select="@name"/>(*ids);
-    }
-    }
-#endif
     /* Error handling */
     if (status &lt; 0) {
     addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);

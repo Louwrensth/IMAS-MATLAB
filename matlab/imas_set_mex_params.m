@@ -11,7 +11,8 @@
 %   - get_empty_as_nan
 %   - put_empty_from_nan
 %   - use_cell_array_for_array_of_structures
-%   - convert_whole_ids
+%   - convert_whole_ids [OBSOLETE: value will be ignored, the present behavior
+%                        corresponds to the old default value (false)]
 %   - error_on_missing_field
 %   - verbosity
 %

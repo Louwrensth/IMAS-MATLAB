@@ -143,10 +143,6 @@ $(IDS_SRC_DIR)/%.h: $(IDS_SRC_DIR)/%.h.in
 $(LIB_DIR) $(BUILD_DIR): 
 	$(mkdir_p) $(@)
 
-$(LIB_DIR)/ids_get.mexa64:           $(BUILD_DIR)/int_to_double_ids.o $(BUILD_DIR)/empty_to_nan_ids.o
-$(LIB_DIR)/ids_get_slice.mexa64:     $(BUILD_DIR)/int_to_double_ids.o $(BUILD_DIR)/empty_to_nan_ids.o
-$(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DIR)/nan_to_empty_ids.o 
-$(LIB_DIR)/ids_put_slice.mexa64:     $(BUILD_DIR)/double_to_int_ids.o $(BUILD_DIR)/nan_to_empty_ids.o
 $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o
 $(LIB_DIR)/ids_put_slice.mexa64:     $(BUILD_DIR)/delete_ids.o
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(MEX_ADD_OBJ_FILES) | $(LIB_DIR) $(LIB_DIR)/libimas-mex.so

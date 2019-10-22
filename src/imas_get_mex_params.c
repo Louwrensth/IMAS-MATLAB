@@ -71,12 +71,6 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     mexErrMsgIdAndTxt("IMAS:imas_mex_get_params:internal","Unable to create structure params");
   mxSetFieldByNumber(plhs[0], 0, ifield, mxCreateLogicalScalar((mxLogical) params.use_cell_array_for_array_of_structures));
 
-  /* params.convert_whole_ids */
-  ifield = mxAddField(plhs[0], "convert_whole_ids");
-  if (ifield < 0)
-    mexErrMsgIdAndTxt("IMAS:imas_mex_get_params:internal","Unable to create structure params");
-  mxSetFieldByNumber(plhs[0], 0, ifield, mxCreateDoubleScalar((double) params.convert_whole_ids));
-
   /* params.error_on_missing_field */
   ifield = mxAddField(plhs[0], "error_on_missing_field");
   if (ifield < 0)
