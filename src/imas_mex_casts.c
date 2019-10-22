@@ -23,7 +23,7 @@ int castDoubleToInt32(mxArray ** data)
 {
   mxArray * doubleData = (mxArray *) *data;
   mxArray * intData = NULL;
-#ifndef DO_NOT_CALL_MATLAB
+#ifdef CALL_MATLAB_FOR_CASTS
   mxArray * exception = NULL;
 
   if (mxIsNumeric(*data) && mxIsDouble(*data))
@@ -76,7 +76,7 @@ int castInt32ToDouble(mxArray ** data)
 {
   mxArray *intData = (mxArray *) * data;
   mxArray *doubleData = NULL;
-#ifndef DO_NOT_CALL_MATLAB
+#ifdef CALL_MATLAB_FOR_CASTS
   mxArray *exception = NULL;
 
   if (mxIsNumeric(*data) && mxIsInt32(*data))
@@ -130,7 +130,7 @@ int castNaNToEmpty(mxArray ** data)
 {
   mxArray *inData = (mxArray *) * data;
   mxArray *outData = NULL;
-#ifndef DO_NOT_CALL_MATLAB
+#ifdef CALL_MATLAB_FOR_CASTS
   mxArray *exception = NULL;
 
   if (mxIsNumeric(*data) && mxIsDouble(*data))
@@ -181,7 +181,7 @@ int castEmptyToNaN(mxArray ** data)
 {
   mxArray *inData = (mxArray *) * data;
   mxArray *outData = NULL;
-#ifndef DO_NOT_CALL_MATLAB
+#ifdef CALL_MATLAB_FOR_CASTS
   mxArray *exception = NULL;
 
   if (mxIsNumeric(*data) && mxIsDouble(*data))
@@ -231,7 +231,7 @@ int castCellToChar(mxArray ** data)
 {
   mxArray * cellData = (mxArray *) *data;
   mxArray * charData = NULL;
-#ifndef DO_NOT_CALL_MATLAB
+#ifdef CALL_MATLAB_FOR_CASTS
   mxArray * exception = NULL;
 
   if (mxIsCell(*data))
@@ -286,7 +286,7 @@ int castCharToCell(mxArray ** data)
 {
   mxArray *charData = (mxArray *) * data;
   mxArray *cellData = NULL;
-#ifndef DO_NOT_CALL_MATLAB
+#ifdef CALL_MATLAB_FOR_CASTS
   mxArray *exception = NULL;
 
   if (mxIsChar(*data))
