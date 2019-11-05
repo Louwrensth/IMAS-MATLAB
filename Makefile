@@ -47,21 +47,31 @@ all: _all
 ## This template takes care of most of the dependencies
 ## Additional dependencies should be added in the init/build section
 define TEMPLATE
-$(1)_SOURCES = $(1)_ids.c.in ids_$(1).c.in ids_$(1).h.in
+$(1)_SOURCES = ids_$(1).c.in ids_$(1).h.in $(1)_ids.c.in
 ALL_SOURCES += $$($(1)_SOURCES)
-$(1)_SRC_FILES = $$(addprefix $(IDS_SRC_DIR)/,$$($(1)_SOURCES))
-ifeq (_to_,$(findstring _to_,$(1)))
-$$($(1)_SRC_FILES): ids_converter.xsl mex_tools.xsl
+$(1)_SRC_FILES= $$(addprefix $(IDS_SRC_DIR)/,$$($(1)_SOURCES))
+# Introducing a fake intermediate file for forcing recipes to be run only once even for parallel builds
+ifeq (,$(findstring _to_,$(1)))
+INDSOURCES += $(1)_sources # Skip the ones for converter
+.INTERMEDIATE: $(1)_sources # Skip the ones for converter
+$(1)_sources: ids_$(1).xsl mex_tools.xsl # Skip the ones for converter
+$$($(1)_SRC_FILES): $(1)_sources
 else
-$$($(1)_SRC_FILES): ids_$(1).xsl mex_tools.xsl
+$$($(1)_SRC_FILES): converter_sources
 endif
 $(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
 $(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
 endef
 
-METHODS = get get_slice put put_slice delete allocate gen gen2 double_to_int int_to_double nan_to_empty empty_to_nan struct_to_cell cell_to_struct rand
+METHODS = get get_slice put put_slice delete allocate gen gen2 int_to_double double_to_int empty_to_nan nan_to_empty cell_to_struct struct_to_cell rand
 
 $(foreach method,$(METHODS),$(eval $(call TEMPLATE,$(method))))
+
+# Do the converter bit
+INDSOURCES += converter_sources
+.INTERMEDIATE: converter_sources
+converter_sources: ids_converter.xsl mex_tools.xsl
+
 
 IDS_C_FILES   = $(filter-out ids_%     , $(ALL_SOURCES))
 MEX_IDS_FILES = $(filter     ids_%.c.in, $(ALL_SOURCES))
@@ -71,6 +81,8 @@ GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))
 GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(MEX_IDS_FILES))
 GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(HEADER_FILES))
 GENSOURCES+= matlab/IDS_list.m
+
+INDSOURCES+= matlab/IDS_list.m
 
 # Add static sources
 MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
@@ -99,17 +111,14 @@ ifneq ("","$(MEXSRC)")
   MEX_ADD_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(subst .c,.o,$(notdir $(MEXSRC))))
 endif
 
-# Enforcing serial builds only until problem with parallel generation of sources is solved.
-.NOTPARALLEL:
-
-_all: $(SOURCES) $(TARGETS)
+_all: sources $(TARGETS)
 
 
 #################################################
 #                 INIT: SOURCE GENERATION
 #################################################
 
-sources: $(SOURCES)
+sources: $(GENSOURCES)
 
 $(get_SRC_FILES):            get_single.xsl
 $(get_slice_SRC_FILES):      get_single.xsl
@@ -127,7 +136,7 @@ $(struct_to_cell_SRC_FILES): cells_structs.xsl
 $(cell_to_struct_SRC_FILES): cells_structs.xsl
 $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
-$(GENSOURCES): $(IDSDEF) | saxonicajar
+$(INDSOURCES): $(IDSDEF) | saxonicajar
 	java net.sf.saxon.Transform -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
 
 $(IDS_SRC_DIR)/%.c: $(IDS_SRC_DIR)/%.c.in
@@ -181,8 +190,8 @@ uninstall: sources_uninstall
 
 sources_install: $(SOURCES)
 	$(mkdir_p) $(datadir)/src/mexinterface/ids
-	$(INSTALL_DATA) $(IDS_SRC_DIR)/*.c $(IDS_SRC_DIR)/*.h $(datadir)/src/mexinterface/ids
-	$(INSTALL_DATA) $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(datadir)/src/mexinterface
+	$(INSTALL_DATA) $(filter-out %.in, $(filter $(IDS_SRC_DIR)/%, $(SOURCES))) $(datadir)/src/mexinterface/ids
+	$(INSTALL_DATA) $(filter-out $(IDS_SRC_DIR)/%, $(filter $(SRC_DIR)/%, $(SOURCES))) $(datadir)/src/mexinterface
 
 sources_uninstall:
 	-rm -rf $(datadir)/src/mexinterface
