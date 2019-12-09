@@ -31,9 +31,9 @@ LIBS=-L../lowlevel -limas
 
 # Check existence of the "indent" utility to get a clean C format
 ifeq "$(shell which indent 2> /dev/null)" ""
- BEAUTIFY = echo
+ BEAUTIFY = cat
 else
- BEAUTIFY = indent -kr --no-tabs -l1000 -fc1
+ BEAUTIFY = indent --standard-output -kr --no-tabs -l1000 -fc1
 endif
 
 # Sets a path where make will search for files
@@ -140,10 +140,10 @@ $(INDSOURCES): $(IDSDEF) | saxonicajar
 	java net.sf.saxon.Transform -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
 
 $(IDS_SRC_DIR)/%.c: $(IDS_SRC_DIR)/%.c.in
-	$(BEAUTIFY) $< -o $@
+	$(BEAUTIFY) $< > $@
 
 $(IDS_SRC_DIR)/%.h: $(IDS_SRC_DIR)/%.h.in
-	$(BEAUTIFY) $< -o $@
+	$(BEAUTIFY) $< > $@
 
 #################################################
 #              BUILD
