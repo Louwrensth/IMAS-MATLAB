@@ -113,6 +113,8 @@ endif
 
 _all: sources $(TARGETS)
 
+.PHONY: all _all
+
 
 #################################################
 #                 INIT: SOURCE GENERATION
@@ -147,6 +149,8 @@ ifneq "$(BEAUTIFY)" ""
 	[[ $$x == 0 ]] || rm -f $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
 	[[ $$x == 0 ]])
 endif
+
+.PHONY: sources
 
 #################################################
 #              BUILD
@@ -203,6 +207,8 @@ doc_install: doc
 	$(mkdir_p) $(docdir)/dev/mexinterface
 	cp -r html latex $(docdir)/dev/mexinterface
 
+.PHONY: install uninstall sources_install sources_uninstall doc_install
+
 #################################################
 #              CLEAN
 #################################################
@@ -214,6 +220,8 @@ clean: test-clean pkgconfig_clean
 
 clean-src: test-clean-src clean-doc clean
 	$(RM) $(GENSOURCES)
+
+.PHONY: clean clean-src clean-doc
 
 #################################################
 #              DOCUMENTATION
@@ -229,6 +237,8 @@ latex/refman.pdf: latex/files.tex
 clean-doc:
 	$(RM) -r latex html
 
+.PHONY: doc
+
 #################################################
 #                 TESTS
 #################################################
@@ -241,6 +251,8 @@ test-clean:
 
 test-clean-src:
 	$(MAKE) -C tests clean-src
+
+.PHONY: test test-clean test-clean-src
 
 PC_FILES =
 include ../Makefile.pkgconfig
