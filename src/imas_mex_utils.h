@@ -25,10 +25,10 @@ extern const int IDS_TIME_MODE_HOMOGENEOUS;
 extern const int IDS_TIME_MODE_INDEPENDENT;
 
 #include "mex.h"
+#include "ual_lowlevel.h"
 #include "imas_mex_params.h"
 #include "imas_mex_casts.h"
 #include "imas_mex_structs.h"
-#include "ual_lowlevel.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -39,6 +39,9 @@ extern const int IDS_TIME_MODE_INDEPENDENT;
 
 #define MAXERRMSGIDSIZE 129
 #define MAXERRMSGTXTSIZE 1025
+
+#define HLI_ERR LOWLEVEL_ERR-1
+
 /** \endcond */
 
 /**
@@ -66,7 +69,7 @@ extern int msg_haspathinfo;
 
 void resetErrMsgIdAndTxt(void);
 
-void my_mexErrMsgIdAndTxt(int status, const char * prefix);
+void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix);
 
 void my_exceptionGetReport(mxArray* exception);
 
@@ -74,17 +77,17 @@ void addIdsPathInfoToErrMsg(const char * idsPathInfo, int force);
 
 int is_field_valid(int datatype, int dim, const mxArray * data);
 
-int mxArray_default_value(int datatype, int dim, mxArray **data);
+al_status_t mxArray_default_value(int datatype, int dim, mxArray **data);
 
-int getHomogeneousTimeCtx(int ctx, int *homogeneousTime);
+al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime);
 
-int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data);
+al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data);
 
-int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size);
+al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size);
 
-int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data);
+al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data);
 
-int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data);
+al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data);
 /** \endcond */
 
 #endif

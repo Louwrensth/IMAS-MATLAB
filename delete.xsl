@@ -27,7 +27,7 @@
     <xsl:when test="@data_type='structure'">
       status = delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(ctx);
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -36,7 +36,7 @@
       fieldPath = "<xsl:value-of select="@path"/>";
       status = ual_delete_data(ctx, fieldPath);
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
       return status; 
       }

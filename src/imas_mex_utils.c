@@ -43,7 +43,7 @@ void resetErrMsgIdAndTxt(void)
    @param[in] status error code
    @param[in] prefix string containing the prefix to the MATLAB error message identifier
  */
-void my_mexErrMsgIdAndTxt(int status, const char * prefix)
+void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix)
 {
   char msgid[MAXERRMSGIDSIZE];
 
@@ -53,7 +53,7 @@ void my_mexErrMsgIdAndTxt(int status, const char * prefix)
     mexErrMsgIdAndTxt(msgid,mex_errmsgtxt);
   } else {
     strncat(msgid, "internal_error", MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
-    mexErrMsgIdAndTxt(msgid,"internal error occured with error code %d%s", status, mex_errmsgtxt);
+    mexErrMsgIdAndTxt(msgid,"internal error occured with error code %d%s", status.code, mex_errmsgtxt);
   }
 }
 
@@ -135,8 +135,10 @@ int is_field_valid(int datatype, int dim, const mxArray * data)
 
    @note Should we use a unique error status?
  */
-int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * ComplexFlag, size_t * dsize, void ** pdefault)
+al_status_t get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * ComplexFlag, size_t * dsize, void ** pdefault)
 {
+  al_status_t status = {0,""};
+
   if (datatype == INTEGER_DATA) {
     *classid = mxINT32_CLASS;
     *ComplexFlag = mxREAL;
@@ -154,8 +156,8 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
     *ComplexFlag = mxCOMPLEX;
     *dsize = sizeof(double);
   } else 
-    return -1; /* TODO: Should we use a unique error status? */
-  return 0;
+    status.code = HLI_ERR;
+  return status;
 }
 
 /**
@@ -168,9 +170,9 @@ int get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * Com
    @param[out] data mxArray containing the data.
    @result error status.
  */
-int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data)
+al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data)
 {
-  int status = 0;
+  al_status_t status;
   mxClassID classid;
   mxComplexity ComplexFlag;
   size_t dsize;
@@ -182,7 +184,7 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
   double *pr, *pi;
 
   status = get_data_info(datatype, dim, &classid, &ComplexFlag, &dsize, &array);
-  if (status < 0)
+  if (status.code < 0)
     return status;
   if (dim == 0 || (size != NULL && size[0] > 0)) {
     if (datatype != CHAR_DATA) {
@@ -254,9 +256,9 @@ int data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **dat
    @param[out] size pointer containing the dimensions of the data.
    @result error status.
  */
-int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size)
+al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size)
 {
-  int status = 0;
+  al_status_t status = {0,""};
   mxChar *chararray;
   int ndims;
   const mwSize *dims;
@@ -322,9 +324,9 @@ int data_from_mxArray(int datatype, int dim, const mxArray * data, void **array,
    @param[out] data mxArray containing the data.
    @result error status.
  */
-int mxArray_default_value(int datatype, int dim, mxArray **data)
+al_status_t mxArray_default_value(int datatype, int dim, mxArray **data)
 {
-  int status = 0;
+  al_status_t status;
   void * array = NULL;
   mxArray * data_old;
 
@@ -342,8 +344,8 @@ int mxArray_default_value(int datatype, int dim, mxArray **data)
   if (datatype == CHAR_DATA && dim == 2) {
     /* For STR_1D cast to cell array of strings */
     data_old = *data;
-    if (status >= 0) status = castCharToCell(data);
-    if (status >= 0) mxDestroyArray(data_old);
+    if (status.code >= 0) status = castCharToCell(data);
+    if (status.code >= 0) mxDestroyArray(data_old);
   }
 
   return status;
@@ -356,9 +358,9 @@ int mxArray_default_value(int datatype, int dim, mxArray **data)
    @param[out] homogeneousTime Value of ids_properties/homogeneous_time.
    @result error status.
  */
-int getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
+al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
 {
-  int status = 0;
+  al_status_t status;
   char *fieldPath = "ids_properties/homogeneous_time";
   char *timebasePath = "";
   int retSize[MAXDIM];
@@ -377,10 +379,10 @@ int getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
    @param[out] data mxArray containing the data.
    @result error status.
  */
-int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data)
+al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data)
 {
 
-  int status = 0;
+  al_status_t status;
 
   mxArray * data_old;
   void * array = NULL;
@@ -400,7 +402,7 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
 
   status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
 
-  if (status >= 0) status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
+  if (status.code >= 0) status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
 
   /* Free arrays  */
   if (array) free(array);
@@ -409,23 +411,23 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
   if (params.get_int_as_double)
     if (field->datatype == INTEGER_DATA) {
       data_old = *data;
-      if (status >= 0) status = castInt32ToDouble(data);
-      if (status >= 0) mxDestroyArray(data_old);
+      if (status.code >= 0) status = castInt32ToDouble(data);
+      if (status.code >= 0) mxDestroyArray(data_old);
     }
   
   if (params.get_empty_as_nan)
     if (field->datatype == DOUBLE_DATA) {
       data_old = *data;
-      if (status >= 0) status = castEmptyToNaN(data);
-      if (status >= 0) mxDestroyArray(data_old);
+      if (status.code >= 0) status = castEmptyToNaN(data);
+      if (status.code >= 0) mxDestroyArray(data_old);
     }
 #endif
   
   if (field->datatype == CHAR_DATA && field->dim == 2) {
     /* For STR_1D cast to cell array of strings */
     data_old = *data;
-    if (status >= 0) status = castCharToCell(data);
-    if (status >= 0) mxDestroyArray(data_old);
+    if (status.code >= 0) status = castCharToCell(data);
+    if (status.code >= 0) mxDestroyArray(data_old);
   }
 
   return status;
@@ -439,11 +441,11 @@ int my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldI
    @param[in] data mxArray containing the data.
    @result error status.
  */
-int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data)
+al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data)
 {
 
-  int status = 0;
-  int cast_status = -1; /* Necessary flag in case a cast was made and clean-up is required */
+  al_status_t status = {0,""};
+  al_status_t cast_status = {HLI_ERR,""}; /* Necessary flag in case a cast was made and clean-up is required */
 
   const mxArray * ptime;
   void * array = NULL;
@@ -455,33 +457,33 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
   if (params.put_int_from_double)
     if (field->datatype == INTEGER_DATA) {
       if (mxIsNumeric(data) && mxIsDouble(data)) {
-	if (status >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
+	if (status.code >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
 	/* Check again field validity */
-	if (status >= 0 && !is_field_valid(field->datatype, field->dim, data))
-	  return 0;
+	if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data))
+	  return (al_status_t) {0,""};
       }
     }
     
   if (params.put_empty_from_nan)
     if (field->datatype == DOUBLE_DATA) {
       if (mxIsNumeric(data) && mxIsDouble(data)) {
-	if (status >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
+	if (status.code >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
 	/* Check again field validity */
-	if (status >= 0 &&!is_field_valid(field->datatype, field->dim, data))
-	  return 0;
+	if (status.code >= 0 &&!is_field_valid(field->datatype, field->dim, data))
+	  return (al_status_t) {0,""};
       }
     }
 #endif
   
   if (field->datatype == CHAR_DATA && field->dim == 2) {
     if (mxIsCell(data)) {
-      if (status >= 0) status = cast_status = castCellToChar((mxArray **) &data);
+      if (status.code >= 0) status = cast_status = castCellToChar((mxArray **) &data);
     }
   }
   
-  if (status >= 0) status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
+  if (status.code >= 0) status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
   
-  if (status >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+  if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
   
   /* Clean up memory allocated by data_from_mxArray */
   if (field->datatype == CHAR_DATA) {
@@ -493,7 +495,7 @@ int my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_field
   }
   
   /* Clean up data created by cast operation */
-  if (cast_status == 0)
+  if (cast_status.code == 0)
     mxDestroyArray((mxArray *) data);
 
   return status;

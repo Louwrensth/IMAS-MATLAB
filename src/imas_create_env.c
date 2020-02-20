@@ -107,19 +107,16 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         mexPrintf("The input version is:  %s\n", version);
 
     int idx;
-    int status;
+    al_status_t status;
 
-    idx = ual_begin_pulse_action(MDSPLUS_BACKEND, shot, run, 
-				 user, tokamak, version); 
+    status = ual_begin_pulse_action(MDSPLUS_BACKEND, shot, run, 
+				    user, tokamak, version, &idx); 
 
-    if (idx < 0)
-      status = idx;
-    else
+    if (status.code >= 0)
       status = ual_open_pulse(idx, FORCE_CREATE_PULSE, "");
 
-    if (status != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_env:Failed", "Error creating imas shot %d, run %d\n\tuser %s, tokamak %s, version %s", shot, run, user, tokamak, version);
-    }
+    if (status.code != 0)
+      mexErrMsgIdAndTxt("IMAS:imas_create_env:Failed", "Error creating imas shot %d, run %d\n\tuser %s, tokamak %s, version %s:\n\t%s", shot, run, user, tokamak, version, status.message);
     /* Prepare the return argument */
     plhs[0] = mxCreateDoubleScalar(idx);
 

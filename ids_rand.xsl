@@ -110,7 +110,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   "If slice is non-zero, it should be between 1 and ntime"); 
 
   /* Declare Function Pointer */
-  int(*ids_rand)(mxArray**, int, int) = NULL;
+  al_status_t(*ids_rand)(mxArray**, int, int) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">ids_rand</xsl:with-param>
@@ -122,8 +122,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Clean-up previous errors */
   resetErrMsgIdAndTxt();
   /* Call function */
-  int err = ids_rand(&amp;plhs[0], ntime, slice);
-  if (err &lt; 0 )
+  al_status_t err = ids_rand(&amp;plhs[0], ntime, slice);
+  if (err.code &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_rand:");
   return;
 
@@ -131,8 +131,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
  </xsl:result-document>
  <xsl:result-document href="src/ids/ids_rand.h.in" standalone="yes" method="text">
   #include "mex.h"
+   #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'int ids_rand_'"/>
+    <xsl:with-param name="prefix" select="'al_status_t ids_rand_'"/>
     <xsl:with-param name="suffix" select="'(mxArray** ids, int ntime, int slice);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
@@ -140,9 +141,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
    #include "imas_mex_utils.h"
    #include "imas_mex_rand.h"
    <xsl:for-each select="IDS">
-     int ids_rand_<xsl:value-of select="@name"/>(mxArray** ids, int ntime, int slice)
+     al_status_t ids_rand_<xsl:value-of select="@name"/>(mxArray** ids, int ntime, int slice)
      {
-     int status = 0;
+     al_status_t status;
      void *array;
      /* AoS-specific variables */<xsl:for-each select=".//field[@data_type='struct_array']">
      int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
@@ -151,9 +152,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
      srandom(0);
      status = init_dataTree_read();
      <xsl:apply-templates select="field" mode="RAND"/>
-     if (status >= 0) status = get_data_from_dataTree(NULL, ids);
+     if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);
      /* Error handling */
-     if (status &lt; 0) {
+     if (status.code &lt; 0) {
      addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
      }
 

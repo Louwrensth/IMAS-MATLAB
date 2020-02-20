@@ -42,19 +42,19 @@
 	  n<xsl:value-of select="$unique_name"/> = n<xsl:value-of select="$unique_name"/> &lt; <xsl:value-of select="@maxoccur"/> ? n<xsl:value-of select="$unique_name"/> : <xsl:value-of select="@maxoccur"/>;
 	</xsl:otherwise>
       </xsl:choose>
-      if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", n<xsl:value-of select="$unique_name"/>);
+      if (status.code >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", n<xsl:value-of select="$unique_name"/>);
       for (i<xsl:value-of select="$unique_name"/> = 0; i<xsl:value-of select="$unique_name"/> &lt; n<xsl:value-of select="$unique_name"/>; i<xsl:value-of select="$unique_name"/>++) {
-      if (status >= 0) status = iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>);
+      if (status.code >= 0) status = iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>);
       <xsl:apply-templates select = "field" mode = "RAND"/>
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
-      if (status >= 0) status = end_dataTree_array_action();
+      if (status.code >= 0) status = end_dataTree_array_action();
       <xsl:if test="@maxoccur='unbounded' and @type='dynamic'">
-	if (status >= 0 &amp;&amp; slice)
+	if (status.code >= 0 &amp;&amp; slice)
 	status = slice_dataTree_array("<xsl:value-of select="@name"/>", slice-1);
       </xsl:if>
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -62,12 +62,12 @@
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      if (status >= 0) status = begin_dataTree_read("<xsl:value-of select="@name"/>");
+      if (status.code >= 0) status = begin_dataTree_read("<xsl:value-of select="@name"/>");
       <xsl:apply-templates select="field" mode="RAND"/>
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (status >= 0) status = end_dataTree_action();
+      if (status.code >= 0) status = end_dataTree_action();
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -111,12 +111,12 @@
 
 	<xsl:otherwise>
 	  data = rand_array(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, <xsl:value-of select="$dynamic"/>, ntime, slice);
-	  if (data == NULL) status = -1;
+	  if (data == NULL) status.code = HLI_ERR;
 	</xsl:otherwise>
       </xsl:choose>
-      if (status >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
+      if (status.code >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
       return status;
       }

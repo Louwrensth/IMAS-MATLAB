@@ -31,20 +31,20 @@
     <xsl:when test = "@data_type = 'struct_array'">
       <xsl:choose>
 	<xsl:when test="$scalar_aos">
-	  if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>",1);
-	  if (status >= 0) status = iterate_dataTree_array(0);
+	  if (status.code >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>",1);
+	  if (status.code >= 0) status = iterate_dataTree_array(0);
 	  <xsl:apply-templates select = "field" mode = "ALLOCATE">
 	    <xsl:with-param name="scalar_aos" select="$scalar_aos"/>
 	  </xsl:apply-templates>
 	</xsl:when>
 	<xsl:otherwise>
-	  if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>",0);
+	  if (status.code >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>",0);
 	</xsl:otherwise>
       </xsl:choose>
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
-      if (status >= 0) status = end_dataTree_array_action();
+      if (status.code >= 0) status = end_dataTree_array_action();
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -52,14 +52,14 @@
 
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
-      if (status >= 0) status = begin_dataTree_read("<xsl:value-of select="@name"/>");
+      if (status.code >= 0) status = begin_dataTree_read("<xsl:value-of select="@name"/>");
       <xsl:apply-templates select = "field" mode = "ALLOCATE">
 	<xsl:with-param name="scalar_aos" select="$scalar_aos"/>
       </xsl:apply-templates>
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (status >= 0) status = end_dataTree_action();
+      if (status.code >= 0) status = end_dataTree_action();
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -70,10 +70,10 @@
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
 		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
 		    my:get_datatype(@data_type)='COMPLEX_DATA'">
-      if (status >= 0) status = mxArray_default_value(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, &amp;data);
-      if (status >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
+      if (status.code >= 0) status = mxArray_default_value(<xsl:value-of select="my:get_datatype(@data_type)"/>, <xsl:value-of select="my:get_dim(@data_type)"/>, &amp;data);
+      if (status.code >= 0) status = put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
       return status;
       }

@@ -43,8 +43,13 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (params.verbosity >= 4)
         mexPrintf("The input idx is:  %d\n", idx);
 
+    al_status_t status = {0,""};
+
     plhs[0] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
     if (idx != -1)
-      *(int *)mxGetData(plhs[0]) = ual_get_backendID(idx);
+      status = ual_get_backendID(idx, (int *)mxGetData(plhs[0]));
+
+    if (status.code < 0)
+      mexErrMsgIdAndTxt("IMAS:imas_get_backendID:Failed", "Error getting backend ID for context %d:\n\t%s", idx, status.message);
 
 }

@@ -19,8 +19,9 @@
    @param[inout] data mxArray handle
    @result error code
  */
-int castDoubleToInt32(mxArray ** data)
+al_status_t castDoubleToInt32(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray * doubleData = (mxArray *) *data;
   mxArray * intData = NULL;
 #ifdef CALL_MATLAB_FOR_CASTS
@@ -34,7 +35,8 @@ int castDoubleToInt32(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data to int32", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 #else
   size_t numel;
@@ -48,7 +50,8 @@ int castDoubleToInt32(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from double to int32", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   numel = mxGetNumberOfElements(doubleData);
@@ -64,7 +67,7 @@ int castDoubleToInt32(mxArray ** data)
 #endif
 
   *data = intData;
-  return 0;
+  return status;
 }
 
 /**
@@ -72,8 +75,9 @@ int castDoubleToInt32(mxArray ** data)
    @param[inout] data mxArray handle
    @result error code
  */
-int castInt32ToDouble(mxArray ** data)
+al_status_t castInt32ToDouble(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray *intData = (mxArray *) * data;
   mxArray *doubleData = NULL;
 #ifdef CALL_MATLAB_FOR_CASTS
@@ -87,7 +91,8 @@ int castInt32ToDouble(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from int32 to double", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 #else
   size_t numel;
@@ -101,7 +106,8 @@ int castInt32ToDouble(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from int32 to double", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   numel = mxGetNumberOfElements(intData);
@@ -117,7 +123,7 @@ int castInt32ToDouble(mxArray ** data)
 #endif
 
   *data = doubleData;
-  return 0;
+  return status;
 }
 
 
@@ -126,8 +132,9 @@ int castInt32ToDouble(mxArray ** data)
    @param[inout] data mxArray handle
    @result error code
  */
-int castNaNToEmpty(mxArray ** data)
+al_status_t castNaNToEmpty(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray *inData = (mxArray *) * data;
   mxArray *outData = NULL;
 #ifdef CALL_MATLAB_FOR_CASTS
@@ -141,7 +148,8 @@ int castNaNToEmpty(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace NaNs with EMPTY_DOUBLEs in data", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 #else
   size_t numel;
@@ -153,7 +161,8 @@ int castNaNToEmpty(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace NaNs with EMPTY_DOUBLEs in data", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   numel = mxGetNumberOfElements(inData);
@@ -169,7 +178,7 @@ int castNaNToEmpty(mxArray ** data)
 #endif
 
   *data = outData;
-  return 0;
+  return status;
 }
 
 /**
@@ -177,8 +186,9 @@ int castNaNToEmpty(mxArray ** data)
    @param[inout] data mxArray handle
    @result error code
  */
-int castEmptyToNaN(mxArray ** data)
+al_status_t castEmptyToNaN(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray *inData = (mxArray *) * data;
   mxArray *outData = NULL;
 #ifdef CALL_MATLAB_FOR_CASTS
@@ -192,7 +202,8 @@ int castEmptyToNaN(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace EMPTY_DOUBLEs with NaNs in data", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 #else
   size_t numel;
@@ -204,7 +215,8 @@ int castEmptyToNaN(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to replace EMPTY_DOUBLEs with NaNs in data", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   numel = mxGetNumberOfElements(inData);
@@ -219,7 +231,7 @@ int castEmptyToNaN(mxArray ** data)
 #endif
 
   *data = outData;
-  return 0;
+  return status;
 }
 
 /**
@@ -227,8 +239,9 @@ int castEmptyToNaN(mxArray ** data)
    @param[inout] data mxArray handle
    @result error code
  */
-int castCellToChar(mxArray ** data)
+al_status_t castCellToChar(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray * cellData = (mxArray *) *data;
   mxArray * charData = NULL;
 #ifdef CALL_MATLAB_FOR_CASTS
@@ -242,7 +255,8 @@ int castCellToChar(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Char", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 #else
   size_t numel;
@@ -254,7 +268,8 @@ int castCellToChar(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Char", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   numel = mxGetNumberOfElements(cellData);
@@ -262,8 +277,10 @@ int castCellToChar(mxArray ** data)
   strings = malloc(numel*sizeof(char *));
   for (i = 0; i < numel; i++) {
     cell = mxGetCell(*data, (mwIndex) i);
-    if (!mxIsChar(cell))
-      return -1;
+    if (!mxIsChar(cell)) {
+      status.code = HLI_ERR;
+      return status;
+    }
     strings[i] = mxArrayToString(mxGetCell(*data, (mwIndex) i));
   }
 
@@ -274,7 +291,7 @@ int castCellToChar(mxArray ** data)
 #endif
 
   *data = charData;
-  return 0;
+  return status;
 }
 
 /**
@@ -282,8 +299,9 @@ int castCellToChar(mxArray ** data)
    @param[inout] data mxArray handle
    @result error code
  */
-int castCharToCell(mxArray ** data)
+al_status_t castCharToCell(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray *charData = (mxArray *) * data;
   mxArray *cellData = NULL;
 #ifdef CALL_MATLAB_FOR_CASTS
@@ -300,7 +318,8 @@ int castCharToCell(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Char to Cell", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 #else
   size_t numel;
@@ -315,7 +334,8 @@ int castCharToCell(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Char to Cell", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   numel = mxGetNumberOfElements(charData);
@@ -329,6 +349,7 @@ int castCharToCell(mxArray ** data)
   else
     cellData = mxCreateCellMatrix(m, 1);
   for (i=0; i<m; i++) {
+    length = 0;
     for (j=n-1; j>0; j--)
       if (!(inChars[j*m+i] > 8 && inChars[j*m+i] < 14) /* TAB LF VT FF CR */
 	  && inChars[j*m+i] != 32 /* SPACE */
@@ -348,7 +369,7 @@ int castCharToCell(mxArray ** data)
 #endif
 
   *data = cellData;
-  return 0;
+  return status;
 }
 
 /**
@@ -357,8 +378,9 @@ int castCharToCell(mxArray ** data)
    @param[inout] data mxArray handle
    @result error code
  */
-int castCellToStruct(mxArray ** data)
+al_status_t castCellToStruct(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray *cellData = (mxArray *) * data;
   mxArray *structData = NULL;
   mxArray *exception = NULL;
@@ -371,11 +393,12 @@ int castCellToStruct(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Cell to Struct", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   *data = structData;
-  return 0;
+  return status;
 }
 
 /**
@@ -383,8 +406,9 @@ int castCellToStruct(mxArray ** data)
    @param[inout] data mxArray handle
    @result error code
  */
-int castStructToCell(mxArray ** data)
+al_status_t castStructToCell(mxArray ** data)
 {
+  al_status_t status = {0,""};
   mxArray *structData = (mxArray *) * data;
   mxArray *cellData = NULL;
   mxArray *exception = NULL;
@@ -418,9 +442,10 @@ int castStructToCell(mxArray ** data)
     mex_errmsgid = "cast_failed";
     strncpy(&mex_errmsgtxt[msglen], "Unable to cast data from Struct to Cell", MAXERRMSGTXTSIZE-msglen);
     msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    return -1;
+    status.code = HLI_ERR;
+    return status;
   }
 
   *data = cellData;
-  return 0;
+  return status;
 }

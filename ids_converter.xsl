@@ -136,7 +136,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   plhs[0] = mxDuplicateArray(prhs[1]);
 
   /* Declare Function Pointer */
-  int(*ids_<xsl:value-of select="$conversion"/>)(mxArray*) = NULL;
+  al_status_t(*ids_<xsl:value-of select="$conversion"/>)(mxArray*) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">ids_<xsl:value-of select="$conversion"/></xsl:with-param>
@@ -151,8 +151,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Clean-up previous errors */
   resetErrMsgIdAndTxt();
   /* Call function */
-  int err = ids_<xsl:value-of select="$conversion"/>(plhs[0]);
-  if (err &lt; 0 )
+  al_status_t err = ids_<xsl:value-of select="$conversion"/>(plhs[0]);
+  if (err.code &lt; 0 )
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_<xsl:value-of select="$conversion"/>:");
   return;
 
@@ -160,17 +160,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
  </xsl:result-document>
  <xsl:result-document href="src/ids/ids_{$conversion}.h.in" standalone="yes" method="text">
   #include "mex.h"
+    #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="concat('int ids_',$conversion,'_')"/>
+    <xsl:with-param name="prefix" select="concat('al_status_t ids_',$conversion,'_')"/>
     <xsl:with-param name="suffix" select="'(mxArray* ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
   <xsl:result-document href="src/ids/{$conversion}_ids.c.in" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
-      int ids_<xsl:value-of select="$conversion"/>_<xsl:value-of select="@name"/>(mxArray* ids)
+      al_status_t ids_<xsl:value-of select="$conversion"/>_<xsl:value-of select="@name"/>(mxArray* ids)
       {
-      int status = 0;
+      al_status_t status;
       int aosArraySize;
       int isEmpty;
       /* AoS-specific variables */<xsl:for-each select=".//field[@data_type='struct_array']">
@@ -200,7 +201,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	</xsl:otherwise>
       </xsl:choose>
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
       }
 

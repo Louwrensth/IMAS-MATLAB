@@ -3,20 +3,20 @@
 
 #define IMAS_MEX_CASTS_H
 
-int castDoubleToInt32(mxArray ** data);
+al_status_t castDoubleToInt32(mxArray ** data);
 
-int castInt32ToDouble(mxArray ** data);
+al_status_t castInt32ToDouble(mxArray ** data);
 
-int castNaNToEmpty(mxArray ** data);
+al_status_t castNaNToEmpty(mxArray ** data);
 
-int castEmptyToNaN(mxArray ** data);
+al_status_t castEmptyToNaN(mxArray ** data);
 
-int castCellToChar(mxArray ** data);
+al_status_t castCellToChar(mxArray ** data);
 
-int castCharToCell(mxArray ** data);
+al_status_t castCharToCell(mxArray ** data);
 
-int castCellToStruct(mxArray ** data);
+al_status_t castCellToStruct(mxArray ** data);
 
-int castStructToCell(mxArray ** data);
+al_status_t castStructToCell(mxArray ** data);
 
 #endif

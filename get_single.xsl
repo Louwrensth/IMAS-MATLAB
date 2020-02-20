@@ -56,26 +56,26 @@
       <xsl:if test="@type='dynamic'">
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
-      status = aosCtx = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize);      <xsl:if test="@type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
+      status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);      <xsl:if test="@type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
 	} else {
-	status = aosCtx = 0;
+	status.code = aosCtx = 0;
 	aosArraySize = 0; <!-- Create an empty dynamic AOS for time-independent IDSs -->
 	}
       </xsl:if>
-      if (status >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", aosArraySize);
+      if (status.code >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", aosArraySize);
       for (int i=0; i&lt;aosArraySize; i++) {
-      if (status >= 0) status = iterate_dataTree_array(i);
-      if (status >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
-      if (status >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
+      if (status.code >= 0) status = iterate_dataTree_array(i);
+      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
+      if (status.code >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (aosCtx > 0) {
       status_end = ual_end_action(aosCtx);
-      if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+      if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
       }
-      if (status >= 0) status = end_dataTree_array_action();
+      if (status.code >= 0) status = end_dataTree_array_action();
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -84,11 +84,11 @@
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
       status = begin_dataTree_read("<xsl:value-of select="@name"/>");
-      if (status >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
+      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (status >= 0) status = end_dataTree_action();
+      if (status.code >= 0) status = end_dataTree_action();
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -122,9 +122,9 @@
 	status = mxArray_default_value(field.datatype, field.dim, &amp;data);
 	}
       </xsl:if>
-      if (status >= 0) put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
+      if (status.code >= 0) put_data_in_dataTree("<xsl:value-of select="@name"/>", data);
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
       return status;
       }

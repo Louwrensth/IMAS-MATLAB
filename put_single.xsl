@@ -62,23 +62,23 @@
       </xsl:choose>
       status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
       if (aosArraySize &gt; 0) {
-      if (status >= 0) status = aosCtx = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize);
+      if (status.code >= 0) status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
       for (int i=0; i&lt;aosArraySize; i++) {
-      if (status >= 0) status = iterate_dataTree_array(i);
-      if (status >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
-      if (status >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
+      if (status.code >= 0) status = iterate_dataTree_array(i);
+      if (status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
+      if (status.code >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (aosCtx > 0) {
       status_end = ual_end_action(aosCtx);
-      if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+      if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
       }
       }
-      if (status >= 0) end_dataTree_array_action();
+      if (status.code >= 0) end_dataTree_array_action();
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
-      return -1;
+      return status;
       }
       <xsl:if test="$dynamic_only !='yes' and @type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
 	}
@@ -88,11 +88,11 @@
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
       status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
-      if (!isEmpty &amp;&amp; status >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
+      if (!isEmpty &amp;&amp; status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
       /* Finished processing structure <xsl:value-of select="@name"/> */
-      if (status >= 0) status = end_dataTree_action();
+      if (status.code >= 0) status = end_dataTree_action();
       /* Error handling */
-      if (status &lt; 0) {
+      if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
       return status;
       }
@@ -109,21 +109,21 @@
     <xsl:choose>
       <xsl:when test="@path='ids_properties/version_put/data_dictionary'">
 	data = mxCreateString("<xsl:value-of select="$DD_GIT_DESCRIBE"/>");
-	status = 0;
+	status.code = 0;
       </xsl:when>
       <xsl:when test="@path='ids_properties/version_put/access_layer'">
 	data = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
-	status = 0;
+	status.code = 0;
       </xsl:when>
       <xsl:when test="@path='ids_properties/version_put/access_layer_language'">
 	data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
-	status = 0;
+	status.code = 0;
       </xsl:when>
       <xsl:otherwise>
 	status = get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data);
       </xsl:otherwise>
     </xsl:choose>
-    if (status >= 0 &amp;&amp; is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
+    if (status.code >= 0 &amp;&amp; is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
     field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
     <xsl:choose>
       <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
@@ -144,7 +144,7 @@
       }
     </xsl:if>
     /* Error handling */
-    if (status &lt; 0) {
+    if (status.code &lt; 0) {
     addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);
     return status;
     }

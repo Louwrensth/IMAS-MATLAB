@@ -30,16 +30,16 @@
     <xsl:choose>
       <!--========== Regular structures ==========-->
       <xsl:when test="@data_type='structure' and .//field[@data_type='struct_array']">
-	if (status >= 0) status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
-	if (status >= 0 &amp;&amp; !isEmpty) {
+	if (status.code >= 0) status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
+	if (status.code >= 0 &amp;&amp; !isEmpty) {
 	<xsl:apply-templates select="field" mode="CELLS_STRUCTS">
 	  <xsl:with-param name="method_name" select="$method_name"/>
 	</xsl:apply-templates>
 	}
 	/* Finished processing structure <xsl:value-of select="@name"/> */
-	if (status >= 0) status = end_dataTree_action();
+	if (status.code >= 0) status = end_dataTree_action();
 	/* Error handling */
-	if (status &lt; 0) {
+	if (status.code &lt; 0) {
 	addIdsPathInfoToErrMsg("\n ... in structure <xsl:value-of select="@path"/>",0);
 	return status;
 	}
@@ -50,56 +50,56 @@
 	<xsl:choose>
 	  <xsl:when test="$method_name='struct_to_cell'">
 	    if (params.use_cell_array_for_array_of_structures) {
-	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
-	    if (status >= 0 &amp;&amp; data != NULL) {
+	    if (status.code >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status.code >= 0 &amp;&amp; data != NULL) {
 	    status = castStructToCell(&amp;data);
-	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
+	    if (status.code >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>
 	  <xsl:when test="$method_name='cell_to_struct'">
 	    if (!params.use_cell_array_for_array_of_structures) {
-	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
-	    if (status >= 0 &amp;&amp; data != NULL) {
+	    if (status.code >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status.code >= 0 &amp;&amp; data != NULL) {
 	    status = castCellToStruct(&amp;data);
-	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
+	    if (status.code >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>
 	</xsl:choose>
 	<xsl:if test=".//field[@data_type='struct_array']">
-	  if (status >= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;n<xsl:value-of select="$unique_name"/>);
+	  if (status.code >= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;n<xsl:value-of select="$unique_name"/>);
 	  for (i<xsl:value-of select="$unique_name"/> = 0;i<xsl:value-of select="$unique_name"/>&lt; n<xsl:value-of select="$unique_name"/>; i<xsl:value-of select="$unique_name"/>++){
-	  if (status >= 0) status = iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>);
+	  if (status.code >= 0) status = iterate_dataTree_array(i<xsl:value-of select="$unique_name"/>);
 	  <xsl:apply-templates select="field" mode="CELLS_STRUCTS">
 	    <xsl:with-param name="method_name" select="$method_name"/>
 	  </xsl:apply-templates>
 	  }
 	  /* Finished processing array of structure <xsl:value-of select="@name"/> */
-	  if (status >= 0) status = end_dataTree_array_action();
+	  if (status.code >= 0) status = end_dataTree_array_action();
 	</xsl:if>
 	<xsl:choose>
 	  <xsl:when test="$method_name='struct_to_cell'">
 	    if (!params.use_cell_array_for_array_of_structures) {
-	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
-	    if (status >= 0 &amp;&amp; data != NULL) {
+	    if (status.code >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status.code >= 0 &amp;&amp; data != NULL) {
 	    status = castStructToCell(&amp;data);
-	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
+	    if (status.code >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>
 	  <xsl:when test="$method_name='cell_to_struct'">
 	    if (params.use_cell_array_for_array_of_structures) {
-	    if (status >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
-	    if (status >= 0 &amp;&amp; data != NULL) {
+	    if (status.code >= 0) status = get_data_from_dataTree("<xsl:value-of select="@name"/>", &amp;data);
+	    if (status.code >= 0 &amp;&amp; data != NULL) {
 	    status = castCellToStruct(&amp;data);
-	    if (status >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
+	    if (status.code >= 0) status = replace_data_in_dataTree("<xsl:value-of select="@name"/>", (mxArray *) data);
 	    }
 	    }
 	  </xsl:when>
 	</xsl:choose>
 	/* Error handling */
-	if (status &lt; 0) {
+	if (status.code &lt; 0) {
 	addIdsPathInfoToErrMsg("\n ... in aos <xsl:value-of select="@path"/>",0);
 	return status;
 	}

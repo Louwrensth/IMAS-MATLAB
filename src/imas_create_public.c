@@ -89,19 +89,16 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         mexPrintf("The input expName is:  %s\n", expName);
 
     int idx;
-    int status;
+    al_status_t status;
 
-    idx = ual_begin_pulse_action(UDA_BACKEND, shot, run, 
-				 "", expName, ""); 
+    status = ual_begin_pulse_action(UDA_BACKEND, shot, run, 
+				    "", expName, "", &idx); 
 
-    if (idx < 0)
-      status = idx;
-    else
+    if (status.code >= 0)
       status = ual_open_pulse(idx, FORCE_CREATE_PULSE, "");
 
-    if (status != 0) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_public:Failed", "Error creating imas shot %d, run %d expName %s", shot, run, expName);
-    }
+    if (status.code != 0)
+      mexErrMsgIdAndTxt("IMAS:imas_create_public:Failed", "Error creating imas shot %d, run %d expName %s:\n\t%s", shot, run, expName, status.message);
     /* Prepare the return argument */
     plhs[0] = mxCreateDoubleScalar(idx);
 

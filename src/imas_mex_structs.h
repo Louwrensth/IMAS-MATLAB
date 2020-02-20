@@ -3,40 +3,40 @@
 
 #define IMAS_MEX_STRUCTS_H
 
-int init_dataTree_read();
+al_status_t init_dataTree_read();
 
-int init_dataTree_write(mxArray * data);
+al_status_t init_dataTree_write(mxArray * data);
 
-int init_dataTree_array_read(int aosArraySize);
+al_status_t init_dataTree_array_read(int aosArraySize);
 
-int init_dataTree_array_write(mxArray * data, int * aosArraySize);
+al_status_t init_dataTree_array_write(mxArray * data, int * aosArraySize);
 
-int begin_dataTree_read(char * name);
+al_status_t begin_dataTree_read(char * name);
 
-int begin_dataTree_write(char * name, int * isEmpty);
+al_status_t begin_dataTree_write(char * name, int * isEmpty);
 
-int begin_dataTree_array_read(char * name, int aosArraySize);
+al_status_t begin_dataTree_array_read(char * name, int aosArraySize);
 
-int begin_dataTree_array_write(char * name, int * aosArraySize);
+al_status_t begin_dataTree_array_write(char * name, int * aosArraySize);
 
-int end_dataTree_action();
+al_status_t end_dataTree_action();
 
-int end_dataTree_array_action();
+al_status_t end_dataTree_array_action();
 
-int iterate_dataTree_array(size_t index);
+al_status_t iterate_dataTree_array(size_t index);
 
-int get_data_from_dataTree(char * name, mxArray ** data);
+al_status_t get_data_from_dataTree(char * name, mxArray ** data);
 
-int put_data_in_dataTree(char * name, mxArray * data);
+al_status_t put_data_in_dataTree(char * name, mxArray * data);
 
-int replace_data_in_dataTree(char * name, mxArray * data);
+al_status_t replace_data_in_dataTree(char * name, mxArray * data);
 
-int slice_dataTree_array(char * name, mwSize index);
+al_status_t slice_dataTree_array(char * name, mwSize index);
 
-int replicate_dataTree_array(char * name, mwSize aosArraySize);
+al_status_t replicate_dataTree_array(char * name, mwSize aosArraySize);
 
-int getSimpleFieldStruct(char *path, const mxArray ** data);
+al_status_t getSimpleFieldStruct(char *path, const mxArray ** data);
 
-int getHomogeneousTime(int *homogeneousTime);
+al_status_t getHomogeneousTime(int *homogeneousTime);
 
 #endif

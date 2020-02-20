@@ -123,7 +123,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = strtok(IDSpathcopy, "/");
 
   /* Declare Function Pointer */
-  int(*ids_put_slice)(int, char*, const mxArray*) = NULL;
+  al_status_t(*ids_put_slice)(int, char*, const mxArray*) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">ids_put_slice</xsl:with-param>
@@ -138,8 +138,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Clean-up previous errors */
   resetErrMsgIdAndTxt();
   /* Call function */
-  int err = ids_put_slice(idx, IDSpath, prhs[nrhs-1]);
-  if (err) 
+  al_status_t err = ids_put_slice(idx, IDSpath, prhs[nrhs-1]);
+  if (err.code &lt; 0) 
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_put_slice:");
   return;
 
@@ -147,8 +147,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
  </xsl:result-document>
  <xsl:result-document href="src/ids/ids_put_slice.h.in" standalone="yes" method="text">
   #include "mex.h"
+    #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'int ids_put_slice_'"/>
+    <xsl:with-param name="prefix" select="'al_status_t ids_put_slice_'"/>
     <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, const mxArray* ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
@@ -157,24 +158,24 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:for-each select="IDS">
     <xsl:apply-templates select="." mode="METHOD_PUT_SLICE_H"/>
 
-    int ids_put_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
+    al_status_t ids_put_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
     {
     int ifield;
     const mxArray* ptime=NULL;
-    int status = 0;
-    int status_end = 0;
+    al_status_t status;
+    al_status_t status_end;
     int putSliceOpCtx = -1;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
-    if (status >= 0) status = init_dataTree_write((mxArray *) ids);
+    status = init_dataTree_write((mxArray *) ids);
     /* TODO: move these checks to external function? */
-    if (status >= 0) status = getHomogeneousTime(&amp;homogeneousTime);
-    if (status &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
+    if (status.code >= 0) status = getHomogeneousTime(&amp;homogeneousTime);
+    if (status.code &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
     "Unable to retrieve ids%%ids_properties%%homogeneous_time");
     if( homogeneousTime == IDS_TIME_MODE_UNKNOWN )
     {
     mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT_SLICE quits with no action.");
-    return 0;
+    return status;
     }
     else if ( homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
     /* Top-level ids_put_slice functions check that ids is a scalar struct */
@@ -190,19 +191,19 @@ void mexFunction(int nlhs, mxArray *plhs[],
     else if( homogeneousTime == IDS_TIME_MODE_INDEPENDENT )
     {
     mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "homogeneous_time=2 makes an IDS <xsl:value-of select="@name"/> with static/constant data only. No static data stored with put_slice operation.");
-    return 0;
+    return status;
     }
 
     /* Open putSlice context */
-    if (status >= 0) status = putSliceOpCtx = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP);
+    if (status.code >= 0) status = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP, &amp;putSliceOpCtx);
 
-    if (status >= 0) status = put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putSliceOpCtx, homogeneousTime);
+    if (status.code >= 0) status = put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putSliceOpCtx, homogeneousTime);
     if (putSliceOpCtx > 0) {
     status_end = ual_end_action(putSliceOpCtx);
-    if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
     }
     /* Error handling */
-    if (status &lt; 0) {
+    if (status.code &lt; 0) {
     addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
     }
 
@@ -217,16 +218,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT_SLICE_H">
-int put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
+al_status_t put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT_SLICE">
-int put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
+al_status_t put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
     {
     struct imas_mex_actionInfo action;
     struct imas_mex_fieldInfo field;
     const mxArray* data=NULL;
-    int status = 0;
-    int status_end = 0;
+    al_status_t status = {0,""};
+    al_status_t status_end;
     int aosArraySize = -1;
     int aosCtx = -1;
     int isEmpty;
@@ -237,7 +238,7 @@ int put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx,
       <xsl:with-param name="dynamic_only" select="'yes'"/>
     </xsl:apply-templates>
 
-    return 0;
+    return status;
     }
 </xsl:template>
 

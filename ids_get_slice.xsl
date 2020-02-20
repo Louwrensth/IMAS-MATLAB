@@ -134,7 +134,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = strtok(IDSpathcopy, "/");
  
   /* Declare Function Pointer */
-  int(*ids_get_slice)(int, char*, double, int, mxArray**) = NULL;
+  al_status_t(*ids_get_slice)(int, char*, double, int, mxArray**) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">ids_get_slice</xsl:with-param>
@@ -149,8 +149,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Clean-up previous errors */
   resetErrMsgIdAndTxt();
   /* Call function */
-  int err = ids_get_slice(idx, IDSpath, inTime, interpolMode, &amp;plhs[0]);
-  if (err) 
+  al_status_t err = ids_get_slice(idx, IDSpath, inTime, interpolMode, &amp;plhs[0]);
+  if (err.code &lt; 0) 
   my_mexErrMsgIdAndTxt(err, "IMAS:ids_get_slice:");
   return;
 
@@ -158,8 +158,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
  </xsl:result-document>
  <xsl:result-document href="src/ids/ids_get_slice.h.in" standalone="yes" method="text">
   #include "mex.h"
+    #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'int ids_get_slice_'"/>
+    <xsl:with-param name="prefix" select="'al_status_t ids_get_slice_'"/>
     <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, double inTime, int interpolMode, mxArray** ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
@@ -168,27 +169,27 @@ void mexFunction(int nlhs, mxArray *plhs[],
    <xsl:for-each select="IDS">
     <xsl:apply-templates select="." mode="METHOD_GET_SLICE_H"/>
 
-    int ids_get_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, double inTime, int interpolMode, mxArray** ids)
+    al_status_t ids_get_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, double inTime, int interpolMode, mxArray** ids)
     {
-    int status = 0;
-    int status_end = 0;
+    al_status_t status;
+    al_status_t status_end;
     int getSliceOpCtx = -1;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
     /* Open getSlice context */
-    status = getSliceOpCtx = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode);
-    if (status >= 0) status = getHomogeneousTimeCtx(getSliceOpCtx, &amp;homogeneousTime);
-    if (status >= 0) status = init_dataTree_read();
+    status = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
+    if (status.code >= 0) status = getHomogeneousTimeCtx(getSliceOpCtx, &amp;homogeneousTime);
+    if (status.code >= 0) status = init_dataTree_read();
 
-    if (status >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime);
+    if (status.code >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime);
     if (getSliceOpCtx > 0) {
     status_end = ual_end_action(getSliceOpCtx);
-    if (status >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
     }
 
-    if (status >= 0) status = get_data_from_dataTree(NULL, ids);
+    if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);
     /* Error handling */
-    if (status &lt; 0) {
+    if (status.code &lt; 0) {
     addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
     }
 
@@ -203,17 +204,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE_H">
-int get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
+al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE">
   <xsl:call-template name="COMMENT_FIELD"/>
-  int get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
+  al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
   {
   struct imas_mex_actionInfo action;
   struct imas_mex_fieldInfo field;
   mxArray* data=NULL;
-  int status = 0;
-  int status_end = 0;
+  al_status_t status = {0,""};
+  al_status_t status_end;
   int aosArraySize = -1;
   int aosCtx = -1;
   action.context = ctx;
@@ -222,7 +223,7 @@ int get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx,
     <xsl:with-param name="slice" select="'yes'"/>
   </xsl:apply-templates>
 
-  return 0;
+  return status;
   }
 </xsl:template>
 
