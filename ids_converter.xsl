@@ -66,7 +66,7 @@
 
   <xsl:param name="conversion" select="concat($src,'_to_',$dest)" />
 
- <xsl:result-document href="src/ids/ids_{$conversion}.c.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_{$conversion}.c" standalone="yes" method="text">
 /** \addtogroup extra MEX-interface-extra
  *  @{
  */
@@ -158,7 +158,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 }
  </xsl:result-document>
- <xsl:result-document href="src/ids/ids_{$conversion}.h.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_{$conversion}.h" standalone="yes" method="text">
   #include "mex.h"
     #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
@@ -166,7 +166,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="suffix" select="'(mxArray* ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
-  <xsl:result-document href="src/ids/{$conversion}_ids.c.in" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/{$conversion}_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
       al_status_t ids_<xsl:value-of select="$conversion"/>_<xsl:value-of select="@name"/>(mxArray* ids)

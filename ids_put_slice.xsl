@@ -24,7 +24,7 @@
 <!--================================================-->
 
 <xsl:template match = "/IDSs">
- <xsl:result-document href="src/ids/ids_put_slice.c.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_put_slice.c" standalone="yes" method="text">
 /** \addtogroup interface MEX-interface
  *  @{
  */
@@ -145,7 +145,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 }
  </xsl:result-document>
- <xsl:result-document href="src/ids/ids_put_slice.h.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_put_slice.h" standalone="yes" method="text">
   #include "mex.h"
     #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
@@ -153,7 +153,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, const mxArray* ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
-  <xsl:result-document href="src/ids/put_slice_ids.c.in" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/put_slice_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
     <xsl:apply-templates select="." mode="METHOD_PUT_SLICE_H"/>

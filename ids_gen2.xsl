@@ -25,7 +25,7 @@
 
 <xsl:template match = "/IDSs">
  <!-- Second Version: Empty AOS -->
- <xsl:result-document href="src/ids/ids_gen2.c.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_gen2.c" standalone="yes" method="text">
 /** \addtogroup extra MEX-interface-extra
  *  @{
  */
@@ -101,7 +101,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 }
  </xsl:result-document>
- <xsl:result-document href="src/ids/ids_gen2.h.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_gen2.h" standalone="yes" method="text">
   #include "mex.h"
    #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
@@ -109,7 +109,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="suffix" select="'(mxArray** ids);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
- <xsl:result-document href="src/ids/gen2_ids.c.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/gen2_ids.c" standalone="yes" method="text">
    #include "imas_mex_utils.h"
    <xsl:for-each select="IDS">
      al_status_t ids_gen2_<xsl:value-of select="@name"/>(mxArray** ids)

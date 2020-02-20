@@ -24,7 +24,7 @@
 <!--================================================-->
 
 <xsl:template match = "/IDSs">
- <xsl:result-document href="src/ids/ids_rand.c.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_rand.c" standalone="yes" method="text">
 /** \defgroup extra MEX-interface-extra
  *  Extra MEX functions defined in the MEX HLI.
  *  @{
@@ -129,7 +129,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 }
  </xsl:result-document>
- <xsl:result-document href="src/ids/ids_rand.h.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/ids_rand.h" standalone="yes" method="text">
   #include "mex.h"
    #include "imas_mex_utils.h"
   <xsl:apply-templates select = "IDS" mode="LIST">
@@ -137,7 +137,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:with-param name="suffix" select="'(mxArray** ids, int ntime, int slice);'"/>
   </xsl:apply-templates>
  </xsl:result-document>
- <xsl:result-document href="src/ids/rand_ids.c.in" standalone="yes" method="text">
+ <xsl:result-document href="src/ids/rand_ids.c" standalone="yes" method="text">
    #include "imas_mex_utils.h"
    #include "imas_mex_rand.h"
    <xsl:for-each select="IDS">

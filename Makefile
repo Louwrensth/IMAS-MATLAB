@@ -30,10 +30,9 @@ IDSDEF= ../xml/IDSDef.xml
 LIBS=-L../lowlevel -limas
 
 # Check existence of the "indent" utility to get a clean C format
-ifeq "$(shell which indent 2> /dev/null)" ""
- BEAUTIFY = cat
-else
- BEAUTIFY = indent --standard-output -kr --no-tabs -l1000 -fc1
+BEAUTIFY=
+ifneq "$(shell which indent 2> /dev/null)" ""
+ BEAUTIFY = indent -kr --no-tabs -l1000 -fc1
 endif
 
 # Sets a path where make will search for files
@@ -47,9 +46,9 @@ all: _all
 ## This template takes care of most of the dependencies
 ## Additional dependencies should be added in the init/build section
 define TEMPLATE
-$(1)_SOURCES = ids_$(1).c.in ids_$(1).h.in $(1)_ids.c.in
+$(1)_SOURCES = ids_$(1).c ids_$(1).h $(1)_ids.c
 ALL_SOURCES += $$($(1)_SOURCES)
-$(1)_SRC_FILES= $$(addprefix $(IDS_SRC_DIR)/,$$($(1)_SOURCES))
+$(1)_SRC_FILES= $$(addprefix $$(IDS_SRC_DIR)/,$$($(1)_SOURCES))
 # Introducing a fake intermediate file for forcing recipes to be run only once even for parallel builds
 ifeq (,$(findstring _to_,$(1)))
 INDSOURCES += $(1)_sources # Skip the ones for converter
@@ -58,6 +57,7 @@ $(1)_sources: ids_$(1).xsl mex_tools.xsl # Skip the ones for converter
 $$($(1)_SRC_FILES): $(1)_sources
 else
 $$($(1)_SRC_FILES): converter_sources
+converter_SOURCES += $$($(1)_SOURCES)
 endif
 $(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
 $(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
@@ -74,8 +74,8 @@ converter_sources: ids_converter.xsl mex_tools.xsl
 
 
 IDS_C_FILES   = $(filter-out ids_%     , $(ALL_SOURCES))
-MEX_IDS_FILES = $(filter     ids_%.c.in, $(ALL_SOURCES))
-HEADER_FILES  = $(filter     ids_%.h.in, $(ALL_SOURCES))
+MEX_IDS_FILES = $(filter     ids_%.c, $(ALL_SOURCES))
+HEADER_FILES  = $(filter     ids_%.h, $(ALL_SOURCES))
 
 GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))
 GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(MEX_IDS_FILES))
@@ -93,18 +93,18 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_get_backendID \
 				imas_get_mex_params imas_set_mex_params \
 				)
-SOURCES = $(GENSOURCES:.in=)
+SOURCES = $(GENSOURCES)
 UTL_SRC_FILES = $(addsuffix .c, imas_mex_utils imas_mex_structs imas_mex_params imas_mex_casts imas_mex_rand)
 SOURCES+= $(addprefix $(SRC_DIR)/,$(MEX_SRC_FILES) $(UTL_SRC_FILES))
 
 # Compiled objects
-IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c.in=.o))
-IDS_OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_IDS_FILES:.c.in=.o))
+IDS_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(IDS_C_FILES:.c=.o))
+IDS_OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_IDS_FILES:.c=.o))
 OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FILES:.c=.o))
 OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_SRC_FILES:.c=.o))
 
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
-TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c.in=.mexa64))
+TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c=.mexa64))
 TARGETS+= $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
 
 ifneq ("","$(MEXSRC)")
@@ -138,12 +138,15 @@ $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 $(INDSOURCES): $(IDSDEF) | saxonicajar
 	java net.sf.saxon.Transform -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
-
-$(IDS_SRC_DIR)/%.c: $(IDS_SRC_DIR)/%.c.in
-	$(BEAUTIFY) $< > $@
-
-$(IDS_SRC_DIR)/%.h: $(IDS_SRC_DIR)/%.h.in
-	$(BEAUTIFY) $< > $@
+ifneq "$(BEAUTIFY)" ""
+        # This script will indent the generated files
+        # If an error is triggered during indenting, remove the files
+	@[ "$@" = "matlab/IDS_list.m" ] || (echo "[indent] Processing $($(@:_sources=_SOURCES))";\
+	VERSION_CONTROL="none" $(BEAUTIFY) $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
+	x=$$?;\
+	[[ $$x == 0 ]] || rm -f $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
+	[[ $$x == 0 ]])
+endif
 
 #################################################
 #              BUILD
@@ -190,7 +193,7 @@ uninstall: sources_uninstall
 
 sources_install: $(SOURCES)
 	$(mkdir_p) $(datadir)/src/mexinterface/ids
-	$(INSTALL_DATA) $(filter-out %.in, $(filter $(IDS_SRC_DIR)/%, $(SOURCES))) $(datadir)/src/mexinterface/ids
+	$(INSTALL_DATA) $(filter $(IDS_SRC_DIR)/%, $(SOURCES)) $(datadir)/src/mexinterface/ids
 	$(INSTALL_DATA) $(filter-out $(IDS_SRC_DIR)/%, $(filter $(SRC_DIR)/%, $(SOURCES))) $(datadir)/src/mexinterface
 
 sources_uninstall:
@@ -210,7 +213,7 @@ clean: test-clean pkgconfig_clean
 	$(RM) $(TARGETS)
 
 clean-src: test-clean-src clean-doc clean
-	$(RM) $(GENSOURCES) $(GENSOURCES:.in=)
+	$(RM) $(GENSOURCES)
 
 #################################################
 #              DOCUMENTATION
