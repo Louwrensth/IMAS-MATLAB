@@ -156,6 +156,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/put_slice_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
+    int ids_put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids);
     <xsl:apply-templates select="." mode="METHOD_PUT_SLICE_H"/>
 
     al_status_t ids_put_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
@@ -166,6 +167,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
     al_status_t status_end;
     int putSliceOpCtx = -1;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
+    int getOpCtx = -1;
+    int homogeneousTimeStored = IDS_TIME_MODE_UNKNOWN;
+    int sliceOp = 1;
 
     status = init_dataTree_write((mxArray *) ids);
     /* TODO: move these checks to external function? */
@@ -193,14 +197,47 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "homogeneous_time=2 makes an IDS <xsl:value-of select="@name"/> with static/constant data only. No static data stored with put_slice operation.");
     return status;
     }
-
-    /* Open putSlice context */
-    if (status.code >= 0) status = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP, &amp;putSliceOpCtx);
-
-    if (status.code >= 0) status = put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putSliceOpCtx, homogeneousTime);
-    if (putSliceOpCtx > 0) {
-    status_end = ual_end_action(putSliceOpCtx);
-    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+    /* Check stored homogeneousTime mode */
+    /* Open read context */
+    if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getOpCtx);
+    if (status.code >= 0) status.code = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTimeStored);
+    if (status.code >= 0) {
+      /* If no IDS previously stored */
+      if (homogeneousTimeStored == IDS_TIME_MODE_UNKNOWN) {
+        mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "Slice is being added to an empty IDS <xsl:value-of select="@name"/>. PUT is called to save time independent data.'");
+        sliceOp = 0;
+      }      
+      /* Otherwise check that the stored and new value match */
+      if (homogeneousTimeStored != homogeneousTime) {
+        snprintf(mex_errmsgtxt, MAXERRMSGTXTSIZE, "homogeneous_time mode from input IDS <xsl:value-of select="@name"/> (%d) differs from value already stored in database (%d)",homogeneousTime, homogeneousTimeStored);
+        msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+        status.code = -5;
+      }
+    }
+    if (getOpCtx > 0) {
+      status_end = ual_end_action(getOpCtx);
+      if (status.code >= 0) status.code = status_end.code; /* Result of ual_end_action is only relevant if there was no error before */
+    }
+    
+    if (sliceOp) {
+      /* Open putSlice context */
+      if (status.code >= 0) status = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP, &amp;putSliceOpCtx);
+      
+      if (status.code >= 0) status = put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putSliceOpCtx, homogeneousTime);
+      if (putSliceOpCtx > 0) {
+        status_end = ual_end_action(putSliceOpCtx);
+        if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+      }
+    } else {
+      /* Call put method */
+      if (status.code >= 0) {
+        status = ids_put_<xsl:value-of select="@name"/>(expIdx, idsFullName, ids);
+        /* Error handling
+             Ensures the error is shown as originating in ids_put
+               and avoids displaying twice the ids name */
+        if (status.code &lt; 0) my_mexErrMsgIdAndTxt(status, "IMAS:ids_put:");
+        return status;
+      }
     }
     /* Error handling */
     if (status.code &lt; 0) {
