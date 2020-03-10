@@ -156,7 +156,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/put_slice_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
-    int ids_put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids);
+    al_status_t ids_put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids);
     <xsl:apply-templates select="." mode="METHOD_PUT_SLICE_H"/>
 
     al_status_t ids_put_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
@@ -200,7 +200,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     /* Check stored homogeneousTime mode */
     /* Open read context */
     if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getOpCtx);
-    if (status.code >= 0) status.code = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTimeStored);
+    if (status.code >= 0) status = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTimeStored);
     if (status.code >= 0) {
       /* If no IDS previously stored */
       if (homogeneousTimeStored == IDS_TIME_MODE_UNKNOWN) {
