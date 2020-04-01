@@ -21,9 +21,6 @@
 
   <xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
 
-  <xsl:variable name="AosRelativePath">
-    <xsl:call-template name="printAosRelativePath"/>
-  </xsl:variable>
 
   <xsl:if test="@data_type='structure' or @data_type='struct_array' or my:get_datatype(@data_type)='INTEGER_DATA'">
     <xsl:call-template name="COMMENT_FIELD"/>

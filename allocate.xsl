@@ -21,10 +21,6 @@
 
 <xsl:param name="unique_name"><xsl:if test="@data_type='struct_array'"><xsl:value-of select="concat(@name,'_',generate-id(.))"/></xsl:if></xsl:param>
 
-<xsl:variable name="AosRelativePath">
-  <xsl:call-template name="printAosRelativePath"/>
-</xsl:variable>
-
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
   <!--========== Array of structure ===========-->

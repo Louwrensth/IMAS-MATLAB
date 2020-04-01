@@ -31,10 +31,10 @@ int msg_haspathinfo = 0;
  */
 void resetErrMsgIdAndTxt(void)
 {
-  mex_errmsgid = NULL;
-  mex_errmsgtxt[0] = '\000';
-  msglen = 0;
-  msg_haspathinfo = 0;
+	mex_errmsgid = NULL;
+	mex_errmsgtxt[0] = '\000';
+	msglen = 0;
+	msg_haspathinfo = 0;
 }
 
 /**
@@ -45,16 +45,16 @@ void resetErrMsgIdAndTxt(void)
  */
 void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix)
 {
-  char msgid[MAXERRMSGIDSIZE];
+	char msgid[MAXERRMSGIDSIZE];
 
-  strncpy(msgid, prefix, strnlen(prefix, MAXERRMSGIDSIZE-1)+1);
-  if (mex_errmsgid != NULL && strnlen(mex_errmsgid, MAXERRMSGIDSIZE-1)) {
-    strncat(msgid, mex_errmsgid, MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
-    mexErrMsgIdAndTxt(msgid,mex_errmsgtxt);
-  } else {
-    strncat(msgid, "internal_error", MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
-    mexErrMsgIdAndTxt(msgid,"internal error occured with error code %d%s", status.code, mex_errmsgtxt);
-  }
+	strncpy(msgid, prefix, strnlen(prefix, MAXERRMSGIDSIZE-1)+1);
+	if (mex_errmsgid != NULL && strnlen(mex_errmsgid, MAXERRMSGIDSIZE-1)) {
+		strncat(msgid, mex_errmsgid, MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
+		mexErrMsgIdAndTxt(msgid,mex_errmsgtxt);
+	} else {
+		strncat(msgid, "internal_error", MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
+		mexErrMsgIdAndTxt(msgid,"internal error occured with error code %d%s", status.code, mex_errmsgtxt);
+	}
 }
 
 /**
@@ -64,21 +64,21 @@ void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix)
  */
 void my_exceptionGetReport(mxArray* exception)
 {
-  mxArray * report;
-  char * reportTxt;
-  
-  if (exception == NULL)
-    return;
+	mxArray * report;
+	char * reportTxt;
 
-  report = mxGetProperty(exception, (mwIndex) 0, "message");
-  reportTxt = mxArrayToString(report);
-  msglen = strnlen(reportTxt, MAXERRMSGTXTSIZE-1)+1;
-  strncpy(mex_errmsgtxt, reportTxt, msglen);
-  mxFree(reportTxt);
-  mxDestroyArray(report);
+	if (exception == NULL)
+		return;
 
-  strncat(mex_errmsgtxt, "\n----------\n", (12 < MAXERRMSGTXTSIZE-1-msglen) ? 12 : MAXERRMSGTXTSIZE-1-msglen);
-  msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+	report = mxGetProperty(exception, (mwIndex) 0, "message");
+	reportTxt = mxArrayToString(report);
+	msglen = strnlen(reportTxt, MAXERRMSGTXTSIZE-1)+1;
+	strncpy(mex_errmsgtxt, reportTxt, msglen);
+	mxFree(reportTxt);
+	mxDestroyArray(report);
+
+	strncat(mex_errmsgtxt, "\n----------\n", (12 < MAXERRMSGTXTSIZE-1-msglen) ? 12 : MAXERRMSGTXTSIZE-1-msglen);
+	msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
 
 }
 
@@ -90,11 +90,11 @@ void my_exceptionGetReport(mxArray* exception)
  */
 void addIdsPathInfoToErrMsg(const char * pathInfo, int force)
 {
-  if (force || !msg_haspathinfo) {
-    strncat(mex_errmsgtxt, pathInfo, MAXERRMSGTXTSIZE-1-msglen);
-    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    msg_haspathinfo = 1;
-  }
+	if (force || !msg_haspathinfo) {
+		strncat(mex_errmsgtxt, pathInfo, MAXERRMSGTXTSIZE-1-msglen);
+		msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
+		msg_haspathinfo = 1;
+	}
 }
 
 /**
@@ -109,17 +109,17 @@ void addIdsPathInfoToErrMsg(const char * pathInfo, int force)
  */
 int is_field_valid(int datatype, int dim, const mxArray * data)
 {
-  return (data != NULL && !mxIsEmpty(data) && 
-	  (dim != 0 || 
-	   (mxIsScalar(data) && 
-	    (
-	     (datatype == INTEGER_DATA && (!mxIsInt32(data) || ((int *)    mxGetData(data))[0] != EMPTY_INT)) ||
-	     (datatype == DOUBLE_DATA  && (mxIsDouble(data) && ((double *) mxGetData(data))[0] != EMPTY_DOUBLE)) ||
-	     (datatype == COMPLEX_DATA && (mxIsDouble(data) && (((double *) mxGetData(data))[0] != EMPTY_DOUBLE || ((double *) mxGetImagData(data))[0] != EMPTY_DOUBLE)))
-	     )
-	    )
-	   )
-	  );
+	return (data != NULL && !mxIsEmpty(data) &&
+			(dim != 0 ||
+					(mxIsScalar(data) &&
+							(
+									(datatype == INTEGER_DATA && (!mxIsInt32(data) || ((int *)    mxGetData(data))[0] != EMPTY_INT)) ||
+									(datatype == DOUBLE_DATA  && (mxIsDouble(data) && ((double *) mxGetData(data))[0] != EMPTY_DOUBLE)) ||
+									(datatype == COMPLEX_DATA && (mxIsDouble(data) && (((double *) mxGetData(data))[0] != EMPTY_DOUBLE || ((double *) mxGetImagData(data))[0] != EMPTY_DOUBLE)))
+							)
+					)
+			)
+	);
 }
 
 /**
@@ -137,27 +137,27 @@ int is_field_valid(int datatype, int dim, const mxArray * data)
  */
 al_status_t get_data_info(int datatype, int dim, mxClassID * classid, mxComplexity * ComplexFlag, size_t * dsize, void ** pdefault)
 {
-  al_status_t status = {0,""};
+	al_status_t status = {0,""};
 
-  if (datatype == INTEGER_DATA) {
-    *classid = mxINT32_CLASS;
-    *ComplexFlag = mxREAL;
-    *dsize = sizeof(int);
-  } else if (datatype == DOUBLE_DATA) {
-    *classid = mxDOUBLE_CLASS;
-    *ComplexFlag = mxREAL;
-    *dsize = sizeof(double);
-  } else if (datatype == CHAR_DATA) {
-    *classid = mxCHAR_CLASS;
-    *ComplexFlag = mxREAL;
-    *dsize = 2*sizeof(char);
-  } else if (datatype == COMPLEX_DATA) {
-    *classid = mxDOUBLE_CLASS;
-    *ComplexFlag = mxCOMPLEX;
-    *dsize = sizeof(double);
-  } else 
-    status.code = HLI_ERR;
-  return status;
+	if (datatype == INTEGER_DATA) {
+		*classid = mxINT32_CLASS;
+		*ComplexFlag = mxREAL;
+		*dsize = sizeof(int);
+	} else if (datatype == DOUBLE_DATA) {
+		*classid = mxDOUBLE_CLASS;
+		*ComplexFlag = mxREAL;
+		*dsize = sizeof(double);
+	} else if (datatype == CHAR_DATA) {
+		*classid = mxCHAR_CLASS;
+		*ComplexFlag = mxREAL;
+		*dsize = 2*sizeof(char);
+	} else if (datatype == COMPLEX_DATA) {
+		*classid = mxDOUBLE_CLASS;
+		*ComplexFlag = mxCOMPLEX;
+		*dsize = sizeof(double);
+	} else
+		status.code = HLI_ERR;
+	return status;
 }
 
 /**
@@ -172,78 +172,78 @@ al_status_t get_data_info(int datatype, int dim, mxClassID * classid, mxComplexi
  */
 al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data)
 {
-  al_status_t status;
-  mxClassID classid;
-  mxComplexity ComplexFlag;
-  size_t dsize;
-  mwSize ndims;
-  mwSize dims[MAXDIM];
-  mwSize numel = 1;
-  mxChar * chararray;
-  int i, j;
-  double *pr, *pi;
+	al_status_t status;
+	mxClassID classid;
+	mxComplexity ComplexFlag;
+	size_t dsize;
+	mwSize ndims;
+	mwSize dims[MAXDIM];
+	mwSize numel = 1;
+	mxChar * chararray;
+	int i, j;
+	double *pr, *pi;
 
-  status = get_data_info(datatype, dim, &classid, &ComplexFlag, &dsize, &array);
-  if (status.code < 0)
-    return status;
-  if (dim == 0 || (size != NULL && size[0] > 0)) {
-    if (datatype != CHAR_DATA) {
-      /*           **** NUMERIC DATA **** */
-      /* Avoid creating empty arrays for scalars */
-      ndims = (dim > 0) ? dim : 1;
-      dims[0] = 1;
-      /* Convert array size and compute total number of elements */
-      for (i = 0; i < dim; i++) {
-	dims[i] = (mwSize) size[i];
-	numel = numel * dims[i];
-      }
-      if (!numel) ndims=0; /* True empty arrays */
-      *data = mxCreateNumericArray(ndims, dims, classid, ComplexFlag);
-      if (datatype != COMPLEX_DATA)
-	/* integer and double data map directly to MATLAB types */
-	memcpy(mxGetData(*data), array, numel * dsize);
-      else {
+	status = get_data_info(datatype, dim, &classid, &ComplexFlag, &dsize, &array);
+	if (status.code < 0)
+		return status;
+	if (dim == 0 || (size != NULL && size[0] > 0)) {
+		if (datatype != CHAR_DATA) {
+			/*           **** NUMERIC DATA **** */
+			/* Avoid creating empty arrays for scalars */
+			ndims = (dim > 0) ? dim : 1;
+			dims[0] = 1;
+			/* Convert array size and compute total number of elements */
+			for (i = 0; i < dim; i++) {
+				dims[i] = (mwSize) size[i];
+				numel = numel * dims[i];
+			}
+			if (!numel) ndims=0; /* True empty arrays */
+			*data = mxCreateNumericArray(ndims, dims, classid, ComplexFlag);
+			if (datatype != COMPLEX_DATA)
+				/* integer and double data map directly to MATLAB types */
+				memcpy(mxGetData(*data), array, numel * dsize);
+			else {
 #if MX_HAS_INTERLEAVED_COMPLEX
 #error IMAS_MEX builds with interleaved complex API is not supported yet
-	memcpy(mxGetData(*data), array, numel * dsize * 2);
+				memcpy(mxGetData(*data), array, numel * dsize * 2);
 #else
-	/* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
-	pr = mxGetData(*data);
-	pi = mxGetImagData(*data);
-	for (i = 0; i < numel; i++) {
-	  pr[i] = ((double *) array)[2*i];
-	  pi[i] = ((double *) array)[2*i+1];
-	}
+				/* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
+				pr = mxGetData(*data);
+				pi = mxGetImagData(*data);
+				for (i = 0; i < numel; i++) {
+					pr[i] = ((double *) array)[2*i];
+					pi[i] = ((double *) array)[2*i+1];
+				}
 #endif
-      }
-    } else {
-      /*           **** CHAR DATA **** */
-      if (dim == 1) {
-	dims[0] = 1;
-	dims[1] = size[0];
-      } else {
-	/* Size is [nb of strings, string length] (???) */
-	dims[0] = (mwSize) size[0];
-	dims[1] = (mwSize) size[1];
-      }
-      *data = mxCreateCharArray(2, dims);
-      /* We need to transpose the character array */
-      chararray = mxGetData(*data);
-      for (i = 0; i < dims[0]; i++)
-	for (j = 0; j < dims[1]; j++)
-	  chararray[j*dims[0]+i] = (mxChar) ((char *) array)[i*dims[1]+j];
-    }
-  } else {
-    if (datatype == CHAR_DATA) {
-      /* Create an empty string (0x0 char array) */
-      *data = mxCreateCharArray(0, NULL);
-    }
-    else
-      /* Create an empty array of correct class */
-      *data = mxCreateNumericArray(0, NULL, classid, ComplexFlag);
-  }
-  
-  return status;
+			}
+		} else {
+			/*           **** CHAR DATA **** */
+			if (dim == 1) {
+				dims[0] = 1;
+				dims[1] = size[0];
+			} else {
+				/* Size is [nb of strings, string length] (???) */
+				dims[0] = (mwSize) size[0];
+				dims[1] = (mwSize) size[1];
+			}
+			*data = mxCreateCharArray(2, dims);
+			/* We need to transpose the character array */
+			chararray = mxGetData(*data);
+			for (i = 0; i < dims[0]; i++)
+				for (j = 0; j < dims[1]; j++)
+					chararray[j*dims[0]+i] = (mxChar) ((char *) array)[i*dims[1]+j];
+		}
+	} else {
+		if (datatype == CHAR_DATA) {
+			/* Create an empty string (0x0 char array) */
+			*data = mxCreateCharArray(0, NULL);
+		}
+		else
+			/* Create an empty array of correct class */
+			*data = mxCreateNumericArray(0, NULL, classid, ComplexFlag);
+	}
+
+	return status;
 }
 
 /**
@@ -258,63 +258,63 @@ al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArr
  */
 al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void **array, int *size)
 {
-  al_status_t status = {0,""};
-  mxChar *chararray;
-  int ndims;
-  const mwSize *dims;
-  mwSize numel = 1;
-  int i,j;
-  double *pr, *pi;
+	al_status_t status = {0,""};
+	mxChar *chararray;
+	int ndims;
+	const mwSize *dims;
+	mwSize numel = 1;
+	int i,j;
+	double *pr, *pi;
 
-  ndims = mxGetNumberOfDimensions(data);
-  dims = mxGetDimensions(data);
-  /* Convert array size and compute total number of elements */
-  for (i = 0; i < dim; i++) {
-    size[i] = ndims > i ? (int) dims[i] : 1;
-    numel = numel * size[i];
-  }
-  /* Allow for 1D row vectors  */
-  if (dim == 1 && dims[0] == 1) {
-    size[0] = dims[1];
-    numel = dims[1];
-  }
-  /* Get pointer to data */
-  if (datatype != CHAR_DATA) {
-    /*           **** NUMERIC DATA **** */
-    if (datatype != COMPLEX_DATA)
-      /* integer and double data map directly to MATLAB types */
-      *array = mxGetData(data);
-    else {
+	ndims = mxGetNumberOfDimensions(data);
+	dims = mxGetDimensions(data);
+	/* Convert array size and compute total number of elements */
+	for (i = 0; i < dim; i++) {
+		size[i] = ndims > i ? (int) dims[i] : 1;
+		numel = numel * size[i];
+	}
+	/* Allow for 1D row vectors  */
+	if (dim == 1 && dims[0] == 1) {
+		size[0] = dims[1];
+		numel = dims[1];
+	}
+	/* Get pointer to data */
+	if (datatype != CHAR_DATA) {
+		/*           **** NUMERIC DATA **** */
+		if (datatype != COMPLEX_DATA)
+			/* integer and double data map directly to MATLAB types */
+			*array = mxGetData(data);
+		else {
 #if MX_HAS_INTERLEAVED_COMPLEX
 #error IMAS_MEX builds with interleaved complex API is not supported yet
-      *array = mxGetData(data);
+			*array = mxGetData(data);
 #else
-      /* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
-      *array = malloc(numel*2*sizeof(double));
-      pr = mxGetData(data);
-      pi = mxGetImagData(data);
-      for (i = 0; i < numel; i++) {
-	((double *) *array)[2*i] = pr[i];
-	((double *) *array)[2*i+1] = pi[i];
-      }
+			/* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
+			*array = malloc(numel*2*sizeof(double));
+			pr = mxGetData(data);
+			pi = mxGetImagData(data);
+			for (i = 0; i < numel; i++) {
+				((double *) *array)[2*i] = pr[i];
+				((double *) *array)[2*i+1] = pi[i];
+			}
 #endif
-    }
-  } else {
-    /*           **** CHAR DATA **** */
-    /* MATLAB uses mxChar (uint16) to represent char arrays */
-    if (dim == 1)
-      *array = mxArrayToString(data);
-    else {
-      /* Size is [nb of strings, string length] (???) */
-      /* We need to transpose the character array */
-      chararray = (mxChar *) mxGetChars(data);
-      *array = malloc(numel*sizeof(char));
-      for (i = 0; i < size[1]; i++)
-	for (j = 0; j < size[0]; j++)
-	  ((char *) *array)[j*size[1]+i] = (char) chararray[i*size[0]+j];
-    }
-  }
-  return status;
+		}
+	} else {
+		/*           **** CHAR DATA **** */
+		/* MATLAB uses mxChar (uint16) to represent char arrays */
+		if (dim == 1)
+			*array = mxArrayToString(data);
+		else {
+			/* Size is [nb of strings, string length] (???) */
+			/* We need to transpose the character array */
+			chararray = (mxChar *) mxGetChars(data);
+			*array = malloc(numel*sizeof(char));
+			for (i = 0; i < size[1]; i++)
+				for (j = 0; j < size[0]; j++)
+					((char *) *array)[j*size[1]+i] = (char) chararray[i*size[0]+j];
+		}
+	}
+	return status;
 }
 
 /**
@@ -326,29 +326,29 @@ al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void 
  */
 al_status_t mxArray_default_value(int datatype, int dim, mxArray **data)
 {
-  al_status_t status;
-  void * array = NULL;
-  mxArray * data_old;
+	al_status_t status;
+	void * array = NULL;
+	mxArray * data_old;
 
-  if (dim == 0) {
-    if (datatype == INTEGER_DATA)
-      array = (int *) &EMPTY_INT;
-    else if (datatype == DOUBLE_DATA)
-      array = (int *) &EMPTY_DOUBLE;
-    else if (datatype == COMPLEX_DATA)
-      array = (int *) &EMPTY_COMPLEX[0];
-  }
+	if (dim == 0) {
+		if (datatype == INTEGER_DATA)
+			array = (int *) &EMPTY_INT;
+		else if (datatype == DOUBLE_DATA)
+			array = (int *) &EMPTY_DOUBLE;
+		else if (datatype == COMPLEX_DATA)
+			array = (int *) &EMPTY_COMPLEX[0];
+	}
 
-  status = data_to_mxArray(datatype, dim, array, NULL, data);
-  
-  if (datatype == CHAR_DATA && dim == 2) {
-    /* For STR_1D cast to cell array of strings */
-    data_old = *data;
-    if (status.code >= 0) status = castCharToCell(data);
-    if (status.code >= 0) mxDestroyArray(data_old);
-  }
+	status = data_to_mxArray(datatype, dim, array, NULL, data);
 
-  return status;
+	if (datatype == CHAR_DATA && dim == 2) {
+		/* For STR_1D cast to cell array of strings */
+		data_old = *data;
+		if (status.code >= 0) status = castCharToCell(data);
+		if (status.code >= 0) mxDestroyArray(data_old);
+	}
+
+	return status;
 }
 
 /**
@@ -360,15 +360,265 @@ al_status_t mxArray_default_value(int datatype, int dim, mxArray **data)
  */
 al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
 {
-  al_status_t status;
-  char *fieldPath = "ids_properties/homogeneous_time";
-  char *timebasePath = "";
-  int retSize[MAXDIM];
+	al_status_t status;
+	char *fieldPath = "ids_properties/homogeneous_time";
+	char *timebasePath = "";
+	int retSize[MAXDIM];
 
-  status = ual_read_data(ctx, fieldPath, timebasePath, (void**)&homogeneousTime, 
-			 INTEGER_DATA, 0, &retSize[0]);
+	status = ual_read_data(ctx, fieldPath, timebasePath, (void**)&homogeneousTime,
+			INTEGER_DATA, 0, &retSize[0]);
 
-  return status;
+	return status;
+}
+
+/**
+   Reads the string field ids_properties/version_put/data_dictionary.
+   For a given context (which must correspond to the root of an open IDS object), this function reads the string field ids_properties/version_put/data_dictionary.
+   @param[in] ctx Current operation context.
+   @param[out] data_dictionary Value of ids_properties/version_put/data_dictionary.
+   @result error status.
+ */
+al_status_t getDataDictionaryVersion(int ctx, char **data_dictionary)
+{
+	al_status_t status;
+	char *fieldPath = "ids_properties/version_put/data_dictionary";
+	char *timebasePath = "";
+	int retSize[MAXDIM];
+
+	status = ual_read_data(ctx, fieldPath, timebasePath, (void **)data_dictionary,
+			CHAR_DATA, 1, &retSize[0]);
+
+	return status;
+}
+
+/**
+   Extract all tokens from a comma separated strings.
+   @param[in] charsToSplit, char* containing comma separated strings
+   @param[in] charsToSplitLength, length of charsToSplit
+   @param[in] tokenLength, max length of each expected token from charsToSplit
+   @param[out] arrayOfCharsPointers, pointers array to char*
+   @param[out] tokensCount, number of tokens in charsToSplit
+   @result each element of arrayOfCharsPointers[] contains a token of charsToSplit.
+ */
+void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
+		int charsToSplitLength, int tokenLength, int *tokensCount) {
+
+	const char s[2] = ",";
+	char *token;
+
+	char* toTokenize = malloc(charsToSplitLength);
+	strcpy(toTokenize, charsToSplit);
+
+	/* get the first token */
+	token = strtok(toTokenize, s);
+	if (token == NULL)
+	{
+		*tokensCount = 0;
+		free(toTokenize);
+		return;
+	}
+
+	/* walk through other tokens */
+	int i = 0;
+	while( token != NULL ) {
+		arrayOfCharsPointers[i] = malloc(tokenLength);
+		arrayOfCharsPointers[i] = strcpy(arrayOfCharsPointers[i], token);
+		token = strtok(NULL, s);
+		i++;
+	}
+
+	*tokensCount = i;
+	free(toTokenize);
+}
+
+/**
+   Converts a DD version to an integer.
+   @param[in] nbc_version, the DD version to be converted
+              e.g nbc_version="3.26.0" will be converted to 3260
+   @result the conversion.
+ */
+int convertDDVersionToInt(char* nbc_version) {
+	int version = 0;
+	const char s[2] = ".";
+	char *token;
+
+	token = strtok(nbc_version, s);
+	if (token == NULL)
+	{
+		return version;
+	}
+	/* walk through other tokens */
+	char* c = malloc(10);
+	strcpy(c, "");
+	while( token != NULL ) {
+		if (!isNumeric(token))
+			break;
+		c = strcat(c, token);
+		token = strtok(NULL, s);
+	}
+	int v = atoi(c);
+	free(c);
+	free(token);
+	return v;
+}
+
+int isNumeric (const char * s)
+{
+	if (s == NULL || *s == '\0' || isspace(*s))
+		return 0;
+	char * p;
+	strtod (s, &p);
+	return *p == '\0';
+}
+
+/**
+   Returns the IMAS path of a node from NBC data provided by the DD. Used for:
+   - computing the path of an AOS (e.g k=0, path is computed from the root node)
+   - computing the path of a field (if k!=0, path is computed from the first ancestor AOS relative to the field)
+   @param[in] ancestors_count, number of ancestors (AOSs, structures) of the node
+   @param[in] ancestors_names, ancestors_names[i] gives the name of the ith ancestor of the node (numbering i starts from the root node)
+   @param[in] ancestors_change_nbc_versions, ancestors_change_nbc_versions[i] gives a comma separated list of DD versions
+              where renaming of the ith ancestor of the node has occurred.
+              e.g. ancestors_change_nbc_versions[1] = "3.24.0,3.25.0,3.26.0" refers to 3 versions
+              where the 2nd ancestor (starting from the root node) of the node has been renamed
+   @param[in] ancestors_change_nbc_previous_names, ancestors_change_nbc_previous_names[i] gives a comma separated list of names
+              of the 2nd ancestor of this node in previous versions of the DD given by ancestors_change_nbc_versions[i]
+              e.g. ancestors_change_nbc_previous_names[2] = "name_3240,name_3250,name_3260"
+   @param[in] dataDictionaryVersion read in 'ids_properties/version_put/data_dictionary'
+   @param[out] path, contains the result.
+ */
+void getNodePath(char* path, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
+		char* ancestors_change_nbc_previous_names[], char* dataDictionaryVersion, int k) {
+
+	char* dd_version = malloc(ANCESTOR_VERSION_MAX_LENGTH);
+	char* pathTokens[ancestors_count];
+	char* nbc_versions[NBC_VERSIONS_MAX_COUNT];
+	char* nbc_previous_names[NBC_VERSIONS_MAX_COUNT];
+	char* pathToken =  malloc(ANCESTOR_NAME_MAX_LENGTH);
+
+	strcpy(dd_version, dataDictionaryVersion);
+	int dataDictionaryVersionInt = convertDDVersionToInt(dd_version);
+	int i;
+
+	path = strcpy(path, "");
+	pathToken = strcpy(pathToken, "");
+
+	int pathTokensCount = 0;
+
+	for (i = k; i < ancestors_count; i++) {
+		pathToken = strcpy(pathToken, ancestors_names[i]);
+		int nbc_versions_count = 0;
+		splitUtil(nbc_versions, ancestors_change_nbc_versions[i],
+				ANCESTORS_VERSIONS_MAX_LENGTH, ANCESTOR_VERSION_MAX_LENGTH, &nbc_versions_count);
+		splitUtil(nbc_previous_names, ancestors_change_nbc_previous_names[i],
+				ANCESTORS_PREVIOUS_NAMES_MAX_LENGTH, ANCESTOR_NAME_MAX_LENGTH, &nbc_versions_count);
+
+		int j;
+		for (j = 0; j < nbc_versions_count; j++) {
+			char* nbc_version_char = nbc_versions[j];
+			int nbc_version = convertDDVersionToInt(nbc_version_char);
+			if ((nbc_version != 0) && (dataDictionaryVersionInt < nbc_version || dataDictionaryVersionInt==0)) {
+				//printf("aos/structure/field name has been patched to = %s\n", nbc_previous_names[j]);
+				pathToken = strcpy(pathToken, nbc_previous_names[j]);
+			}
+			else {
+				//printf("DD version not patched\n");
+			}
+			free(nbc_previous_names[j]);
+		}
+		if (strcmp(pathToken, "") != 0) {
+			pathTokens[pathTokensCount] = malloc(ANCESTOR_NAME_MAX_LENGTH);
+			pathTokens[pathTokensCount] = strcpy(pathTokens[pathTokensCount], pathToken);
+			pathTokensCount++;
+		}
+	}
+
+	free(pathToken);
+
+	for (i = 0; i < pathTokensCount; i++) {
+		if (i == 0) {
+			path = strcpy(path, pathTokens[i]);
+		}
+		else {
+			char* s = malloc(IMAS_PATH_MAX_LENGTH);
+			strcpy(s, "/");
+			s = strcat(s, pathTokens[i]);
+			path = strcat(path, s);
+			free(s);
+		}
+		free(pathTokens[i]);
+	}
+}
+
+/**
+   Returns the IMAS path of a field node from NBC data provided by the DD.
+   @param[in] ancestors_count, number of ancestors (AOSs, structures) of the node
+   @param[in] ancestors_names, ancestors_names[i] gives the name of the ith ancestor of the node (numbering i starts from the root node)
+   @param[in] ancestors_data_types, ancestors_data_types[i] gives the name of the type of the ith ancestor of the node
+   @param[in] ancestors_change_nbc_versions, ancestors_change_nbc_versions[i] gives a comma separated list of DD versions
+              where renaming of the ith ancestor of the node has occurred.
+              e.g. ancestors_change_nbc_versions[1] = "3.24.0,3.25.0,3.26.0" refers to 3 versions
+              where the 2nd ancestor (starting from the root node) of the node has been renamed
+   @param[in] ancestors_change_nbc_previous_names, ancestors_change_nbc_previous_names[i] gives a comma separated list of names
+              of the 2nd ancestor of this node in previous versions of the DD given by ancestors_change_nbc_versions[i]
+              e.g. ancestors_change_nbc_previous_names[2] = "name_3240,name_3250,name_3260"
+   @param[in] dataDictionaryVersion read in 'ids_properties/version_put/data_dictionary'
+   @param[out] path, contains the result.
+ */
+void getFieldRelativePath(char* relativePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
+		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion) {
+	int k= getIndexAfterFirstStructArrayAncestor(ancestors_data_types, ancestors_count);
+	getNodePath(relativePath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names,dataDictionaryVersion, k);
+}
+
+/**
+   Returns the timebase path of a field node from NBC data provided by the DD.
+   @param[in] ancestors_count, number of ancestors (AOSs, structures) of the node
+   @param[in] ancestors_names, ancestors_names[i] gives the name of the ith ancestor of the node (numbering i starts from the root node)
+   @param[in] ancestors_data_types, ancestors_data_types[i] gives the name of the type of the ith ancestor of the node
+   @param[in] ancestors_change_nbc_versions, ancestors_change_nbc_versions[i] gives a comma separated list of DD versions
+              where renaming of the ith ancestor of the node has occurred.
+              e.g. ancestors_change_nbc_versions[1] = "3.24.0,3.25.0,3.26.0" refers to 3 versions
+              where the 2nd ancestor (starting from the root node) of the node has been renamed
+   @param[in] ancestors_change_nbc_previous_names, ancestors_change_nbc_previous_names[i] gives a comma separated list of names
+              of the 2nd ancestor of this node in previous versions of the DD given by ancestors_change_nbc_versions[i]
+              e.g. ancestors_change_nbc_previous_names[2] = "name_3240,name_3250,name_3260"
+   @param[in] dataDictionaryVersion read in 'ids_properties/version_put/data_dictionary'
+   @param[out] path, contains the result.
+ */
+void getTimeBasePath(char* timebasePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
+		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion) {
+	int k = getIndexAfterFirstStructArrayAncestor(ancestors_data_types, ancestors_count);
+	char* path = malloc(IMAS_PATH_MAX_LENGTH);
+	getFieldRelativePath(path, ancestors_count, ancestors_names, ancestors_change_nbc_versions,
+			ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);
+	if (k == 0)
+		timebasePath = strcpy(timebasePath, "/time");
+	else {
+		if (strcmp(path, "") == 0)
+			timebasePath = strcpy(timebasePath, "/time");
+		else {
+			timebasePath = strcpy(timebasePath, path);
+			timebasePath = strcat(timebasePath, "/time");
+		}
+	}
+	free(path);
+}
+
+/**
+   Returns the index of the first AOS ancestor of a field node.
+   @param[in] ancestors_count, number of ancestors (AOSs, structures) of the node
+   @param[in] ancestors_data_types, ancestors_data_types[i] gives the name of the type of the ith ancestor of the node
+   @result index (starting from the root node) of the first ancestor .
+ */
+int getIndexAfterFirstStructArrayAncestor(char* ancestors_data_types[], int ancestors_count) {
+	int structarrayAncestorIndex = 0;
+	int i;
+	for (i=0; i < ancestors_count; i++) {
+		if (strcmp(ancestors_data_types[i], "struct_array") == 0)
+			structarrayAncestorIndex = i + 1;
+	}
+	return structarrayAncestorIndex;
 }
 
 /**
@@ -382,55 +632,55 @@ al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
 al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data)
 {
 
-  al_status_t status;
+	al_status_t status;
 
-  mxArray * data_old;
-  void * array = NULL;
-  int dims[MAXDIM];
+	mxArray * data_old;
+	void * array = NULL;
+	int dims[MAXDIM];
 
-  int i;
-  double retTime;
+	int i;
+	double retTime;
 
-  if (field->dim == 0) {
-    if (field->datatype == INTEGER_DATA)
-      array = malloc(sizeof(int));
-    else if (field->datatype == DOUBLE_DATA)
-      array = malloc(sizeof(double));
-    else if (field->datatype == COMPLEX_DATA)
-      array = malloc(sizeof(double _Complex));
-  }
+	if (field->dim == 0) {
+		if (field->datatype == INTEGER_DATA)
+			array = malloc(sizeof(int));
+		else if (field->datatype == DOUBLE_DATA)
+			array = malloc(sizeof(double));
+		else if (field->datatype == COMPLEX_DATA)
+			array = malloc(sizeof(double _Complex));
+	}
 
-  status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
+	status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
 
-  if (status.code >= 0) status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
+	if (status.code >= 0) status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
 
-  /* Free arrays  */
-  if (array) free(array);
+	/* Free arrays  */
+	if (array) free(array);
 
 #ifndef NO_LOCAL_CONVERSION
-  if (params.get_int_as_double)
-    if (field->datatype == INTEGER_DATA) {
-      data_old = *data;
-      if (status.code >= 0) status = castInt32ToDouble(data);
-      if (status.code >= 0) mxDestroyArray(data_old);
-    }
-  
-  if (params.get_empty_as_nan)
-    if (field->datatype == DOUBLE_DATA) {
-      data_old = *data;
-      if (status.code >= 0) status = castEmptyToNaN(data);
-      if (status.code >= 0) mxDestroyArray(data_old);
-    }
-#endif
-  
-  if (field->datatype == CHAR_DATA && field->dim == 2) {
-    /* For STR_1D cast to cell array of strings */
-    data_old = *data;
-    if (status.code >= 0) status = castCharToCell(data);
-    if (status.code >= 0) mxDestroyArray(data_old);
-  }
+	if (params.get_int_as_double)
+		if (field->datatype == INTEGER_DATA) {
+			data_old = *data;
+			if (status.code >= 0) status = castInt32ToDouble(data);
+			if (status.code >= 0) mxDestroyArray(data_old);
+		}
 
-  return status;
+	if (params.get_empty_as_nan)
+		if (field->datatype == DOUBLE_DATA) {
+			data_old = *data;
+			if (status.code >= 0) status = castEmptyToNaN(data);
+			if (status.code >= 0) mxDestroyArray(data_old);
+		}
+#endif
+
+	if (field->datatype == CHAR_DATA && field->dim == 2) {
+		/* For STR_1D cast to cell array of strings */
+		data_old = *data;
+		if (status.code >= 0) status = castCharToCell(data);
+		if (status.code >= 0) mxDestroyArray(data_old);
+	}
+
+	return status;
 }
 
 /**
@@ -444,59 +694,59 @@ al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_me
 al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data)
 {
 
-  al_status_t status = {0,""};
-  al_status_t cast_status = {HLI_ERR,""}; /* Necessary flag in case a cast was made and clean-up is required */
+	al_status_t status = {0,""};
+	al_status_t cast_status = {HLI_ERR,""}; /* Necessary flag in case a cast was made and clean-up is required */
 
-  const mxArray * ptime;
-  void * array = NULL;
-  int dims[MAXDIM];
+	const mxArray * ptime;
+	void * array = NULL;
+	int dims[MAXDIM];
 
-  int i;
+	int i;
 
 #ifndef NO_LOCAL_CONVERSION
-  if (params.put_int_from_double)
-    if (field->datatype == INTEGER_DATA) {
-      if (mxIsNumeric(data) && mxIsDouble(data)) {
-	if (status.code >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
-	/* Check again field validity */
-	if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data))
-	  return (al_status_t) {0,""};
-      }
-    }
-    
-  if (params.put_empty_from_nan)
-    if (field->datatype == DOUBLE_DATA) {
-      if (mxIsNumeric(data) && mxIsDouble(data)) {
-	if (status.code >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
-	/* Check again field validity */
-	if (status.code >= 0 &&!is_field_valid(field->datatype, field->dim, data))
-	  return (al_status_t) {0,""};
-      }
-    }
-#endif
-  
-  if (field->datatype == CHAR_DATA && field->dim == 2) {
-    if (mxIsCell(data)) {
-      if (status.code >= 0) status = cast_status = castCellToChar((mxArray **) &data);
-    }
-  }
-  
-  if (status.code >= 0) status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
-  
-  if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
-  
-  /* Clean up memory allocated by data_from_mxArray */
-  if (field->datatype == CHAR_DATA) {
-    if (array != NULL)
-      (field->dim == 1) ? mxFree(array) : free(array);
-  } else if (field->datatype == COMPLEX_DATA) {
-    if (array != NULL)
-      free(array);
-  }
-  
-  /* Clean up data created by cast operation */
-  if (cast_status.code == 0)
-    mxDestroyArray((mxArray *) data);
+	if (params.put_int_from_double)
+		if (field->datatype == INTEGER_DATA) {
+			if (mxIsNumeric(data) && mxIsDouble(data)) {
+				if (status.code >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
+				/* Check again field validity */
+				if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data))
+					return (al_status_t) {0,""};
+			}
+		}
 
-  return status;
+	if (params.put_empty_from_nan)
+		if (field->datatype == DOUBLE_DATA) {
+			if (mxIsNumeric(data) && mxIsDouble(data)) {
+				if (status.code >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
+				/* Check again field validity */
+				if (status.code >= 0 &&!is_field_valid(field->datatype, field->dim, data))
+					return (al_status_t) {0,""};
+			}
+		}
+#endif
+
+	if (field->datatype == CHAR_DATA && field->dim == 2) {
+		if (mxIsCell(data)) {
+			if (status.code >= 0) status = cast_status = castCellToChar((mxArray **) &data);
+		}
+	}
+
+	if (status.code >= 0) status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
+
+	if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+
+	/* Clean up memory allocated by data_from_mxArray */
+	if (field->datatype == CHAR_DATA) {
+		if (array != NULL)
+			(field->dim == 1) ? mxFree(array) : free(array);
+	} else if (field->datatype == COMPLEX_DATA) {
+		if (array != NULL)
+			free(array);
+	}
+
+	/* Clean up data created by cast operation */
+	if (cast_status.code == 0)
+		mxDestroyArray((mxArray *) data);
+
+	return status;
 }

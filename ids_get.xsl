@@ -153,14 +153,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
     al_status_t status;
     al_status_t status_end;
     int getOpCtx = -1;
+    char* dataDictionaryVersion;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
-
+    
     /* Open get context */
     status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getOpCtx);
+    
+    if (status.code >= 0) status = getDataDictionaryVersion(getOpCtx, &amp;dataDictionaryVersion);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTime);
     if (status.code >= 0) status = init_dataTree_read();
 
-    if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime);
+    if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion);
     if (getOpCtx > 0) {
     status_end = ual_end_action(getOpCtx);
     if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
@@ -183,11 +186,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
-al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
+al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
   <xsl:call-template name="COMMENT_FIELD"/>
-  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
+  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion)
   {
   struct imas_mex_actionInfo action;
   struct imas_mex_fieldInfo field;
@@ -197,8 +200,12 @@ al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ct
   int aosArraySize = -1;
   int aosCtx = -1;
   action.context = ctx;
+  
+  <xsl:call-template name="declareAndAllocateNBCVariables"/>
 
   <xsl:apply-templates select="field" mode="GET_SINGLE"/>
+  
+  <xsl:call-template name="freeNBCVariables"/>
 
   return status;
   }

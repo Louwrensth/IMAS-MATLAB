@@ -18,9 +18,6 @@
 
 <xsl:template match="field" mode="DELETE">
 
-<xsl:variable name="AosRelativePath">
-  <xsl:call-template name="printAosRelativePath"/>
-</xsl:variable>
 
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>

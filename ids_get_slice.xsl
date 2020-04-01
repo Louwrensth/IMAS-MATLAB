@@ -174,14 +174,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
     al_status_t status;
     al_status_t status_end;
     int getSliceOpCtx = -1;
+    char* dataDictionaryVersion;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
     /* Open getSlice context */
     status = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
+    
+    if (status.code >= 0) status = getDataDictionaryVersion(getSliceOpCtx, &amp;dataDictionaryVersion);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getSliceOpCtx, &amp;homogeneousTime);
     if (status.code >= 0) status = init_dataTree_read();
 
-    if (status.code >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime);
+    if (status.code >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime, dataDictionaryVersion);
     if (getSliceOpCtx > 0) {
     status_end = ual_end_action(getSliceOpCtx);
     if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
@@ -204,11 +207,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE_H">
-al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
+al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE">
   <xsl:call-template name="COMMENT_FIELD"/>
-  al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
+  al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion)
   {
   struct imas_mex_actionInfo action;
   struct imas_mex_fieldInfo field;
@@ -218,10 +221,14 @@ al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(
   int aosArraySize = -1;
   int aosCtx = -1;
   action.context = ctx;
+  
+  <xsl:call-template name="declareAndAllocateNBCVariables"/>
 
   <xsl:apply-templates select="field" mode="GET_SINGLE">
     <xsl:with-param name="slice" select="'yes'"/>
   </xsl:apply-templates>
+  
+  <xsl:call-template name="freeNBCVariables"/>
 
   return status;
   }

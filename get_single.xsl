@@ -19,10 +19,6 @@
 <xsl:template match="field" mode="GET_SINGLE">
   <xsl:param name="slice"/>
 
-<xsl:variable name="AosRelativePath">
-  <xsl:call-template name="printAosRelativePath"/>
-</xsl:variable>
-
 <xsl:variable name="method_name">
   <xsl:choose>
     <xsl:when test="$slice='yes'">get_slice</xsl:when>
@@ -36,23 +32,15 @@
   <!-- Type 1 arrays of structure, with potentially multiple time bases -->
   <!-- Type 2 arrays of structure -->
   <!-- Type 3 arrays of structure, with a unique time base -->
+  
     <xsl:when test = "@data_type = 'struct_array'">
-      field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
-      <xsl:if test="ancestor::field[@data_type='struct_array']">
-	//<xsl:value-of select="ancestor::field[@data_type='struct_array'][1]/@path"/>
-	//<xsl:value-of select="@path"/>
-      </xsl:if>
-      <xsl:choose>	
-	<xsl:when test="@type='dynamic'"> <!-- Type 3 -->
-	  if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) 
-          field.timebasePath = "/time";
-       	  else
-	  field.timebasePath = &quot;<xsl:value-of select="$AosRelativePath"/>/time&quot;;
-	</xsl:when>
-  	<xsl:otherwise> <!-- Type 1 or 2 -->
-	  field.timebasePath = "";
-	</xsl:otherwise>
-      </xsl:choose>
+      <xsl:call-template name="setNBCVariables"/>
+      <xsl:call-template name="generateNodePath">
+        <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
+  	  </xsl:call-template>
+      <xsl:call-template name="generateTimebasePath">
+  		<xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
+  	  </xsl:call-template>
       <xsl:if test="@type='dynamic'">
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
@@ -65,7 +53,7 @@
       if (status.code >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", aosArraySize);
       for (int i=0; i&lt;aosArraySize; i++) {
       if (status.code >= 0) status = iterate_dataTree_array(i);
-      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
+      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, dataDictionaryVersion);
       if (status.code >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
@@ -84,7 +72,7 @@
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
       status = begin_dataTree_read("<xsl:value-of select="@name"/>");
-      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
+      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, dataDictionaryVersion);
       /* Finished processing structure <xsl:value-of select="@name"/> */
       if (status.code >= 0) status = end_dataTree_action();
       /* Error handling */
@@ -99,18 +87,14 @@
 		    my:get_datatype(@data_type)='INTEGER_DATA' or 
 		    my:get_datatype(@data_type)='DOUBLE_DATA' or 
 		    my:get_datatype(@data_type)='COMPLEX_DATA'">
-      field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
-      <xsl:choose>
-	<xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
-	  if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) 
-          field.timebasePath = "/time";
-       	  else
-	  field.timebasePath = &quot;<xsl:value-of select="@timebasepath"/>&quot;;
-	</xsl:when>
-	<xsl:otherwise>
-	  field.timebasePath = "";
-	</xsl:otherwise>
-      </xsl:choose>
+		    
+      <xsl:call-template name="setNBCVariables"/>
+      <xsl:call-template name="generateNodePath">
+        <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
+  	  </xsl:call-template>
+      <xsl:call-template name="generateTimebasePath">
+  		<xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
+  	  </xsl:call-template>
       field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
       field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;
       <xsl:if test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">

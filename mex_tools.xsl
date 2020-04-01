@@ -32,18 +32,127 @@
   <xsl:value-of select="$function_name"/> = &amp;<xsl:value-of select="concat($function_name,'_',@name)"/>;
   } else</xsl:template>
 
-<xsl:template name ="printAosRelativePath">
-  <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
-  <xsl:variable name="elementPath" select="@path"/>
+<!-- Generate node path. Take into account fields, AOSs or structures which have been possibly renamed. --> 
+<xsl:template name ="generateNodePath">
+       <xsl:param name="ignore_nbc_change"/>
+       <xsl:choose>
+	       <xsl:when test="$ignore_nbc_change=1 or (not(ancestor::field[@change_nbc_version]) and not(@change_nbc_version))">
+	       	   <xsl:choose>
+		            <xsl:when test="ancestor::field[@data_type='struct_array']">
+		                <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
+				 		<xsl:variable name="elementPath" select="@path"/>
+				 		<xsl:text>field.fieldPath=&quot;</xsl:text><xsl:value-of select="replace($elementPath,concat($AoSPath,'/'),'')"/>&quot;;
+		            </xsl:when>
+		            <xsl:otherwise>
+		                <xsl:text>field.fieldPath=&quot;</xsl:text><xsl:value-of select="@path"/>&quot;;
+		            </xsl:otherwise>
+               </xsl:choose>
+	       </xsl:when>
+	       <xsl:otherwise>
+		        <xsl:choose>
+			        <xsl:when test="ancestor::field[@data_type='struct_array']">
+			             <xsl:text>getFieldRelativePath(field.fieldPath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);&#xA;</xsl:text>
+			        </xsl:when>
+			        <xsl:otherwise>
+			             <xsl:text>getNodePath(field.fieldPath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, dataDictionaryVersion, 0);&#xA;</xsl:text>
+			        </xsl:otherwise>
+		        </xsl:choose>
+		   </xsl:otherwise>
+        </xsl:choose>
+        <!-- xsl:text>mexPrintf("field.fieldPath=%s\n", field.fieldPath);&#xA;</xsl:text -->
+        <xsl:text>&#xA;</xsl:text>
+</xsl:template>
 
-  <xsl:choose>
-    <xsl:when test="ancestor::field[@data_type='struct_array']">
-      <xsl:value-of select="replace($elementPath,concat($AoSPath,'/'),'')"/>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:value-of select="$elementPath"/>
-    </xsl:otherwise>
-  </xsl:choose>
+<!-- Generate timebase path. Take into account fields, AOSs or structures which have been possibly renamed. --> 
+<xsl:template name ="generateTimebasePath">
+       <xsl:param name="ignore_nbc_change"/>
+		       <xsl:choose>
+		            <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
+		                <xsl:text>if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) {&#xA;</xsl:text> 
+		                <xsl:text>&#032;field.timebasePath="/time";&#xA;</xsl:text>
+		                <xsl:text>&#032;}&#xA;</xsl:text>
+		                <xsl:text>else{&#xA;</xsl:text>
+		                <xsl:choose>
+					         <xsl:when test="$ignore_nbc_change=1">
+					           <xsl:text>&#032;field.timebasePath=&quot;</xsl:text><xsl:value-of select="@timebasepath"/><xsl:text>&quot;;}&#xA;</xsl:text>
+					         </xsl:when>
+					         <xsl:otherwise>
+					           <xsl:text>&#032;getTimeBasePath(field.timebasePath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);}&#xA;</xsl:text>
+					         </xsl:otherwise>
+				        </xsl:choose>
+		            </xsl:when>
+		            <xsl:otherwise>
+                		<xsl:text>field.timebasePath = "";&#xA;</xsl:text>
+            		</xsl:otherwise>
+		        </xsl:choose>
+		<!-- xsl:text>&#032;mexPrintf("field.timebasePath=%s\n", field.timebasePath);&#xA;</xsl:text -->
+        <xsl:text>&#xA;</xsl:text>
+</xsl:template>
+
+<!-- Declare variables which contain data provided by the DD concerning fields, AOSs or structures which have been renamed -->
+<xsl:template name ="declareAndAllocateNBCVariables">
+        <xsl:text>&#xA;</xsl:text>     
+		<xsl:text>char *ancestors_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+		<xsl:text>char *ancestors_data_types[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+		<xsl:text>char *ancestors_change_nbc_versions[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+		<xsl:text>char *ancestors_change_nbc_previous_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+		<xsl:text>int ancestor_index;&#xA;</xsl:text>
+		<xsl:text>int ancestors_count;&#xA;</xsl:text>
+		<xsl:text>int i;&#xA;</xsl:text>
+  
+        <xsl:text>for (i = 0; i &lt; ANCESTORS_MAX_COUNT; i++) {&#xA;</xsl:text>
+        <xsl:text>&#032;ancestors_names[i] = malloc(ANCESTOR_NAME_MAX_LENGTH);&#xA;</xsl:text>
+        <xsl:text>&#032;ancestors_data_types[i] = malloc(ANCESTOR_TYPE_MAX_LENGTH);&#xA;</xsl:text>
+        <xsl:text>&#032;ancestors_change_nbc_versions[i] = malloc(ANCESTORS_VERSIONS_MAX_LENGTH);&#xA;</xsl:text>
+        <xsl:text>&#032;ancestors_change_nbc_previous_names[i] = malloc(ANCESTORS_PREVIOUS_NAMES_MAX_LENGTH);&#xA;</xsl:text>
+        
+        <xsl:text>}&#xA;</xsl:text>
+        <xsl:text>field.fieldPath = malloc(IMAS_PATH_MAX_LENGTH);&#xA;</xsl:text>
+        <xsl:text>field.timebasePath = malloc(IMAS_PATH_MAX_LENGTH);&#xA;</xsl:text>
+        <xsl:text>&#xA;</xsl:text> 
+</xsl:template>
+
+<!--Fill variables which contain data provided by the DD concerning field, AOS or structure renaming-->
+<xsl:template name ="setNBCVariables">
+   <xsl:choose>
+      <xsl:when test="ancestor::field[@change_nbc_version] or @change_nbc_version">
+        <xsl:text>ancestor_index = 0;&#xA;</xsl:text>
+        <xsl:for-each select="ancestor::field[@data_type='struct_array' or @data_type='structure']">
+            <xsl:variable name="selected_name" select="@name"/>
+            <xsl:variable name="selected_data_type" select="@data_type"/>
+            <xsl:variable name="selected_change_nbc_version" select="@change_nbc_version"/>
+            <xsl:variable name="selected_change_previous_name" select="@change_nbc_previous_name"/>
+    		<xsl:text>strcpy(ancestors_names[ancestor_index], &quot;</xsl:text><xsl:value-of select="$selected_name"/><xsl:text>&quot;);&#xA;</xsl:text>
+    		<xsl:text>strcpy(ancestors_data_types[ancestor_index], &quot;</xsl:text><xsl:value-of select="$selected_data_type"/><xsl:text>&quot;);&#xA;</xsl:text>
+    		<xsl:text>strcpy(ancestors_change_nbc_versions[ancestor_index], &quot;</xsl:text><xsl:value-of select="$selected_change_nbc_version"/><xsl:text>&quot;);&#xA;</xsl:text>
+  		    <xsl:text>strcpy(ancestors_change_nbc_previous_names[ancestor_index], &quot;</xsl:text><xsl:value-of select="$selected_change_previous_name"/><xsl:text>&quot;);&#xA;</xsl:text>
+  		    <xsl:text>ancestor_index++;&#xA;</xsl:text>
+  		</xsl:for-each>
+  		<xsl:text>strcpy(ancestors_names[ancestor_index], &quot;</xsl:text><xsl:value-of select="@name"/><xsl:text>&quot;);&#xA;</xsl:text>
+    	<xsl:text>strcpy(ancestors_data_types[ancestor_index], &quot;</xsl:text><xsl:value-of select="@data_type"/><xsl:text>&quot;);&#xA;</xsl:text>
+    	<xsl:text>strcpy(ancestors_change_nbc_versions[ancestor_index], &quot;</xsl:text><xsl:value-of select="@change_nbc_version"/><xsl:text>&quot;);&#xA;</xsl:text>
+  		<xsl:text>strcpy(ancestors_change_nbc_previous_names[ancestor_index], &quot;</xsl:text><xsl:value-of select="@change_nbc_previous_name"/><xsl:text>&quot;);&#xA;</xsl:text>
+  		<xsl:text>ancestor_index++;&#xA;</xsl:text>
+  		<xsl:text>ancestors_count = ancestor_index;&#xA;</xsl:text>
+	    <xsl:text>&#xA;</xsl:text>
+      </xsl:when>
+   </xsl:choose>
+</xsl:template>
+
+<!--Free variables which contain data provided by the DD concerning field, AOS or structure renaming-->
+<xsl:template name ="freeNBCVariables">
+   <xsl:choose>
+     <xsl:when test="ancestor::field[@change_nbc_version] or @change_nbc_version">
+        <xsl:text>for (i = 0; i &lt; ANCESTORS_MAX_COUNT; i++) {&#xA;</xsl:text>
+        <xsl:text>&#032;free(ancestors_names[i]);&#xA;</xsl:text>
+        <xsl:text>&#032;free(ancestors_data_types[i]);&#xA;</xsl:text>
+        <xsl:text>&#032;free(ancestors_change_nbc_versions[i]);&#xA;</xsl:text>
+        <xsl:text>&#032;free(ancestors_change_nbc_previous_names[i]);&#xA;</xsl:text>
+        <xsl:text>}&#xA;</xsl:text>
+        <xsl:text>&#032;free(field.fieldPath);&#xA;</xsl:text>
+        <xsl:text>&#032;free(field.timebasePath);&#xA;</xsl:text>
+     </xsl:when>
+   </xsl:choose>
 </xsl:template>
 
 <!--Documentation for a single field-->

@@ -29,10 +29,6 @@
   </xsl:choose>
 </xsl:variable>
 
-<xsl:variable name="AosRelativePath">
-  <xsl:call-template name="printAosRelativePath"/>
-</xsl:variable>
-
 <xsl:if test="$dynamic_only !='yes' or descendant-or-self::field[@type='dynamic'] or ancestor::field[@type='dynamic' and @data_type='struct_array']">
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
@@ -44,22 +40,13 @@
       <xsl:if test="$dynamic_only !='yes' and @type='dynamic'"> <!-- This could be put in the same statement as aosArraySize>0  -->
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
-      field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
-      <xsl:if test="ancestor::field[@data_type='struct_array']">
-	//<xsl:value-of select="ancestor::field[@data_type='struct_array'][1]/@path"/>
-	//<xsl:value-of select="@path"/>
-      </xsl:if>
-      <xsl:choose>	
-	<xsl:when test="@type='dynamic'"> <!-- Type 3 -->
-	  if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) 
-          field.timebasePath = "/time";
-       	  else
-	  field.timebasePath = &quot;<xsl:value-of select="$AosRelativePath"/>/time&quot;;
-	</xsl:when>
-  	<xsl:otherwise> <!-- Type 1 or 2 -->
-	  field.timebasePath = "";
-	</xsl:otherwise>
-      </xsl:choose>
+      <xsl:call-template name="generateNodePath">
+        <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+  	  </xsl:call-template>
+      <xsl:call-template name="generateTimebasePath">
+  		<xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+  	  </xsl:call-template>
+      
       status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
       if (aosArraySize &gt; 0) {
       if (status.code >= 0) status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
@@ -124,18 +111,12 @@
       </xsl:otherwise>
     </xsl:choose>
     if (status.code >= 0 &amp;&amp; is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
-    field.fieldPath = &quot;<xsl:value-of select="$AosRelativePath"/>&quot;;
-    <xsl:choose>
-      <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
-	if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) 
-        field.timebasePath = "/time";
-       	else
-	field.timebasePath = &quot;<xsl:value-of select="@timebasepath"/>&quot;;
-      </xsl:when>
-      <xsl:otherwise>
-	field.timebasePath = "";
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:call-template name="generateNodePath">
+        <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+  	</xsl:call-template>
+    <xsl:call-template name="generateTimebasePath">
+  		<xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+  	</xsl:call-template>
     field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
     field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;
     status = my_ual_write_data(&amp;action, &amp;field, data);

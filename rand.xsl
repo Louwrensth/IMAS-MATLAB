@@ -22,9 +22,6 @@
 
   <xsl:param name="dynamic"><xsl:choose><xsl:when test="@type='dynamic' and not(ancestor::field[@data_type='struct_array' and @type='dynamic'])">1</xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:param>
 
-  <xsl:variable name="AosRelativePath">
-    <xsl:call-template name="printAosRelativePath"/>
-  </xsl:variable>
 
 <xsl:call-template name="COMMENT_FIELD"/>
 <xsl:choose>
