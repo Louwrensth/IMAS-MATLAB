@@ -85,8 +85,6 @@ void my_exceptionGetReport(mxArray* exception);
 
 void addIdsPathInfoToErrMsg(const char * idsPathInfo, int force);
 
-void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit, int charsToSplitLength, int tokenLength, int *tokensCount);
-
 void getTimeBasePath(char* timebasePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
 		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion);
 
@@ -96,11 +94,9 @@ void getFieldRelativePath(char* relativePath, int ancestors_count, char* ancesto
 void getNodePath(char* path, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
 		char* ancestors_change_nbc_previous_names[], char* dataDictionaryVersion, int k);
 
-int convertDDVersionToInt(char* nbc_version);
-
-int isNumeric (const char * s);
-
 int getIndexAfterFirstStructArrayAncestor(char* ancestors_data_types[],  int ancestors_count);
+
+void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit, int charsToSplitLength, int tokenLength, int *tokensCount);
 
 int is_field_valid(int datatype, int dim, const mxArray * data);
 

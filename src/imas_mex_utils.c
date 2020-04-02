@@ -378,97 +378,23 @@ al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
    @param[out] data_dictionary Value of ids_properties/version_put/data_dictionary.
    @result error status.
  */
-al_status_t getDataDictionaryVersion(int ctx, char **data_dictionary)
+al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary)
 {
 	al_status_t status;
 	char *fieldPath = "ids_properties/version_put/data_dictionary";
 	char *timebasePath = "";
 	int retSize[MAXDIM];
-
-	status = ual_read_data(ctx, fieldPath, timebasePath, (void **)data_dictionary,
+	char* szTemp = NULL;
+	status = ual_read_data(ctx, fieldPath, timebasePath, (void **)&szTemp,
 			CHAR_DATA, 1, &retSize[0]);
-
+	if (status.code==0)
+	{
+		*data_dictionary = (char *)malloc(retSize[0] + 1);
+		memset(*data_dictionary, 0, retSize[0] + 1);
+		strncpy(*data_dictionary, szTemp, retSize[0]);
+		free(szTemp);
+	}
 	return status;
-}
-
-/**
-   Extract all tokens from a comma separated strings.
-   @param[in] charsToSplit, char* containing comma separated strings
-   @param[in] charsToSplitLength, length of charsToSplit
-   @param[in] tokenLength, max length of each expected token from charsToSplit
-   @param[out] arrayOfCharsPointers, pointers array to char*
-   @param[out] tokensCount, number of tokens in charsToSplit
-   @result each element of arrayOfCharsPointers[] contains a token of charsToSplit.
- */
-void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
-		int charsToSplitLength, int tokenLength, int *tokensCount) {
-
-	const char s[2] = ",";
-	char *token;
-
-	char* toTokenize = malloc(charsToSplitLength);
-	strcpy(toTokenize, charsToSplit);
-
-	/* get the first token */
-	token = strtok(toTokenize, s);
-	if (token == NULL)
-	{
-		*tokensCount = 0;
-		free(toTokenize);
-		return;
-	}
-
-	/* walk through other tokens */
-	int i = 0;
-	while( token != NULL ) {
-		arrayOfCharsPointers[i] = malloc(tokenLength);
-		arrayOfCharsPointers[i] = strcpy(arrayOfCharsPointers[i], token);
-		token = strtok(NULL, s);
-		i++;
-	}
-
-	*tokensCount = i;
-	free(toTokenize);
-}
-
-/**
-   Converts a DD version to an integer.
-   @param[in] nbc_version, the DD version to be converted
-              e.g nbc_version="3.26.0" will be converted to 3260
-   @result the conversion.
- */
-int convertDDVersionToInt(char* nbc_version) {
-	int version = 0;
-	const char s[2] = ".";
-	char *token;
-
-	token = strtok(nbc_version, s);
-	if (token == NULL)
-	{
-		return version;
-	}
-	/* walk through other tokens */
-	char* c = malloc(10);
-	strcpy(c, "");
-	while( token != NULL ) {
-		if (!isNumeric(token))
-			break;
-		c = strcat(c, token);
-		token = strtok(NULL, s);
-	}
-	int v = atoi(c);
-	free(c);
-	free(token);
-	return v;
-}
-
-int isNumeric (const char * s)
-{
-	if (s == NULL || *s == '\0' || isspace(*s))
-		return 0;
-	char * p;
-	strtod (s, &p);
-	return *p == '\0';
 }
 
 /**
@@ -487,17 +413,19 @@ int isNumeric (const char * s)
    @param[in] dataDictionaryVersion read in 'ids_properties/version_put/data_dictionary'
    @param[out] path, contains the result.
  */
-void getNodePath(char* path, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
-		char* ancestors_change_nbc_previous_names[], char* dataDictionaryVersion, int k) {
+void getNodePath(char* path,
+		int ancestors_count,
+		char* ancestors_names[],
+		char* ancestors_change_nbc_versions[],
+		char* ancestors_change_nbc_previous_names[],
+		char* dataDictionaryVersion,
+		int k) {
 
-	char* dd_version = malloc(ANCESTOR_VERSION_MAX_LENGTH);
 	char* pathTokens[ancestors_count];
 	char* nbc_versions[NBC_VERSIONS_MAX_COUNT];
 	char* nbc_previous_names[NBC_VERSIONS_MAX_COUNT];
 	char* pathToken =  malloc(ANCESTOR_NAME_MAX_LENGTH);
 
-	strcpy(dd_version, dataDictionaryVersion);
-	int dataDictionaryVersionInt = convertDDVersionToInt(dd_version);
 	int i;
 
 	path = strcpy(path, "");
@@ -515,15 +443,16 @@ void getNodePath(char* path, int ancestors_count, char* ancestors_names[], char*
 
 		int j;
 		for (j = 0; j < nbc_versions_count; j++) {
-			char* nbc_version_char = nbc_versions[j];
-			int nbc_version = convertDDVersionToInt(nbc_version_char);
-			if ((nbc_version != 0) && (dataDictionaryVersionInt < nbc_version || dataDictionaryVersionInt==0)) {
+			//printf("nbc_version = %s\n", nbc_versions[j]);
+			//printf("dataDictionaryVersion = %s\n", dataDictionaryVersion);
+			if ((strcmp(nbc_versions[j], "") != 0) && (strcmp(dataDictionaryVersion, nbc_versions[j]) < 0 || strcmp(dataDictionaryVersion, "") == 0)) {
 				//printf("aos/structure/field name has been patched to = %s\n", nbc_previous_names[j]);
 				pathToken = strcpy(pathToken, nbc_previous_names[j]);
 			}
 			else {
 				//printf("DD version not patched\n");
 			}
+			free(nbc_versions[j]);
 			free(nbc_previous_names[j]);
 		}
 		if (strcmp(pathToken, "") != 0) {
@@ -565,8 +494,13 @@ void getNodePath(char* path, int ancestors_count, char* ancestors_names[], char*
    @param[in] dataDictionaryVersion read in 'ids_properties/version_put/data_dictionary'
    @param[out] path, contains the result.
  */
-void getFieldRelativePath(char* relativePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
-		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion) {
+void getFieldRelativePath(char* relativePath,
+		int ancestors_count,
+		char* ancestors_names[],
+		char* ancestors_change_nbc_versions[],
+		char* ancestors_change_nbc_previous_names[],
+		char* ancestors_data_types[],
+		char* dataDictionaryVersion) {
 	int k= getIndexAfterFirstStructArrayAncestor(ancestors_data_types, ancestors_count);
 	getNodePath(relativePath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names,dataDictionaryVersion, k);
 }
@@ -586,23 +520,30 @@ void getFieldRelativePath(char* relativePath, int ancestors_count, char* ancesto
    @param[in] dataDictionaryVersion read in 'ids_properties/version_put/data_dictionary'
    @param[out] path, contains the result.
  */
-void getTimeBasePath(char* timebasePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
-		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion) {
+void getTimeBasePath(char* timebasePath,
+		int ancestors_count,
+		char* ancestors_names[],
+		char* ancestors_change_nbc_versions[],
+		char* ancestors_change_nbc_previous_names[],
+		char* ancestors_data_types[],
+		char* dataDictionaryVersion) {
+
 	int k = getIndexAfterFirstStructArrayAncestor(ancestors_data_types, ancestors_count);
-	char* path = malloc(IMAS_PATH_MAX_LENGTH);
-	getFieldRelativePath(path, ancestors_count, ancestors_names, ancestors_change_nbc_versions,
-			ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);
 	if (k == 0)
-		timebasePath = strcpy(timebasePath, "/time");
+		timebasePath = strdup("/time");
 	else {
+		char* path = malloc(IMAS_PATH_MAX_LENGTH);
+			getFieldRelativePath(path, ancestors_count, ancestors_names, ancestors_change_nbc_versions,
+					ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);
 		if (strcmp(path, "") == 0)
-			timebasePath = strcpy(timebasePath, "/time");
+			timebasePath = strdup("/time");
 		else {
 			timebasePath = strcpy(timebasePath, path);
 			timebasePath = strcat(timebasePath, "/time");
 		}
+		free(path);
 	}
-	free(path);
+
 }
 
 /**
@@ -619,6 +560,46 @@ int getIndexAfterFirstStructArrayAncestor(char* ancestors_data_types[], int ance
 			structarrayAncestorIndex = i + 1;
 	}
 	return structarrayAncestorIndex;
+}
+
+/**
+   Extract all tokens from a comma separated strings.
+   @param[in] charsToSplit, char* containing comma separated strings
+   @param[in] charsToSplitLength, length of charsToSplit
+   @param[in] tokenLength, max length of each expected token from charsToSplit
+   @param[out] arrayOfCharsPointers, pointers array to char*
+   @param[out] tokensCount, number of tokens in charsToSplit
+   @result each element of arrayOfCharsPointers[] contains a token of charsToSplit.
+ */
+void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
+		int charsToSplitLength, int tokenLength, int *tokensCount) {
+
+	const char s[2] = ",";
+	char *token;
+
+	char* toTokenize = malloc(charsToSplitLength);
+	strcpy(toTokenize, charsToSplit);
+
+	/* get the first token */
+	token = strtok(toTokenize, s);
+	if (token == NULL)
+	{
+		*tokensCount = 0;
+		free(toTokenize);
+		return;
+	}
+
+	/* walk through other tokens */
+	int i = 0;
+	while( token != NULL ) {
+		arrayOfCharsPointers[i] = malloc(tokenLength);
+		arrayOfCharsPointers[i] = strcpy(arrayOfCharsPointers[i], token);
+		token = strtok(NULL, s);
+		i++;
+	}
+
+	*tokensCount = i;
+	free(toTokenize);
 }
 
 /**
