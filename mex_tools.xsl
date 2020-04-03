@@ -41,10 +41,10 @@
 		            <xsl:when test="ancestor::field[@data_type='struct_array']">
 		                <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
 				 		<xsl:variable name="elementPath" select="@path"/>
-				 		<xsl:text>field.fieldPath=strdup(&quot;</xsl:text><xsl:value-of select="replace($elementPath,concat($AoSPath,'/'),'')"/>&quot;);
+				 		<xsl:text>strcpy(field.fieldPath,&quot;</xsl:text><xsl:value-of select="replace($elementPath,concat($AoSPath,'/'),'')"/>&quot;);
 		            </xsl:when>
 		            <xsl:otherwise>
-		                <xsl:text>field.fieldPath=strdup(&quot;</xsl:text><xsl:value-of select="@path"/>&quot;);
+		                <xsl:text>strcpy(field.fieldPath, &quot;</xsl:text><xsl:value-of select="@path"/>&quot;);
 		            </xsl:otherwise>
                </xsl:choose>
 	       </xsl:when>
@@ -69,12 +69,12 @@
 		       <xsl:choose>
 		            <xsl:when test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
 		                <xsl:text>if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) {&#xA;</xsl:text> 
-		                <xsl:text>&#032;field.timebasePath=strdup("/time");&#xA;</xsl:text>
+		                <xsl:text>&#032;strcpy(field.timebasePath, "/time");&#xA;</xsl:text>
 		                <xsl:text>&#032;}&#xA;</xsl:text>
 		                <xsl:text>else{&#xA;</xsl:text>
 		                <xsl:choose>
-					         <xsl:when test="$ignore_nbc_change=1">
-					           <xsl:text>&#032;field.timebasePath=strdup(&quot;</xsl:text><xsl:value-of select="@timebasepath"/><xsl:text>&quot;);}&#xA;</xsl:text>
+					         <xsl:when test="$ignore_nbc_change=1 or not(ancestor::field[@change_nbc_version] or @change_nbc_version)">
+					           <xsl:text>&#032;strcpy(field.timebasePath, &quot;</xsl:text><xsl:value-of select="@timebasepath"/><xsl:text>&quot;);}&#xA;</xsl:text>
 					         </xsl:when>
 					         <xsl:otherwise>
 					           <xsl:text>&#032;getTimeBasePath(field.timebasePath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);}&#xA;</xsl:text>
@@ -82,7 +82,7 @@
 				        </xsl:choose>
 		            </xsl:when>
 		            <xsl:otherwise>
-                		<xsl:text>field.timebasePath = strdup("");&#xA;</xsl:text>
+                		<xsl:text>strcpy(field.timebasePath,"");&#xA;</xsl:text>
             		</xsl:otherwise>
 		        </xsl:choose>
 		<!-- xsl:text>&#032;mexPrintf("field.timebasePath=%s\n", field.timebasePath);&#xA;</xsl:text -->
@@ -97,7 +97,7 @@
 		<xsl:text>char *ancestors_change_nbc_versions[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
 		<xsl:text>char *ancestors_change_nbc_previous_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
 		<xsl:text>int ancestor_index;&#xA;</xsl:text>
-		<xsl:text>int ancestors_count;&#xA;</xsl:text>
+		<xsl:text>int ancestors_count = 0;&#xA;</xsl:text>
 		<xsl:text>int i;&#xA;</xsl:text>
   
         <xsl:text>for (i = 0; i &lt; ANCESTORS_MAX_COUNT; i++) {&#xA;</xsl:text>

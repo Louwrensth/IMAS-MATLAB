@@ -550,7 +550,7 @@ void getTimeBasePath(char* timebasePath,
    Returns the index of the first AOS ancestor of a field node.
    @param[in] ancestors_count, number of ancestors (AOSs, structures) of the node
    @param[in] ancestors_data_types, ancestors_data_types[i] gives the name of the type of the ith ancestor of the node
-   @result index (starting from the root node) of the first ancestor .
+   @result index (starting from the root node) of the first ancestor + 1.
  */
 int getIndexAfterFirstStructArrayAncestor(char* ancestors_data_types[], int ancestors_count) {
 	int structarrayAncestorIndex = 0;
