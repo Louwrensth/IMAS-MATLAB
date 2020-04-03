@@ -270,10 +270,16 @@ al_status_t put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(
     int isEmpty;
 
     action.context = ctx;
-
+    
+    field.fieldPath = malloc(IMAS_PATH_MAX_LENGTH);
+    field.timebasePath = malloc(IMAS_PATH_MAX_LENGTH);
+    
     <xsl:apply-templates select="field" mode="PUT_SINGLE">
       <xsl:with-param name="dynamic_only" select="'yes'"/>
     </xsl:apply-templates>
+    
+    free(field.fieldPath);
+    free(field.timebasePath);
 
     return status;
     }
