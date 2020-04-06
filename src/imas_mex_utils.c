@@ -530,13 +530,13 @@ void getTimeBasePath(char* timebasePath,
 
 	int k = getIndexAfterFirstStructArrayAncestor(ancestors_data_types, ancestors_count);
 	if (k == 0)
-		timebasePath = strdup("/time");
+		timebasePath = strcpy(timebasePath, "/time");
 	else {
 		char* path = malloc(IMAS_PATH_MAX_LENGTH);
 			getFieldRelativePath(path, ancestors_count, ancestors_names, ancestors_change_nbc_versions,
 					ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);
 		if (strcmp(path, "") == 0)
-			timebasePath = strdup("/time");
+			timebasePath = strcpy(timebasePath, "/time");
 		else {
 			timebasePath = strcpy(timebasePath, path);
 			timebasePath = strcat(timebasePath, "/time");
