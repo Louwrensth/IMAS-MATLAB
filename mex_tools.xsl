@@ -98,22 +98,25 @@
 
 <!-- Declare variables which contain data provided by the DD concerning fields, AOSs or structures which have been renamed -->
 <xsl:template name ="declareAndAllocateNBCVariables">
-  <xsl:text>&#xA;</xsl:text>     
-  <xsl:text>char *ancestors_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
-  <xsl:text>char *ancestors_data_types[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
-  <xsl:text>char *ancestors_change_nbc_versions[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
-  <xsl:text>char *ancestors_change_nbc_previous_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
-  <xsl:text>int ancestor_index;&#xA;</xsl:text>
-  <xsl:text>int ancestors_count = 0;&#xA;</xsl:text>
-  <xsl:text>int i;&#xA;</xsl:text>
+  <xsl:variable name="level" select="count(ancestor::field[@data_type='struct_array' or @data_type='struct'])"/>
+  <xsl:if test="ancestor::field[@change_nbc_version] or @change_nbc_version or count(descendant::field[count(ancestor::field[@data_type='struct_array' or @data_type='struct']) = $level and @change_nbc_version]) > 0">
+    <xsl:text>&#xA;</xsl:text>     
+    <xsl:text>char *ancestors_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+    <xsl:text>char *ancestors_data_types[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+    <xsl:text>char *ancestors_change_nbc_versions[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+    <xsl:text>char *ancestors_change_nbc_previous_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
+    <xsl:text>int ancestor_index;&#xA;</xsl:text>
+    <xsl:text>int ancestors_count = 0;&#xA;</xsl:text>
+    <xsl:text>int i;&#xA;</xsl:text>
   
-  <xsl:text>for (i = 0; i &lt; ANCESTORS_MAX_COUNT; i++) {&#xA;</xsl:text>
-  <xsl:text>&#032;ancestors_names[i] = malloc(ANCESTOR_NAME_MAX_LENGTH);&#xA;</xsl:text>
-  <xsl:text>&#032;ancestors_data_types[i] = malloc(ANCESTOR_TYPE_MAX_LENGTH);&#xA;</xsl:text>
-  <xsl:text>&#032;ancestors_change_nbc_versions[i] = malloc(ANCESTORS_VERSIONS_MAX_LENGTH);&#xA;</xsl:text>
-  <xsl:text>&#032;ancestors_change_nbc_previous_names[i] = malloc(ANCESTORS_PREVIOUS_NAMES_MAX_LENGTH);&#xA;</xsl:text>
+    <xsl:text>for (i = 0; i &lt; ANCESTORS_MAX_COUNT; i++) {&#xA;</xsl:text>
+    <xsl:text>&#032;ancestors_names[i] = malloc(ANCESTOR_NAME_MAX_LENGTH);&#xA;</xsl:text>
+    <xsl:text>&#032;ancestors_data_types[i] = malloc(ANCESTOR_TYPE_MAX_LENGTH);&#xA;</xsl:text>
+    <xsl:text>&#032;ancestors_change_nbc_versions[i] = malloc(ANCESTORS_VERSIONS_MAX_LENGTH);&#xA;</xsl:text>
+    <xsl:text>&#032;ancestors_change_nbc_previous_names[i] = malloc(ANCESTORS_PREVIOUS_NAMES_MAX_LENGTH);&#xA;</xsl:text>
   
-  <xsl:text>}&#xA;</xsl:text>
+    <xsl:text>}&#xA;</xsl:text>
+  </xsl:if>
   <xsl:text>field.fieldPath = malloc(IMAS_PATH_MAX_LENGTH);&#xA;</xsl:text>
   <xsl:text>field.timebasePath = malloc(IMAS_PATH_MAX_LENGTH);&#xA;</xsl:text>
   <xsl:text>&#xA;</xsl:text> 
@@ -148,18 +151,17 @@
 
 <!--Free variables which contain data provided by the DD concerning field, AOS or structure renaming-->
 <xsl:template name ="freeNBCVariables">
-  <xsl:choose>
-    <xsl:when test="ancestor::field[@change_nbc_version] or @change_nbc_version">
-      <xsl:text>for (i = 0; i &lt; ANCESTORS_MAX_COUNT; i++) {&#xA;</xsl:text>
-      <xsl:text>&#032;free(ancestors_names[i]);&#xA;</xsl:text>
-      <xsl:text>&#032;free(ancestors_data_types[i]);&#xA;</xsl:text>
-      <xsl:text>&#032;free(ancestors_change_nbc_versions[i]);&#xA;</xsl:text>
-      <xsl:text>&#032;free(ancestors_change_nbc_previous_names[i]);&#xA;</xsl:text>
-      <xsl:text>}&#xA;</xsl:text>
-      <xsl:text>&#032;free(field.fieldPath);&#xA;</xsl:text>
-      <xsl:text>&#032;free(field.timebasePath);&#xA;</xsl:text>
-    </xsl:when>
-  </xsl:choose>
+  <xsl:variable name="level" select="count(ancestor::field[@data_type='struct_array' or @data_type='struct'])"/>
+  <xsl:if test="ancestor::field[@change_nbc_version] or @change_nbc_version or count(descendant::field[count(ancestor::field[@data_type='struct_array' or @data_type='struct']) = $level and @change_nbc_version]) > 0">
+    <xsl:text>for (i = 0; i &lt; ANCESTORS_MAX_COUNT; i++) {&#xA;</xsl:text>
+    <xsl:text>&#032;free(ancestors_names[i]);&#xA;</xsl:text>
+    <xsl:text>&#032;free(ancestors_data_types[i]);&#xA;</xsl:text>
+    <xsl:text>&#032;free(ancestors_change_nbc_versions[i]);&#xA;</xsl:text>
+    <xsl:text>&#032;free(ancestors_change_nbc_previous_names[i]);&#xA;</xsl:text>
+    <xsl:text>}&#xA;</xsl:text>
+  </xsl:if>
+  <xsl:text>&#032;free(field.fieldPath);&#xA;</xsl:text>
+  <xsl:text>&#032;free(field.timebasePath);&#xA;</xsl:text>
 </xsl:template>
 
 <!--Documentation for a single field-->
