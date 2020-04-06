@@ -153,7 +153,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     al_status_t status;
     al_status_t status_end;
     int getOpCtx = -1;
-    char* dataDictionaryVersion;
+    char* dataDictionaryVersion = NULL;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
     
     /* Open get context */
@@ -174,6 +174,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (status.code &lt; 0) {
     addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
     }
+    if (dataDictionaryVersion != NULL) free(dataDictionaryVersion);
 
     return status;
     }
