@@ -121,6 +121,9 @@
     field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;
     status = my_ual_write_data(&amp;action, &amp;field, data);
     }
+    <xsl:if test="starts-with(@path,'ids_properties/version_put/')">
+      mxDestroyArray((mxArray *) data);
+    </xsl:if>
     <xsl:if test="$dynamic_only !='yes' and @type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
       }
     </xsl:if>
