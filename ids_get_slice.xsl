@@ -177,13 +177,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
     char* dataDictionaryVersion = NULL;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
-    /* Open getSlice context */
-    status = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
+    /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
+    int getCtx = -1;
+	status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getCtx);
+    if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion);
+    if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
+    if (status.code >= 0) status = ual_end_action(getCtx);
     
-    if (status.code >= 0) status = getDataDictionaryVersion(getSliceOpCtx, &amp;dataDictionaryVersion);
-    if (status.code >= 0) status = getHomogeneousTimeCtx(getSliceOpCtx, &amp;homogeneousTime);
     if (status.code >= 0) status = init_dataTree_read();
-
+    
+    /* Open getSlice context */
+    if (status.code >= 0) status = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
+    
     if (status.code >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime, dataDictionaryVersion);
     if (getSliceOpCtx > 0) {
     status_end = ual_end_action(getSliceOpCtx);
