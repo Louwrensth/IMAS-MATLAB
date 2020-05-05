@@ -182,7 +182,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getCtx);
     if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
-    if (status.code >= 0) status = ual_end_action(getCtx);
+    if (getCtx > 0) {
+    status_end = ual_end_action(getCtx);
+    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+    }
     
     if (status.code >= 0) status = init_dataTree_read();
     
