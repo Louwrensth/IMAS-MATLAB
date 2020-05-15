@@ -46,6 +46,7 @@ void resetErrMsgIdAndTxt(void)
 void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix)
 {
 	char msgid[MAXERRMSGIDSIZE];
+	char* errtype;
 
 	strncpy(msgid, prefix, strnlen(prefix, MAXERRMSGIDSIZE-1)+1);
 	if (mex_errmsgid != NULL && strnlen(mex_errmsgid, MAXERRMSGIDSIZE-1)) {
@@ -53,7 +54,13 @@ void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix)
 		mexErrMsgIdAndTxt(msgid,mex_errmsgtxt);
 	} else {
 		strncat(msgid, "internal_error", MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
-		mexErrMsgIdAndTxt(msgid,"internal error occured with error code %d%s", status.code, mex_errmsgtxt);
+		if (status.code == HLI_ERR) errtype = "HLI";
+		else if (status.code == LOWLEVEL_ERR) errtype = "LOWLEVEL";
+		else if (status.code == BACKEND_ERR) errtype = "BACKEND";
+		else if (status.code == CONTEXT_ERR) errtype = "CONTEXT";
+		else errtype = "UNKNOWN";
+		
+		mexErrMsgIdAndTxt(msgid,"internal error of type %s occured with message:\n %s%s", errtype, status.message, mex_errmsgtxt);
 	}
 }
 
