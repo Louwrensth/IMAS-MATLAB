@@ -52,7 +52,7 @@ The following additional functions are also provided
         + \link ids_cell_to_struct.c ids_cell_to_struct\endlink
         + \link ids_struct_to_cell.c ids_struct_to_cell\endlink
     - Functions to initialize an IDS structure
-        + \link ids_gen2.c ids_gen2\endlink            (provides empty arrays of structures, whereas ids_gen provides scalar arrays of structures)
+        + \link ids_init.c ids_init\endlink            (provides empty arrays of structures, whereas ids_gen provides scalar arrays of structures)
         + \link ids_allocate.c ids_allocate\endlink        (for allocating arrays of structures)
     - Function to generate an IDS structure with random field values (for tests only)
         + \link ids_rand.c ids_rand\endlink

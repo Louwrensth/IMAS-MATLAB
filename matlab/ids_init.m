@@ -1,4 +1,4 @@
-% ids_gen2(IDSname)
+% ids_init(IDSname)
 % 
 % Generate an IDS of specified type with default field values.
 % 

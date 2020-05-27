@@ -63,7 +63,7 @@ $(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
 $(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
 endef
 
-METHODS = get get_slice put put_slice delete allocate gen gen2 int_to_double double_to_int empty_to_nan nan_to_empty cell_to_struct struct_to_cell rand
+METHODS = get get_slice put put_slice delete allocate gen init int_to_double double_to_int empty_to_nan nan_to_empty cell_to_struct struct_to_cell rand
 
 $(foreach method,$(METHODS),$(eval $(call TEMPLATE,$(method))))
 
@@ -129,7 +129,7 @@ $(put_slice_SRC_FILES):      put_single.xsl
 $(delete_SRC_FILES): 	     delete.xsl
 $(allocate_SRC_FILES):       allocate.xsl
 $(gen_SRC_FILES):            allocate.xsl
-$(gen2_SRC_FILES):           allocate.xsl
+$(init_SRC_FILES):           allocate.xsl
 $(double_to_int_SRC_FILES):  ints_doubles.xsl
 $(int_to_double_SRC_FILES):  ints_doubles.xsl
 $(nan_to_empty_SRC_FILES):   emptys_nans.xsl
