@@ -138,11 +138,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
      void *array;
      mxArray* data;
      int i;
+     size_t pathLength = strlen(pathInIDS);
      status = init_dataTree_array_read(1);
      if (status.code >= 0) status = iterate_dataTree_array(0);
      if (status.code >= 0) {
      <xsl:for-each select=".//field[@data_type='struct_array']">
-       if (!strncmp(pathInIDS, <xsl:value-of select="concat('&quot;',@path,'&quot;, ',string-length(@path))"/>)) {
+       if (pathLength == <xsl:value-of select="string-length(@path)"/> &amp;&amp; !strcmp(pathInIDS, <xsl:value-of select="concat('&quot;',@path,'&quot;')"/>)) {
        <xsl:apply-templates select="field" mode="ALLOCATE"/>
        } else
      </xsl:for-each>
