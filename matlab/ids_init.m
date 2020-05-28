@@ -5,8 +5,7 @@
 % IDSname : name of the IDS to generate.
 %
 % NOTE: The array of structures in the resulting IDS will be
-% empty. This is not as in the previous implementation where they
-% were all of size 1. Use ids_allocate to fill the array of
-% structures.
+% empty. This is not as in ids_gen where they are all of size 1. Use
+% ids_allocate to fill the array of structures.
 %
-% See Also: ids_allocate
+% See also: ids_allocate

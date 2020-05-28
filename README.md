@@ -38,7 +38,9 @@ The standard functions have been implemented:
         + \link ids_put.c ids_put\endlink
         + \link ids_put_slice.c ids_put_slice\endlink
     - Function to initialize an IDS structure
-        + \link ids_gen.c ids_gen\endlink
+        + \link ids_init.c ids_init\endlink            (provides empty arrays of structures, preferred over ids_gen)
+        + \link ids_allocate.c ids_allocate\endlink        (for allocating arrays of structures)
+        + \link ids_gen.c ids_gen\endlink              (provides scalar arrays of structures, deprecated)
 
 The following additional functions are also provided
     - Functions to query/modify the global parameters for the MEX interface (see next section.)
@@ -51,9 +53,6 @@ The following additional functions are also provided
         + \link ids_nan_to_empty.c ids_nan_to_empty\endlink
         + \link ids_cell_to_struct.c ids_cell_to_struct\endlink
         + \link ids_struct_to_cell.c ids_struct_to_cell\endlink
-    - Functions to initialize an IDS structure
-        + \link ids_init.c ids_init\endlink            (provides empty arrays of structures, whereas ids_gen provides scalar arrays of structures)
-        + \link ids_allocate.c ids_allocate\endlink        (for allocating arrays of structures)
     - Function to generate an IDS structure with random field values (for tests only)
         + \link ids_rand.c ids_rand\endlink
 
