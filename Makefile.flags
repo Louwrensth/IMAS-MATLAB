@@ -19,7 +19,7 @@ endif
 
 # Try to guess MATLAB_VERSION from the loaded module
 ifeq ("","$(MATLAB_VERSION)")
-  MATLAB_VERSION=$(shell echo $$LOADEDMODULES | gawk 'BEGIN { RS=":"; FS="/" } tolower($$1) ~ /^matlab/ { gsub("[Rr]",""); print tolower($$2) }')
+  MATLAB_VERSION=$(shell echo $$LOADEDMODULES | gawk 'BEGIN { RS=":"; FS="/" } tolower($$1) ~ /^matlab/ { gsub("[Rr]",""); print tolower($$2) }' | cut -f1 -d"-")
 endif
 
 # Check we have a valid version
