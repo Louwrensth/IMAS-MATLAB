@@ -31,7 +31,7 @@ clean-src: clean
 	$(RM) $(GENSOURCES)
 
 $(GENSOURCES): test_utils.xsl $(IDSDEF)
-	java net.sf.saxon.Transform -t -warnings:fatal -s:$(IDSDEF) -xsl:$<
+	$(SAXON) -t -warnings:fatal -s:$(IDSDEF) -xsl:$<
 
 test:
 	$(test_ENV) matlab -nodisplay -r "addpath ../lib ../matlab;res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
