@@ -25,8 +25,10 @@ List of functions
 The standard functions have been implemented:
     - Functions to open/create/close a pulse file
         + \link imas_open_env.c imas_open_env\endlink
+        + \link imas_open_env_backend.c imas_open_env_backend\endlink
         + \link imas_open_public.c imas_open_public\endlink
         + \link imas_create_env.c imas_create_env\endlink
+        + \link imas_create_env_backend.c imas_create_env_backend\endlink
         + \link imas_create_public.c imas_create_public\endlink
         + \link imas_close.c imas_close\endlink
     - Function to query the backend in use
