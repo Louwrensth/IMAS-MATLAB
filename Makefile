@@ -1,6 +1,6 @@
 include ../Makefile.common
 
-ifeq ("no","$(strip $(IMAS_MEX))")
+ifneq ("yes","$(strip $(IMAS_MEX))")
 all sources sources_install install uninstall clean clean-src:
 	$(warning "Ignoring mexinterface (IMAS_MEX=no).")
 else
