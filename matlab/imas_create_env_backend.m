@@ -1,4 +1,4 @@
-% idx = imas_create_backend(name, shot, run, user, tokamak, version, backend_id)
+% idx = imas_create_env_backend(name, shot, run, user, tokamak, version, backend_id)
 % Create a database in a non-default environment.
 %
 % idx :    database index
