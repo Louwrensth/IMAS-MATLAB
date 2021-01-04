@@ -51,6 +51,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (!mxIsChar(prhs[4])) {
         mexErrMsgIdAndTxt("IMAS:imas_open_env_backend:notChar", "Input version must be a string.");
     }
+    /* make sure the 6th input argument is scalar */
     if (!mxIsNumeric(prhs[5]) || !mxIsScalar(prhs[5])) {
         mexErrMsgIdAndTxt("IMAS:imas_open_env_backend:notScalar", "Backend id must be a scalar.");
     }
