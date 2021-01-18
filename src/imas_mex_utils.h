@@ -104,7 +104,7 @@ al_status_t mxArray_default_value(int datatype, int dim, mxArray **data);
 
 al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime);
 
-al_status_t getDataDictionaryVersion(int ctx, char **data_dictionary);
+al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary, bool *tagged_version);
 
 al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArray **data);
 

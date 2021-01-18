@@ -154,12 +154,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
     al_status_t status_end;
     int getOpCtx = -1;
     char* dataDictionaryVersion = NULL;
+	bool taggedDataDictionaryVersion = false;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
     
     /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
     int getCtx = -1;
     status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getCtx);
-    if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion);
+	if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion, &amp;taggedDataDictionaryVersion);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
     if (getCtx > 0) {
     status_end = ual_end_action(getCtx);
@@ -171,7 +172,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     /* Open get context */
     if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getOpCtx);
 
-    if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion);
+	if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
     if (getOpCtx > 0) {
     status_end = ual_end_action(getOpCtx);
     if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
@@ -195,11 +196,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
-al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion);</xsl:template>
+	al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
   <xsl:call-template name="COMMENT_FIELD"/>
-  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion)
+  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)
   {
   struct imas_mex_actionInfo action;
   struct imas_mex_fieldInfo field;

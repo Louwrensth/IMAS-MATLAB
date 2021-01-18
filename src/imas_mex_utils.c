@@ -385,8 +385,9 @@ al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
    @param[out] data_dictionary Value of ids_properties/version_put/data_dictionary.
    @result error status.
  */
-al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary)
+al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary, bool *tagged_version)
 {
+	*tagged_version = true;
 	al_status_t status;
 	char *fieldPath = "ids_properties/version_put/data_dictionary";
 	char *timebasePath = "";
@@ -400,6 +401,9 @@ al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary)
 		memset(*data_dictionary, 0, retSize[0] + 1);
 		strncpy(*data_dictionary, szTemp, retSize[0]);
 		free(szTemp);
+		if (strstr(*data_dictionary, "-") != NULL) {
+    		*tagged_version = false;
+		}
 	}
 	return status;
 }
@@ -450,14 +454,14 @@ void getNodePath(char* path,
 
 		int j;
 		for (j = 0; j < nbc_versions_count; j++) {
-			//printf("nbc_version = %s\n", nbc_versions[j]);
-			//printf("dataDictionaryVersion = %s\n", dataDictionaryVersion);
+			printf("nbc_version = %s\n", nbc_versions[j]);
+			printf("dataDictionaryVersion = %s\n", dataDictionaryVersion);
 			if ((strcmp(nbc_versions[j], "") != 0) && (strcmp(dataDictionaryVersion, nbc_versions[j]) < 0 || strcmp(dataDictionaryVersion, "") == 0)) {
-				//printf("aos/structure/field name has been patched to = %s\n", nbc_previous_names[j]);
+				printf("aos/structure/field name has been patched to = %s\n", nbc_previous_names[j]);
 				pathToken = strcpy(pathToken, nbc_previous_names[j]);
 			}
 			else {
-				//printf("DD version not patched\n");
+				printf("DD version not patched\n");
 			}
 			free(nbc_versions[j]);
 			free(nbc_previous_names[j]);
