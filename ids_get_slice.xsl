@@ -217,7 +217,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE_H">
-	al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
+  al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE">
   <xsl:call-template name="COMMENT_FIELD"/>

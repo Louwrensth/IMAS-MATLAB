@@ -51,9 +51,9 @@
     <xsl:otherwise>
       <xsl:choose>
 	<xsl:when test="ancestor::field[@data_type='struct_array']">
-		<xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
-	    <xsl:variable name="elementPath" select="@path"/>
-		<xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
+	  <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
+	  <xsl:variable name="elementPath" select="@path"/>
+	  <xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
 	  <xsl:text>getFieldRelativePath(field.fieldPath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);&#xA;</xsl:text>
 	  <xsl:text>&#032;}&#xA;</xsl:text>
       <xsl:text>else{&#xA;</xsl:text>
@@ -61,7 +61,7 @@
 	  <xsl:text>}&#xA;</xsl:text>
 	</xsl:when>
 	<xsl:otherwise>
-		<xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
+	  <xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
 	  <xsl:text>getNodePath(field.fieldPath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, dataDictionaryVersion, 0);&#xA;</xsl:text>
 	  <xsl:text>&#032;}&#xA;</xsl:text>
       <xsl:text>else{&#xA;</xsl:text>
@@ -89,7 +89,7 @@
 		<xsl:call-template name="generateTimebasePath_strcpy"/>
 	</xsl:when>
 	<xsl:otherwise>
-		<xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
+	  <xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
 	  <xsl:text>&#032;getTimeBasePath(field.timebasePath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);&#xA;</xsl:text>
 	  <xsl:text>&#032;}&#xA;</xsl:text>
 	  <xsl:text>else{&#xA;</xsl:text>

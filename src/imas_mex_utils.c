@@ -454,14 +454,14 @@ void getNodePath(char* path,
 
 		int j;
 		for (j = 0; j < nbc_versions_count; j++) {
-			printf("nbc_version = %s\n", nbc_versions[j]);
-			printf("dataDictionaryVersion = %s\n", dataDictionaryVersion);
+			//printf("nbc_version = %s\n", nbc_versions[j]);
+			//printf("dataDictionaryVersion = %s\n", dataDictionaryVersion);
 			if ((strcmp(nbc_versions[j], "") != 0) && (strcmp(dataDictionaryVersion, nbc_versions[j]) < 0 || strcmp(dataDictionaryVersion, "") == 0)) {
-				printf("aos/structure/field name has been patched to = %s\n", nbc_previous_names[j]);
+				//printf("aos/structure/field name has been patched to = %s\n", nbc_previous_names[j]);
 				pathToken = strcpy(pathToken, nbc_previous_names[j]);
 			}
 			else {
-				printf("DD version not patched\n");
+				//printf("DD version not patched\n");
 			}
 			free(nbc_versions[j]);
 			free(nbc_previous_names[j]);
