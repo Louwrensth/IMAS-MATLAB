@@ -385,8 +385,9 @@ al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
    @param[out] data_dictionary Value of ids_properties/version_put/data_dictionary.
    @result error status.
  */
-al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary)
+al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary, bool *tagged_version)
 {
+	*tagged_version = true;
 	al_status_t status;
 	char *fieldPath = "ids_properties/version_put/data_dictionary";
 	char *timebasePath = "";
@@ -400,6 +401,9 @@ al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary)
 		memset(*data_dictionary, 0, retSize[0] + 1);
 		strncpy(*data_dictionary, szTemp, retSize[0]);
 		free(szTemp);
+		if (strstr(*data_dictionary, "-") != NULL) {
+    		*tagged_version = false;
+		}
 	}
 	return status;
 }

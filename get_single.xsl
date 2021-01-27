@@ -53,7 +53,7 @@
       if (status.code >= 0) status = begin_dataTree_array_read("<xsl:value-of select="@name"/>", aosArraySize);
       for (int i=0; i&lt;aosArraySize; i++) {
       if (status.code >= 0) status = iterate_dataTree_array(i);
-      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, dataDictionaryVersion);
+	  if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
       if (status.code >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
@@ -72,7 +72,7 @@
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
       status = begin_dataTree_read("<xsl:value-of select="@name"/>");
-      if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, dataDictionaryVersion);
+	  if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
       /* Finished processing structure <xsl:value-of select="@name"/> */
       if (status.code >= 0) status = end_dataTree_action();
       /* Error handling */
