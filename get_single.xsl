@@ -39,8 +39,8 @@
         <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
   	  </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
-  		<xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
-  	  </xsl:call-template>
+        <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
+      </xsl:call-template>
       <xsl:if test="@type='dynamic'">
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
