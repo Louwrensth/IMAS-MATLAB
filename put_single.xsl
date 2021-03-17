@@ -42,10 +42,11 @@
       </xsl:if>
       <xsl:call-template name="generateNodePath">
         <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
-  	  </xsl:call-template>
+      </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
         <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
       </xsl:call-template>
+      aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
 
       status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
       if (status.code >= 0 &amp;&amp; aosArraySize &gt; 0) {
