@@ -42,14 +42,15 @@
       </xsl:if>
       <xsl:call-template name="generateNodePath">
         <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
-  	  </xsl:call-template>
+      </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
-  		<xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
-  	  </xsl:call-template>
-      
+        <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+      </xsl:call-template>
+      aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
+
       status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
-      if (aosArraySize &gt; 0) {
-      if (status.code >= 0) status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
+      if (status.code >= 0 &amp;&amp; aosArraySize &gt; 0) {
+      status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
       for (int i=0; i&lt;aosArraySize; i++) {
       if (status.code >= 0) status = iterate_dataTree_array(i);
       if (status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);

@@ -37,10 +37,11 @@
       <xsl:call-template name="setNBCVariables"/>
       <xsl:call-template name="generateNodePath">
         <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
-  	  </xsl:call-template>
+      </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
-  		<xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
-  	  </xsl:call-template>
+        <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
+      </xsl:call-template>
+      aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
       <xsl:if test="@type='dynamic'">
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
