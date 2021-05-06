@@ -10,12 +10,13 @@ classdef imas_unit_tests < matlab.unittest.TestCase
     % useCache = struct('yes',true,'no',false); % Disabled for now ...
     useCache = struct('no',false);
     homogeneousTime = struct('yes',true,'no',false);
+    backend = struct('MDSplus',12,'HDF5',13);
   end
 
   %% Class-level setup
   methods (TestClassSetup)
-    function createIMASDb(testCase, useCache,homogeneousTime)
-      idx = imas_create_env('ids',9999,9999,0,0,getenv('USER'),'test','3');
+    function createIMASDb(testCase,backend,useCache,homogeneousTime)
+      idx = imas_create_env_backend(9999,9999,getenv('USER'),'test','3',backend);
       testCase.addTeardown(@imas_close,idx);
       if useCache
         imas_enable_mem_cache(idx);
