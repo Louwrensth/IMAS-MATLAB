@@ -22,6 +22,8 @@ program run_perf_f90
   character(len = 132) :: user
   character(len = 132) :: tokamak
   character(len = 132) :: dataversion
+  character(STRMAXLEN) :: uri
+  type(C_PTR) :: cptr
   integer :: ntime
 
   integer :: run_new
@@ -61,7 +63,8 @@ program run_perf_f90
      ! ######################################################
      !                          GET
      ! ######################################################
-     call ual_begin_pulse_action(MDSPLUS_BACKEND, shot, run, user, tokamak, dataversion, idxr); 
+     call ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, dataversion, uri, status);
+     call ual_begin_uri_action(uri, idxr, status); 
      if (idxr < 0) then
         call exit(idxr)
      end if
@@ -72,7 +75,8 @@ program run_perf_f90
      end if
 
      run_new = run + 9800;
-     call ual_begin_pulse_action(MDSPLUS_BACKEND, shot, run_new, user, tokamak, dataversion, idxw); 
+     call ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run_new, user, tokamak, dataversion, uri, status);
+     call ual_begin_uri_action(uri, idxw, status); 
      if (idxw < 0) then
         call exit(idxw)
      end if

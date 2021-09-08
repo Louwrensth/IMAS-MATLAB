@@ -73,8 +73,9 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     int idx;
     al_status_t status;
 
-    status = ual_begin_pulse_action(UDA_BACKEND, shot, run, 
-				    "", expName, "", &idx); 
+    char* uri;
+    ual_build_uri_from_legacy_parameters(UDA_BACKEND, shot, run, "", expName, "", szVersion, &uri);
+    status = ual_begin_uri_action(uri, &idx);
 
     if (status.code >= 0)
       status = ual_open_pulse(idx, OPEN_PULSE, "");
