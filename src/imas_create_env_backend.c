@@ -93,7 +93,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     al_status_t status;
 
     char* uri;
-    ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, version, szVersion, &uri);
+    ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, version, &uri);
     status = ual_begin_uri_action(uri, &idx);
 
     if (status.code >= 0)
