@@ -85,9 +85,6 @@ void my_exceptionGetReport(mxArray* exception);
 
 void addIdsPathInfoToErrMsg(const char * idsPathInfo, int force);
 
-void getTimeBasePath(char* timebasePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
-		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion);
-
 void getFieldRelativePath(char* relativePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
 		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion);
 

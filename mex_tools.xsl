@@ -84,35 +84,23 @@
       <xsl:text>&#032;strcpy(field.timebasePath, "/time");&#xA;</xsl:text>
       <xsl:text>&#032;}&#xA;</xsl:text>
       <xsl:text>else{&#xA;</xsl:text>
-      <xsl:choose>
-	<xsl:when test="$ignore_nbc_change=1 or not(ancestor::field[@change_nbc_version] or @change_nbc_version)">
-		<xsl:call-template name="generateTimebasePath_strcpy"/>
-	</xsl:when>
-	<xsl:otherwise>
-	  <xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
-	  <xsl:text>&#032;getTimeBasePath(field.timebasePath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);&#xA;</xsl:text>
-	  <xsl:text>&#032;}&#xA;</xsl:text>
-	  <xsl:text>else{&#xA;</xsl:text>
-	  <xsl:call-template name="generateTimebasePath_strcpy"/>
-	  <xsl:text>&#032;}&#xA;</xsl:text>
-	</xsl:otherwise>
-      </xsl:choose>
+      <xsl:call-template name="generateTimebasePath_strcpy"/>
+      <xsl:text>&#032;}&#xA;</xsl:text>
     </xsl:when>
     <xsl:otherwise>
       <xsl:text>strcpy(field.timebasePath,"");&#xA;</xsl:text>
     </xsl:otherwise>
   </xsl:choose>
   <!-- xsl:text>&#032;mexPrintf("field.timebasePath=%s\n", field.timebasePath);&#xA;</xsl:text -->
-  
 </xsl:template>
 
 <xsl:template name ="generateTimebasePath_strcpy">
 		<xsl:choose>
 			<xsl:when test="@data_type='struct_array'">
-				<xsl:text>&#032;strcpy(field.timebasePath, &quot;</xsl:text><xsl:value-of select="@path"/><xsl:text>/time&quot;);}&#xA;</xsl:text>
+				<xsl:text>&#032;strcpy(field.timebasePath, &quot;</xsl:text><xsl:value-of select="@path"/><xsl:text>/time&quot;);&#xA;</xsl:text>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:text>&#032;strcpy(field.timebasePath, &quot;</xsl:text><xsl:value-of select="@timebasepath"/><xsl:text>&quot;);}&#xA;</xsl:text>
+				<xsl:text>&#032;strcpy(field.timebasePath, &quot;</xsl:text><xsl:value-of select="@timebasepath"/><xsl:text>&quot;);&#xA;</xsl:text>
 			</xsl:otherwise>
 		</xsl:choose>
 </xsl:template>	
@@ -141,6 +129,9 @@
   </xsl:if>
   <xsl:text>field.fieldPath = malloc(IMAS_PATH_MAX_LENGTH);&#xA;</xsl:text>
   <xsl:text>field.timebasePath = malloc(IMAS_PATH_MAX_LENGTH);&#xA;</xsl:text>
+  <xsl:text>strcpy(field.fieldPath, "");&#xA;</xsl:text>
+  <xsl:text>strcpy(field.timebasePath, "");&#xA;</xsl:text>
+
   <xsl:text>&#xA;</xsl:text> 
 </xsl:template>
 

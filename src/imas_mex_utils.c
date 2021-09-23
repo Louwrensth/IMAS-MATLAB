@@ -517,47 +517,6 @@ void getFieldRelativePath(char* relativePath,
 }
 
 /**
-   Returns the timebase path of a field node from NBC data provided by the DD.
-   @param[in] ancestors_count, number of ancestors (AOSs, structures) of the node
-   @param[in] ancestors_names, ancestors_names[i] gives the name of the ith ancestor of the node (numbering i starts from the root node)
-   @param[in] ancestors_data_types, ancestors_data_types[i] gives the name of the type of the ith ancestor of the node
-   @param[in] ancestors_change_nbc_versions, ancestors_change_nbc_versions[i] gives a comma separated list of DD versions
-              where renaming of the ith ancestor of the node has occurred.
-              e.g. ancestors_change_nbc_versions[1] = "3.24.0,3.25.0,3.26.0" refers to 3 versions
-              where the 2nd ancestor (starting from the root node) of the node has been renamed
-   @param[in] ancestors_change_nbc_previous_names, ancestors_change_nbc_previous_names[i] gives a comma separated list of names
-              of the 2nd ancestor of this node in previous versions of the DD given by ancestors_change_nbc_versions[i]
-              e.g. ancestors_change_nbc_previous_names[2] = "name_3240,name_3250,name_3260"
-   @param[in] dataDictionaryVersion read in 'ids_properties/version_put/data_dictionary'
-   @param[out] path, contains the result.
- */
-void getTimeBasePath(char* timebasePath,
-		int ancestors_count,
-		char* ancestors_names[],
-		char* ancestors_change_nbc_versions[],
-		char* ancestors_change_nbc_previous_names[],
-		char* ancestors_data_types[],
-		char* dataDictionaryVersion) {
-
-	int k = getIndexAfterFirstStructArrayAncestor(ancestors_data_types, ancestors_count);
-	if (k == 0)
-		timebasePath = strcpy(timebasePath, "/time");
-	else {
-		char* path = malloc(IMAS_PATH_MAX_LENGTH);
-			getFieldRelativePath(path, ancestors_count, ancestors_names, ancestors_change_nbc_versions,
-					ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);
-		if (strcmp(path, "") == 0)
-			timebasePath = strcpy(timebasePath, "/time");
-		else {
-			timebasePath = strcpy(timebasePath, path);
-			timebasePath = strcat(timebasePath, "/time");
-		}
-		free(path);
-	}
-
-}
-
-/**
    Returns the index of the first AOS ancestor of a field node.
    @param[in] ancestors_count, number of ancestors (AOSs, structures) of the node
    @param[in] ancestors_data_types, ancestors_data_types[i] gives the name of the type of the ith ancestor of the node
