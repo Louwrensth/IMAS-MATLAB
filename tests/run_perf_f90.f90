@@ -64,24 +64,16 @@ program run_perf_f90
      !                          GET
      ! ######################################################
      call ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, dataversion, uri, status);
-     call ual_begin_uri_action(uri, idxr, status); 
-     if (idxr < 0) then
-        call exit(idxr)
-     end if
 
-     call ual_open_pulse(idxr, OPEN_PULSE, '', status);
+     call ual_begin_dataentry_action(uri, OPEN_PULSE, idxr, status);
      if (status < 0) then
         call exit(status)
      end if
 
      run_new = run + 9800;
      call ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run_new, user, tokamak, dataversion, uri, status);
-     call ual_begin_uri_action(uri, idxw, status); 
-     if (idxw < 0) then
-        call exit(idxw)
-     end if
 
-     call ual_open_pulse(idxw, CREATE_PULSE, '', status);
+     call ual_begin_dataentry_action(uri, CREATE_PULSE, idxw, status);
      if (status < 0) then
         call exit(status)
      end if

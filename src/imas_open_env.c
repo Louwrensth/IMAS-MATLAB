@@ -94,10 +94,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     char* uri;
     ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, version, &uri);
-    status = ual_begin_uri_action(uri, &idx);
-
-    if (status.code >= 0)
-      status = ual_open_pulse(idx, OPEN_PULSE, "");
+    status = ual_begin_dataentry_action(uri, OPEN_PULSE, &idx);
 
     if (status.code < 0)
       mexErrMsgIdAndTxt("IMAS:imas_open_env:Failed", "Error opening imas shot %d, run %d\n\tuser %s, tokamak %s, version %s:\n\t%s", shot, run, user, tokamak, version, status.message);

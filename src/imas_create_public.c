@@ -93,10 +93,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     char* uri;
     ual_build_uri_from_legacy_parameters(UDA_BACKEND, shot, run, "", expName, "", &uri);
-    status = ual_begin_uri_action(uri, &idx);
-
-    if (status.code >= 0)
-      status = ual_open_pulse(idx, FORCE_CREATE_PULSE, "");
+    status = ual_begin_dataentry_action(uri, FORCE_CREATE_PULSE, &idx);
 
     if (status.code != 0)
       mexErrMsgIdAndTxt("IMAS:imas_create_public:Failed", "Error creating imas shot %d, run %d expName %s:\n\t%s", shot, run, expName, status.message);
