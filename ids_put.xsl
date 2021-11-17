@@ -196,7 +196,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     /* Open put context */
     if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, WRITE_OP, &amp;putOpCtx);
 
-    if (status.code >= 0) status = put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putOpCtx, homogeneousTime);
+    if (status.code >= 0) status = put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putOpCtx, homogeneousTime, idsFullName);
     if (putOpCtx > 0) {
     status_end = ual_end_action(putOpCtx);
     if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
@@ -217,10 +217,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT_H">
-al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime);</xsl:template>
+al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT">
-al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime)
+al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName)
     {
     struct imas_mex_actionInfo action;
     struct imas_mex_fieldInfo field;
