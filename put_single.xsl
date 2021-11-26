@@ -53,7 +53,7 @@
       status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
       for (int i=0; i&lt;aosArraySize; i++) {
       if (status.code >= 0) status = iterate_dataTree_array(i);
-      if (status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime);
+      if (status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, idsFullName);
       if (status.code >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
@@ -76,7 +76,7 @@
   <!--========== Regular structure ===========-->
     <xsl:when test="@data_type='structure'">
       status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
-      if (!isEmpty &amp;&amp; status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime);
+      if (!isEmpty &amp;&amp; status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(ctx, homogeneousTime, idsFullName);
       /* Finished processing structure <xsl:value-of select="@name"/> */
       if (status.code >= 0) status = end_dataTree_action();
       /* Error handling */
@@ -120,7 +120,7 @@
   	</xsl:call-template>
     field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
     field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;
-    status = my_ual_write_data(&amp;action, &amp;field, data);
+    status = my_ual_write_data(&amp;action, &amp;field, data, idsFullName, "<xsl:value-of select="@lifecycle_status"/>");
     }
     <xsl:if test="starts-with(@path,'ids_properties/version_put/')">
       mxDestroyArray((mxArray *) data);

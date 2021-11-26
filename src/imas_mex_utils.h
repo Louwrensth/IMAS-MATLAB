@@ -85,9 +85,6 @@ void my_exceptionGetReport(mxArray* exception);
 
 void addIdsPathInfoToErrMsg(const char * idsPathInfo, int force);
 
-void getTimeBasePath(char* timebasePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
-		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion);
-
 void getFieldRelativePath(char* relativePath, int ancestors_count, char* ancestors_names[], char* ancestors_change_nbc_versions[],
 		char* ancestors_change_nbc_previous_names[], char* ancestors_data_types[],  char* dataDictionaryVersion);
 
@@ -97,6 +94,8 @@ void getNodePath(char* path, int ancestors_count, char* ancestors_names[], char*
 int getIndexAfterFirstStructArrayAncestor(char* ancestors_data_types[],  int ancestors_count);
 
 void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit, int charsToSplitLength, int tokenLength, int *tokensCount);
+
+void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, const char* lifeCycleStatus);
 
 int is_field_valid(int datatype, int dim, const mxArray * data);
 
@@ -112,7 +111,7 @@ al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void 
 
 al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data);
 
-al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data);
+al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data, const char* idsName, const char* lifecycle_status);
 /** \endcond */
 
 #endif
