@@ -573,6 +573,18 @@ void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
 }
 
 /**
+   Displays a warning when a DD node has an obsolescent lifecycle_status.
+   @param[in] idsName, char*, name of the IDS
+   @param[in] fieldPath, char*, path to the node
+   @param[out] lifeCycleStatus, char*, data-dictionary lifecycle status
+ */
+void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, const char* lifeCycleStatus)
+{
+    if (strcmp(lifeCycleStatus, "obsolescent") == 0)
+        mexPrintf("Warning : while putting IDS %s, the written IDS has non-empty obsolescent node %s. Please consider updating the code to avoid using obsolescent nodes.\n", idsName, fieldPath);
+}
+
+/**
    Reads a field and stores it in an mxArray object.
    Combines the reading of the field data by the UAL, its encapsulation in an mxArray and its conversion (if needed).
    @param[in] action Information about the current operation.
@@ -642,7 +654,7 @@ al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_me
    @param[in] data mxArray containing the data.
    @result error status.
  */
-al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data)
+al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data, const char* idsName, const char* lifecycle_status)
 {
 
 	al_status_t status = {0,""};
@@ -683,6 +695,8 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 	}
 
 	if (status.code >= 0) status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
+
+    if (status.code >= 0) warningWritingObsolescentNode(idsName, field->fieldPath, lifecycle_status);
 
 	if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
 
