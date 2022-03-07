@@ -580,6 +580,16 @@ void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
  */
 void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, const char* lifeCycleStatus)
 {
+	char* imas_obsolescent_nodes_warning_var = getenv("IMAS_OBSOLESCENT_NODES_WARNING");
+	bool ignore_obsolescent_node_warning = false;
+	if (imas_obsolescent_nodes_warning_var != NULL) {
+	   int v = atoi(imas_obsolescent_nodes_warning_var);
+	   if (v == 0)
+	      ignore_obsolescent_node_warning = true;
+	}
+	if (ignore_obsolescent_node_warning)
+	   return;
+	   
     if (strcmp(lifeCycleStatus, "obsolescent") == 0)
         mexPrintf("Warning : while putting IDS %s, the written IDS has non-empty obsolescent node %s. Please consider updating the code to avoid using obsolescent nodes.\n", idsName, fieldPath);
 }
