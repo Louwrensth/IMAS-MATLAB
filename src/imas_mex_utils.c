@@ -580,14 +580,14 @@ void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
  */
 void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, const char* lifeCycleStatus)
 {
-	char* imas_obsolescent_nodes_warning_var = getenv("IMAS_OBSOLESCENT_NODES_WARNING");
-	bool ignore_obsolescent_node_warning = false;
-	if (imas_obsolescent_nodes_warning_var != NULL) {
-	   int v = atoi(imas_obsolescent_nodes_warning_var);
+	char* imas_disable_obsolescent_warnings_var = getenv("IMAS_DISABLE_OBSOLESCENT_WARNINGS");
+	bool imas_disable_obsolescent_warnings = false;
+	if (imas_disable_obsolescent_warnings_var != NULL) {
+	   int v = atoi(imas_disable_obsolescent_warnings_var);
 	   if (v == 0)
-	      ignore_obsolescent_node_warning = true;
+	      imas_disable_obsolescent_warnings = true;
 	}
-	if (ignore_obsolescent_node_warning)
+	if (imas_disable_obsolescent_warnings)
 	   return;
 	   
     if (strcmp(lifeCycleStatus, "obsolescent") == 0)
