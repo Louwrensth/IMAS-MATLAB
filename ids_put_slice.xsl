@@ -204,11 +204,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (status.code >= 0) {
       /* If no IDS previously stored */
       if (homogeneousTimeStored == IDS_TIME_MODE_UNKNOWN) {
-        mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "Slice is being added to an empty IDS <xsl:value-of select="@name"/>. PUT is called to save time independent data.'");
         sliceOp = 0;
-      }      
+      }
       /* Otherwise check that the stored and new value match */
-      if (homogeneousTimeStored != homogeneousTime) {
+      else if (homogeneousTimeStored != homogeneousTime) { 
         snprintf(mex_errmsgtxt, MAXERRMSGTXTSIZE, "homogeneous_time mode from input IDS <xsl:value-of select="@name"/> (%d) differs from value already stored in database (%d)",homogeneousTime, homogeneousTimeStored);
         msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
         status.code = -5;
