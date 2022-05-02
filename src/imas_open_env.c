@@ -91,41 +91,24 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     int idx;
     al_status_t status;
-
-    int backend = MDSPLUS_BACKEND;
-    char* backend_value = getenv("IMAS_AL_BACKEND");
-    if (backend_value != NULL)
-		backend = atoi(backend_value);
-
+    int backend = get_default_backend();
+    int fallback;
+    
     status = ual_begin_pulse_action(backend, shot, run, 
 				 user, tokamak, version, &idx); 
 
     if (status.code >= 0)
       status = ual_open_pulse(idx, OPEN_PULSE, "");
-    
-    if ( status.code < 0 && (backend == MDSPLUS_BACKEND || backend == HDF5_BACKEND) ) {
-		bool backend_search = false;
-		char* backend_search_var = getenv("IMAS_AL_BACKEND_SEARCH");
-		if (backend_search_var != NULL) {
-		   if (strcmp(backend_search_var, "1") == 0) 
-				backend_search = true;
-		}
-	    if (backend_search) { 
-			int next_backend;
-			if (backend == MDSPLUS_BACKEND)
-				next_backend = HDF5_BACKEND;
-			else 
-				next_backend = MDSPLUS_BACKEND;
-		    mexPrintf("WARNING: Backend search enabled, searching a pulse file with backend %d\n", next_backend);
-			status = ual_begin_pulse_action(next_backend, shot, run, 
-					 user, tokamak, version, &idx); 
-					 
-			if (status.code >= 0)
-				status = ual_open_pulse(idx, OPEN_PULSE, "");
-        }
-        else {
-			//mexPrintf("Backend search disabled...");
-		}
+
+    if ( status.code < 0 ) {
+      fallback = get_fallback_backend();
+      if (fallback != NO_BACKEND) {
+	mexPrintf("WARNING: the pulse file is not available with the backend %d, now attempting to access it with the fallback backend %d\n",backend,fallback);
+	status = ual_begin_pulse_action(fallback, shot, run, 
+					user, tokamak, version, &idx);
+	if (status.code >= 0)
+	  status = ual_open_pulse(idx, OPEN_PULSE, "");
+      }
     }
 
     if (status.code < 0)

@@ -97,6 +97,9 @@ void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit, int charsToSpli
 
 void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, const char* lifeCycleStatus);
 
+int get_default_backend();
+int get_fallback_backend();
+
 int is_field_valid(int datatype, int dim, const mxArray * data);
 
 al_status_t mxArray_default_value(int datatype, int dim, mxArray **data);

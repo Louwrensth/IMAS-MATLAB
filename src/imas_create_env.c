@@ -108,11 +108,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     int idx;
     al_status_t status;
-
-	int backend = MDSPLUS_BACKEND;
-    char* backend_value = getenv("IMAS_AL_BACKEND");
-    if (backend_value != NULL)
-		backend = atoi(backend_value);
+    int backend = get_default_backend();
 		
     status = ual_begin_pulse_action(backend, shot, run, 
 				    user, tokamak, version, &idx); 
