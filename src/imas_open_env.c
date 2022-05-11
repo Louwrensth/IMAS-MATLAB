@@ -91,12 +91,25 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     int idx;
     al_status_t status;
-
-    status = ual_begin_pulse_action(MDSPLUS_BACKEND, shot, run, 
+    int backend = get_default_backend();
+    int fallback;
+    
+    status = ual_begin_pulse_action(backend, shot, run, 
 				 user, tokamak, version, &idx); 
 
     if (status.code >= 0)
       status = ual_open_pulse(idx, OPEN_PULSE, "");
+
+    if ( status.code < 0 ) {
+      fallback = get_fallback_backend();
+      if (fallback != NO_BACKEND) {
+	mexPrintf("WARNING: the pulse file is not available with the backend %d, now attempting to access it with the fallback backend %d\n",backend,fallback);
+	status = ual_begin_pulse_action(fallback, shot, run, 
+					user, tokamak, version, &idx);
+	if (status.code >= 0)
+	  status = ual_open_pulse(idx, OPEN_PULSE, "");
+      }
+    }
 
     if (status.code < 0)
       mexErrMsgIdAndTxt("IMAS:imas_open_env:Failed", "Error opening imas shot %d, run %d\n\tuser %s, tokamak %s, version %s:\n\t%s", shot, run, user, tokamak, version, status.message);

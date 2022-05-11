@@ -108,8 +108,9 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     int idx;
     al_status_t status;
-
-    status = ual_begin_pulse_action(MDSPLUS_BACKEND, shot, run, 
+    int backend = get_default_backend();
+		
+    status = ual_begin_pulse_action(backend, shot, run, 
 				    user, tokamak, version, &idx); 
 
     if (status.code >= 0)
