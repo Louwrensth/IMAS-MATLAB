@@ -27,7 +27,7 @@
 const struct imas_mex_params defaultParams = DEFAULTPARAMS;
 /**
    Global values for the IMAS MEX-files parameters.
-   This is a global variable shared by all MEX-files through the shared library libimas_mex.so.x.y. It is initialised to the default parameters.
+   This is a global variable shared by all MEX-files through the shared library libal_mex.so.x.y. It is initialised to the default parameters.
  */
 struct imas_mex_params params = DEFAULTPARAMS;
 

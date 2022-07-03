@@ -104,6 +104,32 @@ void addIdsPathInfoToErrMsg(const char * pathInfo, int force)
 	}
 }
 
+/** 
+    Gets the default backend ID from environment variable if set. 
+    @result backendID
+*/
+int get_default_backend()
+{
+  int backendID = MDSPLUS_BACKEND;
+  char* backend_value = getenv("IMAS_AL_DEFAULT_BACKEND");
+  if (backend_value != NULL)
+    backendID = atoi(backend_value);
+  return backendID;
+}
+
+/** 
+    Gets the fallback backend ID from environment variable if set. 
+    @result backendID
+*/
+int get_fallback_backend()
+{
+  int backendID = NO_BACKEND;
+  char* backend_value = getenv("IMAS_AL_FALLBACK_BACKEND");
+  if (backend_value != NULL)
+    backendID = atoi(backend_value);
+  return backendID;
+}
+
 /**
    Checks if field has a different value than the default.
    This routine is used for put and put_slice methods before calling ual_write_data, if it returns 0 (false) then ual_write_data will be skipped.
@@ -580,6 +606,16 @@ void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
  */
 void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, const char* lifeCycleStatus)
 {
+	char* imas_disable_obsolescent_warnings_var = getenv("IMAS_DISABLE_OBSOLESCENT_WARNINGS");
+	bool imas_disable_obsolescent_warnings = false;
+	if (imas_disable_obsolescent_warnings_var != NULL) {
+	   int v = atoi(imas_disable_obsolescent_warnings_var);
+	   if (v == 0)
+	      imas_disable_obsolescent_warnings = true;
+	}
+	if (imas_disable_obsolescent_warnings)
+	   return;
+	   
     if (strcmp(lifeCycleStatus, "obsolescent") == 0)
         mexPrintf("Warning : while putting IDS %s, the written IDS has non-empty obsolescent node %s. Please consider updating the code to avoid using obsolescent nodes.\n", idsName, fieldPath);
 }

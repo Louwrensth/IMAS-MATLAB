@@ -1,6 +1,6 @@
 include ../Makefile.common
 
-ifeq ("no","$(strip $(IMAS_MEX))")
+ifneq ("yes","$(strip $(IMAS_MEX))")
 all sources sources_install install uninstall clean clean-src:
 	$(warning "Ignoring mexinterface (IMAS_MEX=no).")
 else
@@ -31,7 +31,7 @@ IDS_SRC_DIR:=$(SRC_DIR)/ids
 INCDIR=-I$(SRC_DIR) -I$(IDS_SRC_DIR) -I../lowlevel
 
 IDSDEF= ../xml/IDSDef.xml
-LIBS=-L../lowlevel -limas
+LIBS=-L../lowlevel -lal
 
 # Check existence of the "indent" utility to get a clean C format
 BEAUTIFY=
@@ -111,7 +111,7 @@ OBJ_FILES+= $(addprefix $(BUILD_DIR)/,$(MEX_SRC_FILES:.c=.o))
 
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_SRC_FILES:.c=.mexa64))
 TARGETS+= $(addprefix $(LIB_DIR)/,$(MEX_IDS_FILES:.c=.mexa64))
-TARGETS+= $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
+TARGETS+= $(LIB_DIR)/libal-mex.so.$(MEX_SO_NUM)
 
 ifneq ("","$(MEXSRC)")
   MEX_ADD_OBJ_FILES = $(addprefix $(BUILD_DIR)/,$(subst .c,.o,$(notdir $(MEXSRC))))
@@ -167,13 +167,13 @@ $(LIB_DIR) $(BUILD_DIR):
 
 $(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o
 $(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix $(BUILD_DIR)/, delete_ids.o put_ids.o)
-$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(MEX_ADD_OBJ_FILES) | $(LIB_DIR) $(LIB_DIR)/libimas-mex.so
-	$(CC) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -limas-mex $(LIBS) $(LDFLAGS)
+$(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(MEX_ADD_OBJ_FILES) | $(LIB_DIR) $(LIB_DIR)/libal-mex.so
+	$(CC) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -lal-mex $(LIBS) $(LDFLAGS)
 
-$(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM): $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FILES:.c=.o)) | $(LIB_DIR)
+$(LIB_DIR)/libal-mex.so.$(MEX_SO_NUM): $(addprefix $(BUILD_DIR)/,$(UTL_SRC_FILES:.c=.o)) | $(LIB_DIR)
 	$(CC) -g -o $@ -shared -Wl,$(SONAME_OPT),$(notdir $@) $^
 
-$(LIB_DIR)/libimas-mex.so: $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM)
+$(LIB_DIR)/libal-mex.so: $(LIB_DIR)/libal-mex.so.$(MEX_SO_NUM)
 	ln -sf $(notdir $<) $@
 
 $(MEX_ADD_OBJ_FILES): $(MEXSRC) | $(BUILD_DIR)
@@ -193,12 +193,12 @@ install: all pkgconfig_install doc_install
 	$(mkdir_p) $(prefix)/mex $(libdir)
 	$(INSTALL) $(filter %.mexa64,$(TARGETS)) $(prefix)/mex
 	$(INSTALL_DATA) $(patsubst $(LIB_DIR)/%,matlab/%,$(patsubst %.mexa64,%.m,$(filter %.mexa64,$(TARGETS)))) matlab/IDS_list.m matlab/nan_to_empty.m matlab/empty_to_nan.m $(prefix)/mex	
-	$(INSTALL) -T $(LIB_DIR)/libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so.$(MEX_SO_NUM)
-	ln -sf libimas-mex.so.$(MEX_SO_NUM) $(libdir)/libimas-mex.so
+	$(INSTALL) -T $(LIB_DIR)/libal-mex.so.$(MEX_SO_NUM) $(libdir)/libal-mex.so.$(MEX_SO_NUM)
+	ln -sf libal-mex.so.$(MEX_SO_NUM) $(libdir)/libal-mex.so
 
 uninstall: sources_uninstall
 	-rm -rf $(prefix)/mex
-	-rm -f $(addprefix $(libdir)/,libimas-mex.so.$(MEX_SO_NUM) libimas-mex.so.$(MEX_SO_NUM) libimas-mex.so)
+	-rm -f $(addprefix $(libdir)/,libal-mex.so.$(MEX_SO_NUM) libal-mex.so.$(MEX_SO_NUM) libal-mex.so)
 	-rm -rf $(docdir)/dev/mexinterface
 
 sources_install: $(SOURCES)

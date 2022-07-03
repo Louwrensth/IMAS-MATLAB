@@ -108,9 +108,10 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     int idx;
     al_status_t status;
-
     char* uri;
-    ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, version, "", &uri);
+    int backend = get_default_backend();
+
+    ual_build_uri_from_legacy_parameters(backend, shot, run, user, tokamak, version, "", &uri);
     status = ual_begin_dataentry_action(uri, FORCE_CREATE_PULSE, &idx);
 
     if (status.code != 0)
