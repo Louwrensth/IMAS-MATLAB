@@ -606,14 +606,12 @@ void splitUtil(char* arrayOfCharsPointers[], char* charsToSplit,
  */
 void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, const char* lifeCycleStatus)
 {
-	char* imas_disable_obsolescent_warnings_var = getenv("IMAS_DISABLE_OBSOLESCENT_WARNINGS");
-	bool imas_disable_obsolescent_warnings = false;
-	if (imas_disable_obsolescent_warnings_var != NULL) {
-	   int v = atoi(imas_disable_obsolescent_warnings_var);
-	   if (v == 0)
-	      imas_disable_obsolescent_warnings = true;
+	char* disable_obsolescent_warning_var = getenv("IMAS_AL_DISABLE_OBSOLESCENT_WARNING");
+	int disable_obsolescent_warning = 0;
+	if (disable_obsolescent_warning_var != NULL) {
+	   disable_obsolescent_warning = atoi(disable_obsolescent_warning_var);
 	}
-	if (imas_disable_obsolescent_warnings)
+	if (disable_obsolescent_warning == 1)
 	   return;
 	   
     if (strcmp(lifeCycleStatus, "obsolescent") == 0)
