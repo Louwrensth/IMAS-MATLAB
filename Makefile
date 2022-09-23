@@ -21,7 +21,7 @@ LDFLAGS+= $(LDFLAGS_EXTRA)
 
 ifeq "$(strip $(CC))" "icc"
  CC=icc
- LDFLAGS=$(filter-out -lm,$LDFLAGS)
+ LDFLAGS:=$(filter-out -lm,$(LDFLAGS))
 endif
 
 BUILD_DIR:=./build
