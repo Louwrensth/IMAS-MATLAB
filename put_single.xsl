@@ -58,8 +58,8 @@
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (aosCtx > 0) {
-      status_end = ual_end_action(aosCtx);
-      if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+      status_end = hli_end_action(aosCtx);
+      if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
       }
       }
       if (status.code >= 0) end_dataTree_array_action();
