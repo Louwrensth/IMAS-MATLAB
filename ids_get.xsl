@@ -159,7 +159,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
     int getCtx = -1;
-    status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getCtx);
+    status = ual_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
 	if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion, &amp;taggedDataDictionaryVersion);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
     if (getCtx > 0) {
@@ -170,7 +170,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if (status.code >= 0) status = init_dataTree_read();
     
     /* Open get context */
-    if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getOpCtx);
+    if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getOpCtx);
 
 	if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
     if (getOpCtx > 0) {
