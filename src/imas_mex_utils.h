@@ -52,6 +52,21 @@ extern const int IDS_TIME_MODE_INDEPENDENT;
 #define ANCESTORS_VERSIONS_MAX_LENGTH 50
 #define IMAS_PATH_MAX_LENGTH 500
 
+#define MAX_TMP_FILES 1000
+// On any recent Linux (2.6 or later according to Wikipedia [1]) the /dev/shm folder exists for shared memory.
+// Since glibc assumes this to exist anyway [2], we will as well.
+// [1] https://en.wikipedia.org/wiki/Shared_memory
+// [2] https://www.kernel.org/doc/Documentation/filesystems/tmpfs.txt
+// On non-Linux, use the current working directory as temporary directory (since /dev/shm does not exist).
+#if defined(__linux__) || defined(__linux) || defined(linux)
+#  define SERIALIZE_TEMPORARY_DIRECTORY "/dev/shm/"
+#else
+#  define SERIALIZE_TEMPORARY_DIRECTORY
+#endif
+
+
+#define RANDOM_NUMBER_LENGTH 9 
+
 /** \endcond */
 
 /**
@@ -76,6 +91,14 @@ extern const char * mex_errmsgid;
 extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
 extern int msglen;
 extern int msg_haspathinfo;
+
+char * itoa(int );
+
+int atoi(const char *);
+
+char* concat(const char *, const char *);
+
+char* generate_tmp_file();
 
 void resetErrMsgIdAndTxt(void);
 
