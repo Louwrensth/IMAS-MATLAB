@@ -192,9 +192,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     /* Open getSlice context */
     if (status.code >= 0) status = hli_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
-    
+    if (status.code >= 0) status = hli_bind_readback_plugins(getSliceOpCtx); //binding readback plugins just before calling the get_slice() operation
 	if (status.code >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
     if (getSliceOpCtx > 0) {
+    if (status.code >= 0) status = hli_unbind_readback_plugins(getSliceOpCtx); //unbinding readback plugins just after callig the get_slice() operation
     status_end = hli_end_action(getSliceOpCtx);
     if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
     }

@@ -171,9 +171,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     /* Open get context */
     if (status.code >= 0) status = hli_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getOpCtx);
-
+    if (status.code >= 0) status = hli_bind_readback_plugins(getOpCtx); //binding readback plugins just before the get() operation
 	if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
     if (getOpCtx > 0) {
+    if (status.code >= 0) status = hli_unbind_readback_plugins(getOpCtx); //unbinding readback plugins just after the get() operation
     status_end = hli_end_action(getOpCtx);
     if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
     }

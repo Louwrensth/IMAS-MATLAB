@@ -198,6 +198,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     if (status.code >= 0) status = put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putOpCtx, homogeneousTime, idsFullName);
     if (putOpCtx > 0) {
+    if (status.code >= 0)  status = hli_write_plugins_metadata(putOpCtx); //writing plugins metadata just after calling the put() operation
     status_end = hli_end_action(putOpCtx);
     if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
     }
