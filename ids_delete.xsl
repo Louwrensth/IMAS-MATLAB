@@ -156,12 +156,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int deleteOpCtx = -1;
 
     /* Open delete context */
-    status = ual_begin_global_action(expIdx, idsFullName, WRITE_OP, &amp;deleteOpCtx);
+    status = hli_begin_global_action(expIdx, idsFullName, WRITE_OP, &amp;deleteOpCtx);
 
     status = delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(deleteOpCtx);
     if (deleteOpCtx > 0) {
-    status_end = ual_end_action(deleteOpCtx);
-    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+    status_end = hli_end_action(deleteOpCtx);
+    if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
     }
     /* Error handling */
     if (status.code &lt; 0) {

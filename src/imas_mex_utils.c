@@ -398,7 +398,7 @@ al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
 	char *timebasePath = "";
 	int retSize[MAXDIM];
 
-	status = ual_read_data(ctx, fieldPath, timebasePath, (void**)&homogeneousTime,
+	status = hli_read_data(ctx, fieldPath, timebasePath, (void**)&homogeneousTime,
 			INTEGER_DATA, 0, &retSize[0]);
 
 	return status;
@@ -419,7 +419,7 @@ al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary, bool *tagg
 	char *timebasePath = "";
 	int retSize[MAXDIM];
 	char* szTemp = NULL;
-	status = ual_read_data(ctx, fieldPath, timebasePath, (void **)&szTemp,
+	status = hli_read_data(ctx, fieldPath, timebasePath, (void **)&szTemp,
 			CHAR_DATA, 1, &retSize[0]);
 	if (status.code==0)
 	{
@@ -647,7 +647,7 @@ al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_me
 			array = malloc(sizeof(double _Complex));
 	}
 
-	status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
+	status = hli_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
 
 	if (status.code >= 0) status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
 
@@ -706,8 +706,12 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 			if (mxIsNumeric(data) && mxIsDouble(data)) {
 				if (status.code >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
 				/* Check again field validity */
-				if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data))
-					return (al_status_t) {0,""};
+				if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data)) {
+					//return (al_status_t) {0,""};
+				    status = hli_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
+				    return status;
+				}
+				
 			}
 		}
 
@@ -716,8 +720,11 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 			if (mxIsNumeric(data) && mxIsDouble(data)) {
 				if (status.code >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
 				/* Check again field validity */
-				if (status.code >= 0 &&!is_field_valid(field->datatype, field->dim, data))
-					return (al_status_t) {0,""};
+				if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data)) {
+					//return (al_status_t) {0,""};
+				    status = hli_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
+				    return status;
+				 }
 			}
 		}
 #endif
@@ -732,7 +739,7 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 
     if (status.code >= 0) warningWritingObsolescentNode(idsName, field->fieldPath, lifecycle_status);
 
-	if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+	if (status.code >= 0) status = hli_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
 
 	/* Clean up memory allocated by data_from_mxArray */
 	if (field->datatype == CHAR_DATA) {

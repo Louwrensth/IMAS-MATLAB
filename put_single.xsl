@@ -49,8 +49,8 @@
       aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
 
       status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
-      if (status.code >= 0 &amp;&amp; aosArraySize &gt; 0) {
-      status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
+      if (status.code >= 0) {
+      status = hli_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
       for (int i=0; i&lt;aosArraySize; i++) {
       if (status.code >= 0) status = iterate_dataTree_array(i);
       if (status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, idsFullName);
@@ -58,8 +58,8 @@
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (aosCtx > 0) {
-      status_end = ual_end_action(aosCtx);
-      if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+      status_end = hli_end_action(aosCtx);
+      if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
       }
       }
       if (status.code >= 0) end_dataTree_array_action();
@@ -111,7 +111,7 @@
 	status = get_data_from_dataTree("<xsl:value-of select="@name"/>", (mxArray **) &amp;data);
       </xsl:otherwise>
     </xsl:choose>
-    if (status.code >= 0 &amp;&amp; is_field_valid(<xsl:value-of select="concat(my:get_datatype(@data_type), ', ', my:get_dim(@data_type))"/>, data)) {
+    if (status.code >= 0) {
     <xsl:call-template name="generateNodePath">
         <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
   	</xsl:call-template>

@@ -194,12 +194,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
     /* Delete existing IDS if any */
     if (status.code >= 0) status = ids_delete_<xsl:value-of select="@name"/>(expIdx, idsFullName);
     /* Open put context */
-    if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, WRITE_OP, &amp;putOpCtx);
+    if (status.code >= 0) status = hli_begin_global_action(expIdx, idsFullName, WRITE_OP, &amp;putOpCtx);
 
     if (status.code >= 0) status = put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putOpCtx, homogeneousTime, idsFullName);
     if (putOpCtx > 0) {
-    status_end = ual_end_action(putOpCtx);
-    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+    if (status.code >= 0)  status = hli_write_plugins_metadata(putOpCtx); //writing plugins metadata just after calling the put() operation
+    status_end = hli_end_action(putOpCtx);
+    if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
     }
     /* Error handling */
     if (status.code &lt; 0) {
