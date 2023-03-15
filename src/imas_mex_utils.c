@@ -26,6 +26,95 @@ char mex_errmsgtxt[MAXERRMSGTXTSIZE];               /*!< Error message */
 int msglen = 0;                                     /*!< Length of the mex_errmsgtxt string */
 int msg_haspathinfo = 0;
 
+
+/**
+   Convert integer to string
+ */
+char * itoa(int num)
+{
+    int i, rem, len = 0, n;
+    
+    n = num;
+    while (n != 0)
+    {
+        len++;
+        n /= 10;
+    }
+    char * str = (char*)malloc(len);
+    for (i = 0; i < len; i++)
+    {
+        rem = num % 10;
+        num = num / 10;
+        str[len - (i + 1)] = rem + '0';
+    }
+    str[len] = '\0';
+    return str;
+}
+
+/**
+   Convert integer to string
+ */
+int atoi(const char *s1)
+{
+    int sign = 1, number = 0, index = 0;
+    if(*s1 == '-'){
+        sign = -1;
+        index = 1;
+    }
+     
+    while(*s1 != '\0'){
+        if(*s1 >= '0' &&  *s1 <= '9'){
+            number = number*10 + *s1 - '0';
+        } else {
+            break;
+        }
+        *s1++;
+    }
+ 
+    number = number * sign;
+    return number;
+}
+
+/**
+   Concatenate two strings
+ */
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); 
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
+
+/**
+   Generate temporary file and return its name
+ */
+char* generate_tmp_file()
+{
+    const char fs_safe_characters[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
+    char * prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";
+    char* fname;
+    FILE *fp;
+    
+    for( int i=0; i<MAX_TMP_FILES; i++)
+    {
+        srand(time(NULL));   // Initialization, should only be called once.
+        int random_number = rand();      // Returns a pseudo-random integer between 0 and RAND_MAX.
+        
+        char* random_number_string = itoa(random_number);
+        char suffix[RANDOM_NUMBER_LENGTH];
+        strncpy(suffix, random_number_string, RANDOM_NUMBER_LENGTH-1);
+        suffix[RANDOM_NUMBER_LENGTH-1] = '\0';
+        fname = concat(prefix, suffix);
+        fp = fopen(fname, "w");
+        fclose(fp);
+        int ret = remove(fname);
+        return fname;
+    }
+    fname = "";
+    return fname;
+}
+
 /**
    Reset global variables for error message
  */
