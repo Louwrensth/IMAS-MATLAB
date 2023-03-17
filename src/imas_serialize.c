@@ -79,19 +79,18 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
         int idx;
         char * options = concat("-fullpath ", tmpfile);
-        status_begin = ual_begin_pulse_action(ASCII_BACKEND, 0, 0, "serialize", "serialize", "3", &idx); 
-
+        char *uri = (char*) malloc(500);
+        status_begin = ual_build_uri_from_legacy_parameters(ASCII_BACKEND, 0, 0, "serialize", "serialize", "3", options, &uri); 
         if (status_begin.code != 0)
         {
-            ual_end_action(idx);
-            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas shot %s",  status_begin.message);
+            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating uri, %s",  status_begin.message);
         }
 
-        status_open = ual_open_pulse(idx, CREATE_PULSE, options);
-
+        status_open = ual_begin_dataentry_action(uri, CREATE_PULSE, &idx); 
+        free(uri);
         if (status_open.code != 0)
         {
-            ual_end_action(idx);
+            hli_end_action(idx);
             mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas shot %s",  status_open.message);
         }
 
@@ -111,7 +110,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         {
             status_close = ual_close_pulse(idx, CLOSE_PULSE, "");
             if (status_close.code >= 0)
-                ual_end_action(idx);
+                hli_end_action(idx);
             else
                 mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error closing pulse %s",  status_close.message);
         }
