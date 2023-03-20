@@ -156,7 +156,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int deleteOpCtx = -1;
 
     /* Open delete context */
-    status = hli_begin_global_action(expIdx, idsFullName, WRITE_OP, &amp;deleteOpCtx);
+    status = hli_begin_global_action(expIdx, idsFullName, "", WRITE_OP, &amp;deleteOpCtx);
 
     status = delete_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(deleteOpCtx);
     if (deleteOpCtx > 0) {

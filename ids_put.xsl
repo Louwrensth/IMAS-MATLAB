@@ -194,7 +194,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     /* Delete existing IDS if any */
     if (status.code >= 0) status = ids_delete_<xsl:value-of select="@name"/>(expIdx, idsFullName);
     /* Open put context */
-    if (status.code >= 0) status = hli_begin_global_action(expIdx, idsFullName, WRITE_OP, &amp;putOpCtx);
+    if (status.code >= 0) status = hli_begin_global_action(expIdx, idsFullName, "", WRITE_OP, &amp;putOpCtx);
 
     if (status.code >= 0) status = put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putOpCtx, homogeneousTime, idsFullName);
     if (putOpCtx > 0) {

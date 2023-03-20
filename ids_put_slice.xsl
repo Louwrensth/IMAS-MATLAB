@@ -199,7 +199,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
     /* Check stored homogeneousTime mode */
     /* Open read context */
-    if (status.code >= 0) status = hli_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getOpCtx);
+    if (status.code >= 0) status = hli_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getOpCtx);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTimeStored);
     if (status.code >= 0) {
       /* If no IDS previously stored */

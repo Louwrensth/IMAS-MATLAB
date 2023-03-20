@@ -180,7 +180,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
     int getCtx = -1;
-	status = hli_begin_global_action(expIdx, idsFullName, READ_OP, &amp;getCtx);
+	status = hli_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
 	if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion, &amp;taggedDataDictionaryVersion);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
     if (getCtx > 0) {
