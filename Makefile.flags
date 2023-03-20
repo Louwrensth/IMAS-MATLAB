@@ -26,7 +26,7 @@ endif
 ifeq ("","$(MATLAB_VERSION)")
   $(error Empty MATLAB_VERSION variable . Please specify your MATLAB version using the MATLAB_VERSION variable.)
 endif
-TESTED_VERSIONS=2008b 2010a 2010b 2011a 2011b 2012a 2012b 2013a 2013b 2014a 2014b 2015a 2015b 2016a 2016b 2017a 2017b 2018a 2018b 2019a 2020b 2021a
+TESTED_VERSIONS=2019b 2008b 2010a 2010b 2011a 2011b 2012a 2012b 2013a 2013b 2014a 2014b 2015a 2015b 2016a 2016b 2017a 2017b 2018a 2018b 2019a 2020b 2021a
 ifeq ("","$(findstring $(MATLAB_VERSION),$(TESTED_VERSIONS))")
   $(error "This MATLAB version (MATLAB_VERSION: $(MATLAB_VERSION)) has not been tested yet. Please add the necessary compiler information in the Makefile.flags file or use one of the following versions: $(TESTED_VERSIONS).")
 endif
@@ -138,7 +138,7 @@ endif
 # R2019a 9.6.0
 # R2020b 9.9.0
 # R2021a 9.10.0
-ifneq ("","$(findstring $(MATLAB_VERSION),2018b 2019a 2020b 2021a)")
+ifneq ("","$(findstring $(MATLAB_VERSION),2018b 2019b 2019a 2020b 2021a)")
   CFLAGS=-fexceptions -fPIC -fno-omit-frame-pointer -pthread
   CFLAGS+= -DMX_COMPAT_64 -DMATLAB_DEFAULT_RELEASE=R2017b -DUSE_MEX_CMD -D_GNU_SOURCE -DMATLAB_MEX_FILE
   CFLAGS+= -I"$(MATLAB)/extern/include" -I"$(MATLAB)/simulink/include"
