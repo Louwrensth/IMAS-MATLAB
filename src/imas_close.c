@@ -30,7 +30,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     al_status_t status;
 
     if (idx != -1) {
-      status = ual_close_pulse(idx, CLOSE_PULSE, "");
+      status = ual_close_pulse(idx, CLOSE_PULSE);
       if (status.code >= 0)
 	hli_end_action(idx);
     }

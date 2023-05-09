@@ -99,7 +99,7 @@ program run_perf_f90
 
      end do
 
-     call ual_close_pulse(idxr, CLOSE_PULSE, '', status)
+     call ual_close_pulse(idxr, CLOSE_PULSE, status)
      if (status < 0) then
         call exit(status)
      end if
@@ -109,7 +109,7 @@ program run_perf_f90
         call exit(status)
      end if
 
-     call ual_close_pulse(idxw, CLOSE_PULSE, '', status)
+     call ual_close_pulse(idxw, CLOSE_PULSE, status)
      if (status < 0) then
         call exit(status)
      end if

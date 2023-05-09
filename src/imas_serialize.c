@@ -108,7 +108,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         }
         if (idx != -1) 
         {
-            status_close = ual_close_pulse(idx, CLOSE_PULSE, "");
+            status_close = ual_close_pulse(idx, CLOSE_PULSE);
             if (status_close.code >= 0)
                 hli_end_action(idx);
             else
