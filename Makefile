@@ -98,11 +98,11 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_close \
 				imas_get_backendID \
 				imas_get_mex_params imas_set_mex_params \
-				imas_hli_register_plugin \
-				imas_hli_unregister_plugin \
-				imas_hli_bind_plugin \
-				imas_hli_unbind_plugin \
-				imas_hli_setvalue_parameter_plugin \
+				imas_ual_register_plugin \
+				imas_ual_unregister_plugin \
+				imas_ual_bind_plugin \
+				imas_ual_unbind_plugin \
+				imas_ual_setvalue_parameter_plugin \
 				imas_serialize imas_deserialize\
 				)
 SOURCES = $(GENSOURCES)
