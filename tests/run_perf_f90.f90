@@ -104,7 +104,7 @@ program run_perf_f90
         call exit(status)
      end if
 
-     call hli_end_action(idxr, status); 
+     call ual_end_action(idxr, status); 
      if (status < 0) then
         call exit(status)
      end if
@@ -114,7 +114,7 @@ program run_perf_f90
         call exit(status)
      end if
 
-     call hli_end_action(idxw, status); 
+     call ual_end_action(idxw, status); 
      if (status < 0) then
         call exit(status)
      end if

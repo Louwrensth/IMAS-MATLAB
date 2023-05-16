@@ -90,7 +90,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         free(uri);
         if (status_open.code != 0)
         {
-            hli_end_action(idx);
+            ual_end_action(idx);
             mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas shot %s",  status_open.message);
         }
 
@@ -110,7 +110,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         {
             status_close = ual_close_pulse(idx, CLOSE_PULSE);
             if (status_close.code >= 0)
-                hli_end_action(idx);
+                ual_end_action(idx);
             else
                 mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error closing pulse %s",  status_close.message);
         }

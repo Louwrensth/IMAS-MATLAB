@@ -180,24 +180,24 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
     int getCtx = -1;
-	status = hli_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
+	status = ual_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
 	if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion, &amp;taggedDataDictionaryVersion);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
     if (getCtx > 0) {
-    status_end = hli_end_action(getCtx);
-    if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
+    status_end = ual_end_action(getCtx);
+    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
     }
     
     if (status.code >= 0) status = init_dataTree_read();
     
     /* Open getSlice context */
-    if (status.code >= 0) status = hli_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
-    if (status.code >= 0) status = hli_bind_readback_plugins(getSliceOpCtx); //binding readback plugins just before calling the get_slice() operation
+    if (status.code >= 0) status = ual_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
+    if (status.code >= 0) status = ual_bind_readback_plugins(getSliceOpCtx); //binding readback plugins just before calling the get_slice() operation
 	if (status.code >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
     if (getSliceOpCtx > 0) {
-    if (status.code >= 0) status = hli_unbind_readback_plugins(getSliceOpCtx); //unbinding readback plugins just after callig the get_slice() operation
-    status_end = hli_end_action(getSliceOpCtx);
-    if (status.code >= 0) status = status_end; /* Result of hli_end_action is only relevant if there was no error before */
+    if (status.code >= 0) status = ual_unbind_readback_plugins(getSliceOpCtx); //unbinding readback plugins just after callig the get_slice() operation
+    status_end = ual_end_action(getSliceOpCtx);
+    if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
     }
 
     if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);
