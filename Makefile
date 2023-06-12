@@ -91,6 +91,7 @@ INDSOURCES+= matlab/IDS_list.m
 # Add static sources
 MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_open_env_backend \
+				imas_open_uri \
 				imas_open_public \
 				imas_create_env \
 				imas_create_env_backend \
