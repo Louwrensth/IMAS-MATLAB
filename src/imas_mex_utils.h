@@ -100,6 +100,8 @@ char* concat(const char *, const char *);
 
 char* generate_tmp_file();
 
+char * getFilenameFromPath(char *);
+
 void resetErrMsgIdAndTxt(void);
 
 void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix);
