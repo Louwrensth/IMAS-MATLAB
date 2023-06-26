@@ -116,6 +116,18 @@ char* generate_tmp_file()
 }
 
 /**
+   Get filename from path
+ */
+char * getFilenameFromPath(char *path)
+{
+    char *s = strrchr(path, '/');
+    if (!s)
+        return strdup(path);
+    else
+        return strdup(s + 1);
+}
+
+/**
    Reset global variables for error message
  */
 void resetErrMsgIdAndTxt(void)
