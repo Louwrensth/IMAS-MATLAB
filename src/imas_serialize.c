@@ -71,6 +71,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         al_status_t status_begin,status_open, status_end, status_close;
         int _pulseCtx;
         char * tmpfile = generate_tmp_file();
+        char * tmpfilename = getFilenameFromPath(tmpfile);
         if(strcmp(tmpfile, "")==0)
         {
             mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error generating serialization filename %s", tmpfile);
@@ -78,13 +79,10 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         }
 
         int idx;
-        char * options = concat("-fullpath ", tmpfile);
+        char * options = concat(";options=filename=", tmpfilename);
         char *uri = (char*) malloc(500);
-        status_begin = ual_build_uri_from_legacy_parameters(ASCII_BACKEND, 0, 0, "serialize", "serialize", "3", options, &uri); 
-        if (status_begin.code != 0)
-        {
-            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating uri, %s",  status_begin.message);
-        }
+        uri = concat("imas:ascii?path=", SERIALIZE_TEMPORARY_DIRECTORY);
+        uri = concat(uri, options);
 
         status_open = ual_begin_dataentry_action(uri, CREATE_PULSE, &idx); 
         free(uri);
