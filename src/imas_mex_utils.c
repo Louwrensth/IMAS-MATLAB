@@ -838,8 +838,11 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 
 	if (status.code >= 0) status = data_from_mxArray(field->datatype, field->dim, data, &array, dims);
 
-    if (status.code >= 0) warningWritingObsolescentNode(idsName, field->fieldPath, lifecycle_status);
-
+    if (status.code >= 0) {
+      if (is_field_valid(field->datatype, field->dim, data))
+         warningWritingObsolescentNode(idsName, field->fieldPath, lifecycle_status);
+    }
+    
 	if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
 
 	/* Clean up memory allocated by data_from_mxArray */
