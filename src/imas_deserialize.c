@@ -77,7 +77,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         fprintf(fptr,"%s",data);
         fclose(fptr);
         int idx;
-        char * options = concat(";options=filename=", tmpfilename);
+        char * options = concat(";filename=", tmpfilename);
         char *uri = (char*) malloc(500);
         uri = concat("imas:ascii?path=", SERIALIZE_TEMPORARY_DIRECTORY);
         uri = concat(uri, options);
