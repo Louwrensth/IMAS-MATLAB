@@ -1,0 +1,13 @@
+% Create an empty core_profiles IDS
+core_profiles = ids_init('core_profiles')
+
+% core_profiles/profiles_1d is an array of structures
+disp(core_profiles.profiles_1d)  % -> <empty>
+% It currently has no elements, so let's allocate one
+core_profiles.profiles_1d = ids_allocate('core_profiles', 'profiles_1d', 1)
+disp(core_profiles.profiles_1d) % -> {1x1 struct}
+
+% Use cell array indexation to get a specific structure from the array,
+% then we can address child nodes as usual (for example, the average ion
+% temperature, which is an unallocated data array):
+disp(core_profiles.profiles_1d{1}.t_i_average)  % -> <empty>

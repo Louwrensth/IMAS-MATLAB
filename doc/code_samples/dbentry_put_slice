@@ -1,0 +1,25 @@
+% create the database entry by providing an IMAS URI
+data_entry = imas_open_uri('imas:hdf5?path=my-data', 43)
+
+% Create an empty core_profiles IDS
+core_profiles = ids_init('core_profiles')
+
+% Set the mandatory ids_properties.homogeneous_time field
+core_profiles.ids_properties.homogeneous_time = 1
+% Continue filling the core_profiles IDS with static values here
+% ...
+
+% Example time integration loop:
+t = 0.0
+t_stop = 60.0
+dt = 0.1
+
+while t < t_stop
+    core_profiles.time = [t]
+    % Fill your time-dependent data in the core_profiles IDS here
+    % ...
+
+    ids_put_slice(data_entry, 'core_profiles', core_profiles)
+
+    t = t + dt
+end
