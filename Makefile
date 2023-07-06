@@ -240,6 +240,7 @@ clean-src: test-clean-src clean-doc clean
 #              DOCUMENTATION
 #################################################
 
+#----------------------- Doxygen documentation -------------------
 PDFLATEX?=$(shell which pdflatex 2>/dev/null)
 doc: latex/refman.pdf html/files.html
 latex/files.tex html/files.html: Doxyfile README.md $(SOURCES) 
@@ -251,6 +252,15 @@ clean-doc:
 	$(RM) -r latex html
 
 .PHONY: doc
+
+#----------------------- Sphinx documentation -------------------
+
+.PHONY: docs clean-docs
+docs:
+	$(MAKE) -C doc html
+
+clean-docs:
+	$(MAKE) -C doc clean
 
 #################################################
 #                 TESTS
