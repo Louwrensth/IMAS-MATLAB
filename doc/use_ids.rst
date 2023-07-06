@@ -6,8 +6,9 @@
 .. |lang| replace:: MATLAB
 
 .. |create_ids_text| replace:: calling :mat:func:`ids_init`, for example :code:`ids_init('core_profiles')`
-.. |copy_ids| replace:: putting it to the memory backend and getting it again
-.. |deallocate_ids_text| replace:: In MATLAB you can do this by setting the IDS variable to an empty array.
+.. |copy_ids| replace:: by assigning it to a new variable
+.. |deallocate_ids_text| replace:: In MATLAB you can do this by `clearing the IDS variable`_.
+.. _`clearing the IDS variable`: https://www.mathworks.com/help/matlab/ref/clear.html#btf92qy
 
 .. |structures_type| replace:: structure
 .. |structures_child_attribute| replace:: structure fields

@@ -1,0 +1,22 @@
+% Create an empty core_profiles IDS, and fill with some data
+core_profiles = ids_init('core_profiles')
+core_profiles.ids_properties.homogeneous_time = 1
+core_profiles.time = [1, 2]
+core_profiles.profiles_1d = ids_allocate('core_profiles', 'profiles_1d', 2)
+for i = 1:2
+    core_profiles.profiles_1d{i}.grid.rho_tor_norm = 0:.25:1
+    core_profiles.profiles_1d{i}.j_total = (0:.25:1) + i
+end
+
+% Copy the IDS
+core_profiles_copy = core_profiles
+
+% Adjust some data
+core_profiles_copy.profiles_1d{1}.j_total = ...
+    2 * core_profiles_copy.profiles_1d{1}.j_total
+
+% Verify that we didn't change the original IDS
+% ->     2.0000    2.5000    3.0000    3.5000    4.0000
+disp(core_profiles_copy.profiles_1d{1}.j_total)
+% ->     1.0000    1.2500    1.5000    1.7500    2.0000
+disp(core_profiles.profiles_1d{1}.j_total)
