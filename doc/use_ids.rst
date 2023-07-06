@@ -39,6 +39,5 @@
 .. |tm_heterogeneous| replace:: ``IDS_TIME_MODE_HETEROGENEOUS``
 .. |tm_independent| replace:: ``IDS_TIME_MODE_INDEPENDENT``
 
-.. todo
-    .. |ids_validate| replace:: :py:meth:`ids.validate <imas.ids_base.IDSBase.validate>`
-    .. |validate_error| replace:: raises an error
+.. |ids_validate| replace:: `not implemented yet for MATLAB`
+.. |validate_error| replace:: throws an error
