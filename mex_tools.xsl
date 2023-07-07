@@ -140,7 +140,7 @@
 <xsl:template name ="setNBCVariables">
   <xsl:choose>
     <xsl:when test="ancestor::field[@change_nbc_version] or @change_nbc_version">
-      <xsl:text>strcpy(change_nbc_description, &quot;</xsl:text><xsl:value-of select="$change_nbc_description"/><xsl:text>&quot;);&#xA;</xsl:text>
+      <xsl:text>strcpy(change_nbc_description, &quot;</xsl:text><xsl:value-of select="@change_nbc_description"/><xsl:text>&quot;);&#xA;</xsl:text>
       <xsl:text>ancestor_index = 0;&#xA;</xsl:text>
       <xsl:for-each select="ancestor::field[@data_type='struct_array' or @data_type='structure']">
         <xsl:variable name="selected_name" select="@name"/>
