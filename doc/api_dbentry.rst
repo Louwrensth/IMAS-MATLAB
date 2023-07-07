@@ -3,7 +3,7 @@ Data entry API
 
 .. mat:currentmodule:: matlab
 
-.. mat:autofunction:: imas_open_uri()
+.. mat:autofunction:: imas_open()
 
 .. mat:autofunction:: imas_open_env()
 

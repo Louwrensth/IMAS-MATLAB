@@ -1,5 +1,5 @@
 % Open the database entry by providing an IMAS URI
-data_entry = imas_open_uri( ...
+data_entry = imas_open( ...
     'imas:mdsplus?user=public;shot=131024;run=41;database=ITER?version=3')
 
 % Alternatively, we can open an IDS providing legacy arguments

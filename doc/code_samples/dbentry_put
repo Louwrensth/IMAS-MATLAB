@@ -1,5 +1,5 @@
 % create the database entry by providing an IMAS URI
-data_entry = imas_open_uri('imas:hdf5?path=my-data', 43)
+data_entry = imas_open('imas:hdf5?path=my-data', 43)
 
 % Create an empty pf_active IDS
 pf_active = ids_init('pf_active')
