@@ -800,6 +800,10 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 	int dims[MAXDIM];
 
 	int i;
+	bool AL_PLUGINS_ENABLED = false;
+	char* flag = getenv("AL_PLUGINS_ENABLED");
+	if (flag != NULL && strcmp(flag, "TRUE") == 0)
+		AL_PLUGINS_ENABLED = true;
 
 #ifndef NO_LOCAL_CONVERSION
 	if (params.put_int_from_double)
@@ -807,10 +811,14 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 			if (mxIsNumeric(data) && mxIsDouble(data)) {
 				if (status.code >= 0) status = cast_status = castDoubleToInt32((mxArray **) &data);
 				/* Check again field validity */
-				if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data)) {
-					//return (al_status_t) {0,""};
-				    status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
-				    return status;
+				if (status.code >= 0) {
+					bool isFieldValid = is_field_valid(field->datatype, field->dim, data);
+					if (!isFieldValid && !AL_PLUGINS_ENABLED)
+					   return (al_status_t) {0,""};
+					else if (!isFieldValid && AL_PLUGINS_ENABLED) {
+					   status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
+					   return status;	
+					}
 				}
 				
 			}
@@ -821,11 +829,15 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 			if (mxIsNumeric(data) && mxIsDouble(data)) {
 				if (status.code >= 0) status = cast_status = castNaNToEmpty((mxArray **) &data);
 				/* Check again field validity */
-				if (status.code >= 0 && !is_field_valid(field->datatype, field->dim, data)) {
-					//return (al_status_t) {0,""};
-				    status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
-				    return status;
-				 }
+				if (status.code >= 0) {
+					bool isFieldValid = is_field_valid(field->datatype, field->dim, data);
+					if (!isFieldValid && !AL_PLUGINS_ENABLED)
+						return (al_status_t) {0,""};
+					else if (!isFieldValid && AL_PLUGINS_ENABLED) {
+				    	status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
+				    	return status;
+					}
+				}
 			}
 		}
 #endif
@@ -841,10 +853,13 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
     if (status.code >= 0) {
       if (is_field_valid(field->datatype, field->dim, data))
          warningWritingObsolescentNode(idsName, field->fieldPath, lifecycle_status);
+		 if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
     }
-    
-	if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
-
+    else {
+		if (AL_PLUGINS_ENABLED)
+		   if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+	}
+	
 	/* Clean up memory allocated by data_from_mxArray */
 	if (field->datatype == CHAR_DATA) {
 		if (array != NULL)
