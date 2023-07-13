@@ -11,7 +11,7 @@ IDSDEF= ../../xml/IDSDef.xml
 
 # Test environment (mimics loaded imas environment), write ids to tmp dir
 ids_path = $(realpath $(UAL_BUILD)/models/mdsplus)
-test_ENV = AL_PLUGINS_ENABLED=FALSE LD_LIBRARY_PATH=$(UAL_BUILD)/mexinterface/lib:$(UAL_BUILD)/lowlevel:$$LD_LIBRARY_PATH ids_path="$$PWD/tmp;$(ids_path)"
+test_ENV = LD_LIBRARY_PATH=$(UAL_BUILD)/mexinterface/lib:$(UAL_BUILD)/lowlevel:$$LD_LIBRARY_PATH ids_path="$$PWD/tmp;$(ids_path)"
 
 # Get a list of IDS from IDSDEF file
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))
