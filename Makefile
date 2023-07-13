@@ -67,7 +67,7 @@ $(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
 $(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
 endef
 
-METHODS = get get_slice put put_slice delete allocate gen init int_to_double double_to_int empty_to_nan nan_to_empty cell_to_struct struct_to_cell rand
+METHODS = validate get get_slice put put_slice delete allocate gen init int_to_double double_to_int empty_to_nan nan_to_empty cell_to_struct struct_to_cell rand
 
 $(foreach method,$(METHODS),$(eval $(call TEMPLATE,$(method))))
 
@@ -133,6 +133,7 @@ _all: sources $(TARGETS)
 
 sources: $(GENSOURCES)
 
+$(validate_SRC_FILES):       validate_single.xsl
 $(get_SRC_FILES):            get_single.xsl
 $(get_slice_SRC_FILES):      get_single.xsl
 $(put_SRC_FILES):            put_single.xsl
@@ -150,16 +151,16 @@ $(cell_to_struct_SRC_FILES): cells_structs.xsl
 $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 $(INDSOURCES): $(IDSDEF) | saxonicajar
-	$(SAXON) -t -warnings:fatal -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^)) DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) AL_GIT_DESCRIBE=$(AL_GIT_DESCRIBE)
-ifneq "$(BEAUTIFY)" ""
+	$(SAXON) -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
+#ifneq "$(BEAUTIFY)" ""
         # This script will indent the generated files
         # If an error is triggered during indenting, remove the files
-	@[ "$@" = "matlab/IDS_list.m" ] || (echo "[indent] Processing $($(@:_sources=_SOURCES))";\
-	VERSION_CONTROL="none" $(BEAUTIFY) $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
-	x=$$?;\
-	[[ $$x == 0 ]] || rm -f $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
-	[[ $$x == 0 ]])
-endif
+#@[ "$@" = "matlab/IDS_list.m" ] || (echo "[indent] Processing $($(@:_sources=_SOURCES))";\
+#	VERSION_CONTROL="none" $(BEAUTIFY) $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
+#	x=$$?;\
+#	[[ $$x == 0 ]] || rm -f $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
+#	[[ $$x == 0 ]])
+#endif
 
 .PHONY: sources
 
