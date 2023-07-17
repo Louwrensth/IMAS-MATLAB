@@ -1,9 +1,9 @@
-Access Layer - Fortran High Level Interface
-===========================================
+Access Layer - MATLAB High Level Interface
+==========================================
 
 These pages document the Fortran High Level Interface to the :ref:`IMAS <IMAS
 overview>` Access Layer. All code samples and API documentation will show how to
-use the access layer in the `Fortran <https://en.wikipedia.org/wiki/Fortran>`_
+use the access layer in the `MATLAB <https://en.wikipedia.org/wiki/MATLAB>`_
 programming language.
 
 .. seealso::
@@ -15,9 +15,12 @@ programming language.
 
    - `Python High Level Interface
      <https://sharepoint.iter.org/departments/POP/CM/IMDesign/Code%20Documentation/ACCESS-LAYER-doc/python/latest.html>`_
-   - `C++ High Level Interface <https://user.iter.org/default.aspx?uid=YSQENW>`_
-   - `Java High Level Interface <https://user.iter.org/default.aspx?uid=YSQENW>`_
-   - `MATLAB High Level Interface <https://user.iter.org/default.aspx?uid=YSQENW>`_
+   - `Fortran High Level Interface
+     <https://sharepoint.iter.org/departments/POP/CM/IMDesign/Code%20Documentation/ACCESS-LAYER-doc/fortran/latest.html>`_
+   - `C++ High Level Interface
+     <https://sharepoint.iter.org/departments/POP/CM/IMDesign/Code%20Documentation/ACCESS-LAYER-doc/cpp/latest.html>`_
+   - `Java High Level Interface
+     <https://sharepoint.iter.org/departments/POP/CM/IMDesign/Code%20Documentation/ACCESS-LAYER-doc/java/latest.html>`_
 
 .. todo::
 
