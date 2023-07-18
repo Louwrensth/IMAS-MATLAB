@@ -30,7 +30,7 @@
  */
 
 /**
-   \file ids_get.c
+   \file ids_validate.c
    read IDS in MATLAB External Interfaces
    
    This is a MEX file for MATLAB.
@@ -133,6 +133,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
     int timeSize;
     int isEmpty;
+    int aosArraySize;
+    int coordSize;
 
     status = init_dataTree_write((mxArray *) ids);
     if (status.code >= 0) status = getHomogeneousTime(&amp;homogeneousTime);
@@ -156,6 +158,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
 
     <xsl:apply-templates select="field" mode="VALIDATE_CHILD_CALL"/>
+    <xsl:apply-templates select="field[@data_type='struct_array']" mode="VALIDATE_CHILD_1D"/>
 
     return status;
     }
@@ -167,7 +170,21 @@ void mexFunction(int nlhs, mxArray *plhs[],
   </xsl:result-document>
 </xsl:template>
 <xsl:template match = "field[@data_type='structure' or @data_type='struct_array']" mode="VALIDATE_CHILD_CALL">
+  <xsl:choose>
+  <xsl:when test="@data_type='structure'">
     if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(homogeneousTime, timeSize);
+  </xsl:when>
+  <xsl:when test="@data_type='struct_array'">
+    if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+    if (status.code &gt;= 0) {
+      for (int i=0; i&lt;aosArraySize; i++) {
+        if (status.code &gt;= 0) status = iterate_dataTree_array(i);
+        if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(homogeneousTime, timeSize);
+      }
+    }
+    if (status.code &gt;= 0) end_dataTree_array_action();
+  </xsl:when>
+  </xsl:choose>
 </xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_VALIDATE_H">
@@ -181,6 +198,7 @@ al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(i
     const mxArray* data=NULL;
     al_status_t status = {0,""};
     int isEmpty;
+    int aosArraySize;
 
     <xsl:apply-templates select="field" mode="VALIDATE_CHILD_CALL"/>
 
