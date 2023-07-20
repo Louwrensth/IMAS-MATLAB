@@ -53,7 +53,7 @@
 	<xsl:when test="ancestor::field[@data_type='struct_array']">
 	  <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
 	  <xsl:variable name="elementPath" select="@path"/>
-	  <xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
+	  <xsl:text>if (taggedDataDictionaryVersion &amp;&amp; strcmp(change_nbc_description, "type_changed") != 0) {&#xA;</xsl:text> 
 	  <xsl:text>getFieldRelativePath(field.fieldPath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);&#xA;</xsl:text>
 	  <xsl:text>&#032;}&#xA;</xsl:text>
       <xsl:text>else{&#xA;</xsl:text>
@@ -61,7 +61,7 @@
 	  <xsl:text>}&#xA;</xsl:text>
 	</xsl:when>
 	<xsl:otherwise>
-	  <xsl:text>if (taggedDataDictionaryVersion) {&#xA;</xsl:text> 
+	  <xsl:text>if (taggedDataDictionaryVersion &amp;&amp; strcmp(change_nbc_description, "type_changed") != 0) {&#xA;</xsl:text> 
 	  <xsl:text>getNodePath(field.fieldPath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, dataDictionaryVersion, 0);&#xA;</xsl:text>
 	  <xsl:text>&#032;}&#xA;</xsl:text>
       <xsl:text>else{&#xA;</xsl:text>
@@ -110,7 +110,8 @@
 <xsl:template name ="declareAndAllocateNBCVariables">
   <xsl:variable name="level" select="count(ancestor::field[@data_type='struct_array' or @data_type='struct'])"/>
   <xsl:if test="ancestor::field[@change_nbc_version] or @change_nbc_version or count(descendant::field[count(ancestor::field[@data_type='struct_array' or @data_type='struct']) = $level and @change_nbc_version]) > 0">
-    <xsl:text>&#xA;</xsl:text>     
+    <xsl:text>&#xA;</xsl:text> 
+    <xsl:text>char change_nbc_description[20];&#xA;</xsl:text>    
     <xsl:text>char *ancestors_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
     <xsl:text>char *ancestors_data_types[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
     <xsl:text>char *ancestors_change_nbc_versions[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
@@ -139,6 +140,7 @@
 <xsl:template name ="setNBCVariables">
   <xsl:choose>
     <xsl:when test="ancestor::field[@change_nbc_version] or @change_nbc_version">
+      <xsl:text>strcpy(change_nbc_description, &quot;</xsl:text><xsl:value-of select="@change_nbc_description"/><xsl:text>&quot;);&#xA;</xsl:text>
       <xsl:text>ancestor_index = 0;&#xA;</xsl:text>
       <xsl:for-each select="ancestor::field[@data_type='struct_array' or @data_type='structure']">
         <xsl:variable name="selected_name" select="@name"/>
