@@ -800,10 +800,10 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 	int dims[MAXDIM];
 
 	int i;
-	bool AL_PLUGINS_ENABLED = false;
-	char* flag = getenv("AL_PLUGINS_ENABLED");
+	bool IMAS_AL_ENABLE_PLUGINS = false;
+	char* flag = getenv("IMAS_AL_ENABLE_PLUGINS");
 	if (flag != NULL && strcmp(flag, "TRUE") == 0)
-		AL_PLUGINS_ENABLED = true;
+		IMAS_AL_ENABLE_PLUGINS = true;
 
 #ifndef NO_LOCAL_CONVERSION
 	if (params.put_int_from_double)
@@ -813,9 +813,9 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 				/* Check again field validity */
 				if (status.code >= 0) {
 					bool isFieldValid = is_field_valid(field->datatype, field->dim, data);
-					if (!isFieldValid && !AL_PLUGINS_ENABLED)
+					if (!isFieldValid && !IMAS_AL_ENABLE_PLUGINS)
 					   return (al_status_t) {0,""};
-					else if (!isFieldValid && AL_PLUGINS_ENABLED) {
+					else if (!isFieldValid && IMAS_AL_ENABLE_PLUGINS) {
 					   status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
 					   return status;	
 					}
@@ -831,9 +831,9 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 				/* Check again field validity */
 				if (status.code >= 0) {
 					bool isFieldValid = is_field_valid(field->datatype, field->dim, data);
-					if (!isFieldValid && !AL_PLUGINS_ENABLED)
+					if (!isFieldValid && !IMAS_AL_ENABLE_PLUGINS)
 						return (al_status_t) {0,""};
-					else if (!isFieldValid && AL_PLUGINS_ENABLED) {
+					else if (!isFieldValid && IMAS_AL_ENABLE_PLUGINS) {
 				    	status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
 				    	return status;
 					}
@@ -856,7 +856,7 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 		 if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
     }
     else {
-		if (AL_PLUGINS_ENABLED)
+		if (IMAS_AL_ENABLE_PLUGINS)
 		   if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
 	}
 	

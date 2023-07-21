@@ -4,18 +4,18 @@
  */
 
 /**
-   \file imas_open_uri.c
+   \file imas_open.c
    open IMAS database using an URI in MATLAB External Interfaces
    
    This is a MEX file for MATLAB.
 
    Usage:
    \code{.m} 
-   idx = imas_open_uri(uri, mode)
+   idx = imas_open(uri, mode)
    \endcode
 
    MATLAB help:
-   \include matlab/imas_open_uri.m
+   \include matlab/imas_open.m
  */
 
 /** @}*/
@@ -29,16 +29,16 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
     /* Check for one or two input arguments   */
     if (nrhs != 1 && nrhs != 2) {
-        mexErrMsgIdAndTxt("IMAS:imas_open_uri:nargin", "One or two inputs required.");
+        mexErrMsgIdAndTxt("IMAS:imas_open:nargin", "One or two inputs required.");
     }
     /* make sure the 1st input argument is a string */
     if (!mxIsChar(prhs[0])) {
-        mexErrMsgIdAndTxt("IMAS:imas_open_uri:notChar", "URI must be a string.");
+        mexErrMsgIdAndTxt("IMAS:imas_open:notChar", "URI must be a string.");
     }
     
     /* Check for one output argument */
     if (nlhs > 1) {
-        mexErrMsgIdAndTxt("IMAS:imas_open_uri:nargout", "One output maximum required.");
+        mexErrMsgIdAndTxt("IMAS:imas_open:nargout", "One output maximum required.");
     }
     /* Get the value of the name */
     char *uri = mxArrayToString(prhs[0]);
@@ -50,7 +50,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (nrhs == 2){ 
         /* make sure the 2nd input argument is scalar */
         if (!mxIsNumeric(prhs[1]) || !mxIsScalar(prhs[1])) {
-            mexErrMsgIdAndTxt("IMAS:imas_open_uri:notScalar", "File access mode must be a scalar.");
+            mexErrMsgIdAndTxt("IMAS:imas_open:notScalar", "File access mode must be a scalar.");
         }
         mode = (int) mxGetScalar(prhs[1]);
         if (params.verbosity >= 4)
@@ -63,7 +63,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     status = ual_begin_dataentry_action(uri, mode, &idx);
 
     if (status.code < 0)
-      mexErrMsgIdAndTxt("IMAS:imas_open_uri:Failed", "Error opening imas URI %s with mode %d:\n\t%s", uri, mode, status.message);
+      mexErrMsgIdAndTxt("IMAS:imas_open:Failed", "Error opening imas URI %s with mode %d:\n\t%s", uri, mode, status.message);
     /* Prepare the return argument */
     plhs[0] = mxCreateDoubleScalar(idx);
 
