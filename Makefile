@@ -84,9 +84,9 @@ HEADER_FILES  = $(filter     ids_%.h, $(ALL_SOURCES))
 GENSOURCES = $(addprefix $(IDS_SRC_DIR)/,$(IDS_C_FILES))
 GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(MEX_IDS_FILES))
 GENSOURCES+= $(addprefix $(IDS_SRC_DIR)/,$(HEADER_FILES))
-GENSOURCES+= matlab/IDS_list.m
+GENSOURCES+= matlab/IDS_list.m src/imas_versions.c
 
-INDSOURCES+= matlab/IDS_list.m
+INDSOURCES+= matlab/IDS_list.m src/imas_versions.c
 
 # Add static sources
 MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
@@ -103,6 +103,7 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_al_unbind_plugin \
 				imas_al_setvalue_parameter_plugin \
 				imas_serialize imas_deserialize\
+				imas_versions \
 				)
 SOURCES = $(GENSOURCES)
 UTL_SRC_FILES = $(addsuffix .c, imas_mex_utils imas_mex_structs imas_mex_params imas_mex_casts imas_mex_rand)
@@ -149,6 +150,7 @@ $(struct_to_cell_SRC_FILES): cells_structs.xsl
 $(cell_to_struct_SRC_FILES): cells_structs.xsl
 $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
+src/imas_versions.c:		 imas_versions.xsl
 $(INDSOURCES): $(IDSDEF) | saxonicajar
 	$(SAXON) -t -warnings:fatal -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^)) DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) AL_GIT_DESCRIBE=$(AL_GIT_DESCRIBE)
 ifneq "$(BEAUTIFY)" ""
