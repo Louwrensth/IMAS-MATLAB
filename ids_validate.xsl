@@ -12,6 +12,12 @@
 
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
+
+<!--================================================-->
+<!--                Debug logs param                -->
+<!--================================================-->
+<xsl:variable name="enable-logging" select='no'/>
+
 <!--================================================-->
 <!--                 Include section                -->
 <!--================================================-->
@@ -122,6 +128,73 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
  <xsl:result-document href="src/ids/validate_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+
+    const mxArray* getFieldFromStruct(char *path, const mxArray * data)
+    {
+      /* Extracts field from given structure 'data' following '/'-separated path */
+    
+      int ifield = -1;
+      char *token;
+      const mxArray* pfield; 
+      char *relative_path;
+      char *pathcopy = strdup(path);
+      mwIndex index;
+    
+      if (!data) {
+        return NULL;
+      }
+    
+      /* Extract path after last closing bracket */
+      token = strtok(pathcopy, ")");
+      while (token != NULL) {
+        relative_path = token;
+        token = strtok(NULL, ")");
+      }
+    
+      pfield = data;
+    
+      /* Structure unroll */
+      token = strtok(relative_path, "/");
+      while (token != NULL &amp;&amp; pfield != NULL) {
+        if (!mxIsStruct(pfield) || 
+      (params.use_cell_array_for_array_of_structures &amp;&amp; !mxIsScalar(pfield))) {
+          pfield = NULL;
+          break;
+        }
+        ifield = mxGetFieldNumber(pfield, token);
+        if (ifield &lt; 0) {
+          pfield = NULL;
+          break;
+        }
+        pfield = (const mxArray *) mxGetFieldByNumber(pfield, index, ifield);
+        token = strtok(NULL, "/");
+        index = 0; /* Only the first item can be an array */
+      }
+      free(pathcopy);
+      return pfield;
+    }
+
+    int getDimSize(const mxArray * data, int dim) {
+        /* Find the dimension size of the data mxArray */
+        int ndims;
+        const mwSize * dims;
+        
+        if (data == NULL) return 0;
+        
+        ndims = mxGetNumberOfDimensions(data);
+        dims = mxGetDimensions(data);
+        
+        if (dim &gt; ndims) return 0;
+        /* 1D row vectors particular case */
+        if (dim == 1 &amp;&amp; dims[0] == 1) {
+          return dims[1];
+        } 
+        /* Other cases */
+        else {
+          return dims[dim-1];
+        }
+      }
+
     <xsl:for-each select="IDS">
     <xsl:apply-templates select="field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_VALIDATE_H"/>
     
@@ -130,22 +203,24 @@ void mexFunction(int nlhs, mxArray *plhs[],
     al_status_t status;
     int ifield;
     const mxArray* data=NULL;
-    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
+    const mxArray* pfield=NULL;
+    int idsTimeMode = IDS_TIME_MODE_UNKNOWN;
     int timeSize;
     int isEmpty;
+    int i1max, i2max, i3max, i4max, itimemax;
     int aosArraySize;
     int coordSize;
 
     status = init_dataTree_write((mxArray *) ids);
-    if (status.code >= 0) status = getHomogeneousTime(&amp;homogeneousTime);
+    if (status.code >= 0) status = getHomogeneousTime(&amp;idsTimeMode);
     if (status.code &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_validate:invalid_homogeneous_time",
     "Unable to retrieve ids%%ids_properties%%homogeneous_time"); 
-    if( homogeneousTime == IDS_TIME_MODE_UNKNOWN )
+    if( idsTimeMode == IDS_TIME_MODE_UNKNOWN )
     {
     mexErrMsgIdAndTxt("IMAS:ids_validate:empty_ids", "ids%%ids_properties%%homogeneous_time is not defined.");
     return status;
     }
-    else if ( homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
+    else if ( idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
       ifield = mxGetFieldNumber(ids, "time");
       data = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
       if (data == NULL)
@@ -157,8 +232,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
       "If time is homogeneous, ids%%time must have at least one element");
     }
 
+    status = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
+
     <xsl:apply-templates select="field" mode="VALIDATE_CHILD_CALL"/>
     <xsl:apply-templates select="field[@data_type='struct_array']" mode="VALIDATE_CHILD_1D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_1D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_2D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_3D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_4D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_5D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_6D"/>
 
     return status;
     }
@@ -171,36 +254,77 @@ void mexFunction(int nlhs, mxArray *plhs[],
 </xsl:template>
 <xsl:template match = "field[@data_type='structure' or @data_type='struct_array']" mode="VALIDATE_CHILD_CALL">
   <xsl:choose>
-  <xsl:when test="@data_type='structure'">
-    if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(homogeneousTime, timeSize);
+  <xsl:when test="@data_type='structure'"> 
+    if (status.code &gt;= 0) pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
+    if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
+    if (status.code &gt;= 0) status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
+    if (!isEmpty &amp;&amp; status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(idsTimeMode, timeSize);
+    if (status.code &gt;= 0) end_dataTree_action();
+    }
   </xsl:when>
   <xsl:when test="@data_type='struct_array'">
+    if (status.code &gt;= 0) pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
+    if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
     if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
     if (status.code &gt;= 0) {
+      <xsl:if test="$enable-logging = 'yes'">
+        printf("Loop for <xsl:value-of select="@name"/> over %d elements.\n\r",aosArraySize);
+      </xsl:if>
       for (int i=0; i&lt;aosArraySize; i++) {
-        if (status.code &gt;= 0) status = iterate_dataTree_array(i);
-        if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(homogeneousTime, timeSize);
+      const mxArray* elem = mxGetCell(pfield, i);
+      if (elem != NULL) {
+        if (status.code &gt;= 0 &amp;&amp; (mxIsStruct(elem))) {
+          if (status.code &gt;= 0) status = iterate_dataTree_array(i);
+          if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(idsTimeMode, timeSize);
+        }
+        }
       }
     }
-    if (status.code &gt;= 0) end_dataTree_array_action();
+    if (status.code &gt;= 0) status = end_dataTree_array_action();
+    }
   </xsl:when>
   </xsl:choose>
 </xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_VALIDATE_H">
-al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int homogeneousTime, int timeSize);
+al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int idsTimeMode, int timeSize);
 </xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_VALIDATE">
 <xsl:apply-templates select="field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_VALIDATE_H"/>
-    al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int homogeneousTime, int timeSize)
+    al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int idsTimeMode, int timeSize)
     {
     const mxArray* data=NULL;
+    const mxArray* pfield=NULL;
     al_status_t status = {0,""};
     int isEmpty;
     int aosArraySize;
+    int ifield;
+    int ndims;
+    int i1max, i2max, i3max, i4max, itimemax;
+	  const mwSize *dims;
+
+    status = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
+
+    if (data != NULL &amp;&amp; !mxIsEmpty(data)) {
+
+    <xsl:if test="$enable-logging = 'yes'">
+      printf("In validate_<xsl:value-of select="@path"/>\n\r");
+    </xsl:if>
 
     <xsl:apply-templates select="field" mode="VALIDATE_CHILD_CALL"/>
+
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_1D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_2D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_3D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_4D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_5D"/>
+    <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_6D"/>
+    }
+
+    <xsl:if test="$enable-logging = 'yes'">
+      printf("end validate_<xsl:value-of select="@path"/> with statuscode: %d\n\r",status.code);
+    </xsl:if>
 
     return status;
     }
