@@ -18,7 +18,7 @@
   // validation of <xsl:value-of select="@path"/>
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
   <xsl:if test="contains(@coordinate1,'/time')">
-  if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
+  if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
       if(aosArraySize != timeSize) {
         strncpy(status.message,  "array size of <xsl:value-of select="@path"/> wrong dimension.", MAX_ERR_MSG_LEN);
         status.code = HLI_ERR;
