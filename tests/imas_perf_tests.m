@@ -56,7 +56,7 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   methods (Static)
     
     function run = getRunNumber(ntime)
-      newLL = str2num(strtok(getenv('UAL_VERSION'),'.')) > 3;
+      newLL = str2num(strtok(getenv('AL_VERSION'),'.')) > 3;
       base = 0+10*~newLL;
       switch ntime
         case 3,    number = 1;

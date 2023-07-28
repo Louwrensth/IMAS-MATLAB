@@ -31,7 +31,7 @@
     </xsl:when>
     <xsl:otherwise>
       fieldPath = "<xsl:value-of select="@path"/>";
-      status = ual_delete_data(ctx, fieldPath);
+      status = al_delete_data(ctx, fieldPath);
       /* Error handling */
       if (status.code &lt; 0) {
       addIdsPathInfoToErrMsg("\n ... in field <xsl:value-of select="@path"/>",0);

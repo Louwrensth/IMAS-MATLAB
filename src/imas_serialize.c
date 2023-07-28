@@ -84,11 +84,11 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         uri = concat("imas:ascii?path=", SERIALIZE_TEMPORARY_DIRECTORY);
         uri = concat(uri, options);
 
-        status_open = ual_begin_dataentry_action(uri, CREATE_PULSE, &idx); 
+        status_open = al_begin_dataentry_action(uri, CREATE_PULSE, &idx); 
         free(uri);
         if (status_open.code != 0)
         {
-            ual_end_action(idx);
+            al_end_action(idx);
             mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas shot %s",  status_open.message);
         }
 
@@ -106,9 +106,9 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         }
         if (idx != -1) 
         {
-            status_close = ual_close_pulse(idx, CLOSE_PULSE);
+            status_close = al_close_pulse(idx, CLOSE_PULSE);
             if (status_close.code >= 0)
-                ual_end_action(idx);
+                al_end_action(idx);
             else
                 mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error closing pulse %s",  status_close.message);
         }

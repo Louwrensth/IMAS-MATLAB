@@ -1,17 +1,17 @@
 include ../../Makefile.common
 
-ifeq (,$(UAL_BUILD))
-UAL_BUILD=../..
-$(warning UAL_BUILD variable unset, probably not running 'make ual_test' from the Installer. Assuming UAL_BUILD=$(UAL_BUILD).)
+ifeq (,$(AL_BUILD))
+AL_BUILD=../..
+$(warning AL_BUILD variable unset, probably not running 'make al_test' from the Installer. Assuming AL_BUILD=$(AL_BUILD).)
 endif
 
-# This Makefile expects you've got UAL already built (using the installer), but not yet installed, so we're testing the current build.
+# This Makefile expects you've got AL already built (using the installer), but not yet installed, so we're testing the current build.
 
 IDSDEF= ../../xml/IDSDef.xml
 
 # Test environment (mimics loaded imas environment), write ids to tmp dir
-ids_path = $(realpath $(UAL_BUILD)/models/mdsplus)
-test_ENV = IMAS_AL_PLUGINS=$(UAL_BUILD)/plugins  LD_LIBRARY_PATH=$(UAL_BUILD)/mexinterface/lib:$(UAL_BUILD)/lowlevel:$$LD_LIBRARY_PATH ids_path="$$PWD/tmp;$(ids_path)"
+ids_path = $(realpath $(AL_BUILD)/models/mdsplus)
+test_ENV = IMAS_AL_PLUGINS=$(AL_BUILD)/plugins  LD_LIBRARY_PATH=$(AL_BUILD)/mexinterface/lib:$(AL_BUILD)/lowlevel:$$LD_LIBRARY_PATH ids_path="$$PWD/tmp;$(ids_path)"
 
 # Get a list of IDS from IDSDEF file
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))

@@ -60,7 +60,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     int idx;
     al_status_t status;
     
-    status = ual_begin_dataentry_action(uri, mode, &idx);
+    status = al_begin_dataentry_action(uri, mode, &idx);
 
     if (status.code < 0)
       mexErrMsgIdAndTxt("IMAS:imas_open:Failed", "Error opening imas URI %s with mode %d:\n\t%s", uri, mode, status.message);

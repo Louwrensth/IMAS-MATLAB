@@ -5,7 +5,7 @@
 
 /**
    \file src/imas_mex_utils.c
-   Interaction with UAL
+   Interaction with AL
  */
 
 /** @}*/
@@ -233,7 +233,7 @@ int get_fallback_backend()
 
 /**
    Checks if field has a different value than the default.
-   This routine is used for put and put_slice methods before calling ual_write_data, if it returns 0 (false) then ual_write_data will be skipped.
+   This routine is used for put and put_slice methods before calling al_write_data, if it returns 0 (false) then al_write_data will be skipped.
    @param[in] datatype type of data in the current field.
    @param[in] dim rank of the current field.
    @param[in] data mxArray containing the data.
@@ -295,12 +295,12 @@ al_status_t get_data_info(int datatype, int dim, mxClassID * classid, mxComplexi
 }
 
 /**
-   Stores data read by the UAL in an mxArray object.
-   This function creates an mxArray to store the data read by the UAL in a previous call. The array pointer contains the data and the parameters datatype and dim indicate the nature and rank of the data. data_to_mxArray performs a copy of the data. If the UAL read action was unsuccessful (read_status was negative) then the default value is assigned to data.
+   Stores data read by the AL in an mxArray object.
+   This function creates an mxArray to store the data read by the AL in a previous call. The array pointer contains the data and the parameters datatype and dim indicate the nature and rank of the data. data_to_mxArray performs a copy of the data. If the AL read action was unsuccessful (read_status was negative) then the default value is assigned to data.
    @param[in] datatype type of data in the current field.
    @param[in] dim rank of the current field.
-   @param[in] array pointer to the data returned by the UAL read action.
-   @param[in] size pointer containing the dimensions of the data as returned by the UAL read action.
+   @param[in] array pointer to the data returned by the AL read action.
+   @param[in] size pointer containing the dimensions of the data as returned by the AL read action.
    @param[out] data mxArray containing the data.
    @result error status.
  */
@@ -386,7 +386,7 @@ al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArr
    @param[in] datatype type of data in the current field.
    @param[in] dim rank of the current field.
    @param[in] data mxArray containing the data.
-   @param[out] array pointer to the data to be used by the UAL write action.
+   @param[out] array pointer to the data to be used by the AL write action.
    @param[out] size pointer containing the dimensions of the data.
    @result error status.
  */
@@ -499,7 +499,7 @@ al_status_t getHomogeneousTimeCtx(int ctx, int *homogeneousTime)
 	char *timebasePath = "";
 	int retSize[MAXDIM];
 
-	status = ual_read_data(ctx, fieldPath, timebasePath, (void**)&homogeneousTime,
+	status = al_read_data(ctx, fieldPath, timebasePath, (void**)&homogeneousTime,
 			INTEGER_DATA, 0, &retSize[0]);
 
 	return status;
@@ -520,7 +520,7 @@ al_status_t getDataDictionaryVersion(int ctx, char** data_dictionary, bool *tagg
 	char *timebasePath = "";
 	int retSize[MAXDIM];
 	char* szTemp = NULL;
-	status = ual_read_data(ctx, fieldPath, timebasePath, (void **)&szTemp,
+	status = al_read_data(ctx, fieldPath, timebasePath, (void **)&szTemp,
 			CHAR_DATA, 1, &retSize[0]);
 	if (status.code==0)
 	{
@@ -721,13 +721,13 @@ void warningWritingObsolescentNode(const char* idsName, const char* fieldPath, c
 
 /**
    Reads a field and stores it in an mxArray object.
-   Combines the reading of the field data by the UAL, its encapsulation in an mxArray and its conversion (if needed).
+   Combines the reading of the field data by the AL, its encapsulation in an mxArray and its conversion (if needed).
    @param[in] action Information about the current operation.
    @param[in] field Information about the current field.
    @param[out] data mxArray containing the data.
    @result error status.
  */
-al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data)
+al_status_t my_al_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data)
 {
 
 	al_status_t status;
@@ -748,7 +748,7 @@ al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_me
 			array = malloc(sizeof(double _Complex));
 	}
 
-	status = ual_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
+	status = al_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);
 
 	if (status.code >= 0) status = data_to_mxArray(field->datatype, field->dim, array, dims, data);
 
@@ -783,13 +783,13 @@ al_status_t my_ual_read_data(struct imas_mex_actionInfo * action, struct imas_me
 
 /**
    Writes a field from an mxArray object.
-   Combines the conversion of the data stored in the MATLAB array (if needed), its conversion into a basic type and the writing action by the UAL.
+   Combines the conversion of the data stored in the MATLAB array (if needed), its conversion into a basic type and the writing action by the AL.
    @param[in] action Information about the current operation.
    @param[in] field Information about the current field.
    @param[in] data mxArray containing the data.
    @result error status.
  */
-al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data, const char* idsName, const char* lifecycle_status)
+al_status_t my_al_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data, const char* idsName, const char* lifecycle_status)
 {
 
 	al_status_t status = {0,""};
@@ -816,7 +816,7 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 					if (!isFieldValid && !IMAS_AL_ENABLE_PLUGINS)
 					   return (al_status_t) {0,""};
 					else if (!isFieldValid && IMAS_AL_ENABLE_PLUGINS) {
-					   status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
+					   status = al_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
 					   return status;	
 					}
 				}
@@ -834,7 +834,7 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
 					if (!isFieldValid && !IMAS_AL_ENABLE_PLUGINS)
 						return (al_status_t) {0,""};
 					else if (!isFieldValid && IMAS_AL_ENABLE_PLUGINS) {
-				    	status = ual_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
+				    	status = al_write_data(action->context, field->fieldPath, field->timebasePath, NULL, field->datatype, field->dim, NULL);
 				    	return status;
 					}
 				}
@@ -853,11 +853,11 @@ al_status_t my_ual_write_data(struct imas_mex_actionInfo * action, struct imas_m
     if (status.code >= 0) {
       if (is_field_valid(field->datatype, field->dim, data))
          warningWritingObsolescentNode(idsName, field->fieldPath, lifecycle_status);
-		 if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+		 if (status.code >= 0) status = al_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
     }
     else {
 		if (IMAS_AL_ENABLE_PLUGINS)
-		   if (status.code >= 0) status = ual_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
+		   if (status.code >= 0) status = al_write_data(action->context, field->fieldPath, field->timebasePath, array, field->datatype, field->dim, &dims[0]);
 	}
 	
 	/* Clean up memory allocated by data_from_mxArray */

@@ -93,8 +93,8 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     al_status_t status;
 
     char* uri;
-    ual_build_uri_from_legacy_parameters(backend_id, shot, run, user, tokamak, version, "", &uri);
-    status = ual_begin_dataentry_action(uri, FORCE_CREATE_PULSE, &idx);
+    al_build_uri_from_legacy_parameters(backend_id, shot, run, user, tokamak, version, "", &uri);
+    status = al_begin_dataentry_action(uri, FORCE_CREATE_PULSE, &idx);
 
     if (status.code != 0)
       mexErrMsgIdAndTxt("IMAS:imas_create_env_backend:Failed", "Error creating imas shot %d, run %d\n\tuser %s, tokamak %s, version %s, backend_id %d:\n\t%s", shot, run, user, tokamak, version, backend_id, status.message);

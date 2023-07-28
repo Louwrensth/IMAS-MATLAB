@@ -1,4 +1,4 @@
-README for the MEX interace for the UAL.
+README for the MEX interace for the AL.
 
 Working principles
 ==================

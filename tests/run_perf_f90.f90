@@ -63,17 +63,17 @@ program run_perf_f90
      ! ######################################################
      !                          GET
      ! ######################################################
-     call ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, dataversion, uri, options, status);
+     call al_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, dataversion, uri, options, status);
 
-     call ual_begin_dataentry_action(uri, OPEN_PULSE, idxr, status);
+     call al_begin_dataentry_action(uri, OPEN_PULSE, idxr, status);
      if (status < 0) then
         call exit(status)
      end if
 
      run_new = run + 9800;
-     call ual_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run_new, user, tokamak, dataversion, uri, options, status);
+     call al_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run_new, user, tokamak, dataversion, uri, options, status);
 
-     call ual_begin_dataentry_action(uri, CREATE_PULSE, idxw, status);
+     call al_begin_dataentry_action(uri, CREATE_PULSE, idxw, status);
      if (status < 0) then
         call exit(status)
      end if
@@ -99,22 +99,22 @@ program run_perf_f90
 
      end do
 
-     call ual_close_pulse(idxr, CLOSE_PULSE, status)
+     call al_close_pulse(idxr, CLOSE_PULSE, status)
      if (status < 0) then
         call exit(status)
      end if
 
-     call ual_end_action(idxr, status); 
+     call al_end_action(idxr, status); 
      if (status < 0) then
         call exit(status)
      end if
 
-     call ual_close_pulse(idxw, CLOSE_PULSE, status)
+     call al_close_pulse(idxw, CLOSE_PULSE, status)
      if (status < 0) then
         call exit(status)
      end if
 
-     call ual_end_action(idxw, status); 
+     call al_end_action(idxw, status); 
      if (status < 0) then
         call exit(status)
      end if

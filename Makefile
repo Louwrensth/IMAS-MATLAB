@@ -97,11 +97,11 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_close \
 				imas_get_backendID \
 				imas_get_mex_params imas_set_mex_params \
-				imas_ual_register_plugin \
-				imas_ual_unregister_plugin \
-				imas_ual_bind_plugin \
-				imas_ual_unbind_plugin \
-				imas_ual_setvalue_parameter_plugin \
+				imas_al_register_plugin \
+				imas_al_unregister_plugin \
+				imas_al_bind_plugin \
+				imas_al_unbind_plugin \
+				imas_al_setvalue_parameter_plugin \
 				imas_serialize imas_deserialize\
 				)
 SOURCES = $(GENSOURCES)
@@ -150,7 +150,7 @@ $(cell_to_struct_SRC_FILES): cells_structs.xsl
 $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 $(INDSOURCES): $(IDSDEF) | saxonicajar
-	$(SAXON) -t -warnings:fatal -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^)) DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE)
+	$(SAXON) -t -warnings:fatal -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^)) DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) AL_GIT_DESCRIBE=$(AL_GIT_DESCRIBE)
 ifneq "$(BEAUTIFY)" ""
         # This script will indent the generated files
         # If an error is triggered during indenting, remove the files

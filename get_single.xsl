@@ -45,7 +45,7 @@
       <xsl:if test="@type='dynamic'">
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
-      status = ual_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);      <xsl:if test="@type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
+      status = al_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);      <xsl:if test="@type='dynamic'"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
 	} else {
 	status.code = aosCtx = 0;
 	aosArraySize = 0; <!-- Create an empty dynamic AOS for time-independent IDSs -->
@@ -55,12 +55,12 @@
       for (int i=0; i&lt;aosArraySize; i++) {
       if (status.code >= 0) status = iterate_dataTree_array(i);
 	  if (status.code >= 0) status = <xsl:value-of select="concat($method_name,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
-      if (status.code >= 0) status = ual_iterate_over_arraystruct(aosCtx, 1);
+      if (status.code >= 0) status = al_iterate_over_arraystruct(aosCtx, 1);
       }
       /* Finished processing array of structure <xsl:value-of select="@name"/> */
       if (aosCtx > 0) {
-      status_end = ual_end_action(aosCtx);
-      if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+      status_end = al_end_action(aosCtx);
+      if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
       }
       if (status.code >= 0) status = end_dataTree_array_action();
       /* Error handling */
@@ -101,7 +101,7 @@
       <xsl:if test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
 	if (homogeneousTime != IDS_TIME_MODE_INDEPENDENT) {
       </xsl:if>
-      status = my_ual_read_data(&amp;action, &amp;field, &amp;data);
+      status = my_al_read_data(&amp;action, &amp;field, &amp;data);
       <xsl:if test="@type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])"> <!-- homogeneous_time != IDS_TIME_MODE_INDEPENDENT -->
 	} else {
 	status = mxArray_default_value(field.datatype, field.dim, &amp;data);

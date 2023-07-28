@@ -95,15 +95,15 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     int fallback;
     char* uri;
 
-    ual_build_uri_from_legacy_parameters(backend, shot, run, user, tokamak, version, "", &uri);
-    status = ual_begin_dataentry_action(uri, OPEN_PULSE, &idx);
+    al_build_uri_from_legacy_parameters(backend, shot, run, user, tokamak, version, "", &uri);
+    status = al_begin_dataentry_action(uri, OPEN_PULSE, &idx);
 
     if ( status.code < 0 ) {
       fallback = get_fallback_backend();
       if (fallback != NO_BACKEND) {
 	mexPrintf("WARNING: the pulse file is not available with the backend %d, now attempting to access it with the fallback backend %d\n",backend,fallback);
-	ual_build_uri_from_legacy_parameters(fallback, shot, run, user, tokamak, version, "", &uri);
-	status = ual_begin_dataentry_action(uri, OPEN_PULSE, &idx);
+	al_build_uri_from_legacy_parameters(fallback, shot, run, user, tokamak, version, "", &uri);
+	status = al_begin_dataentry_action(uri, OPEN_PULSE, &idx);
       }
     }
 

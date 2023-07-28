@@ -199,7 +199,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
     /* Check stored homogeneousTime mode */
     /* Open read context */
-    if (status.code >= 0) status = ual_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getOpCtx);
+    if (status.code >= 0) status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getOpCtx);
     if (status.code >= 0) status = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTimeStored);
     if (status.code >= 0) {
       /* If no IDS previously stored */
@@ -214,19 +214,19 @@ void mexFunction(int nlhs, mxArray *plhs[],
       }
     }
     if (getOpCtx > 0) {
-      status_end = ual_end_action(getOpCtx);
-      if (status.code >= 0) status.code = status_end.code; /* Result of ual_end_action is only relevant if there was no error before */
+      status_end = al_end_action(getOpCtx);
+      if (status.code >= 0) status.code = status_end.code; /* Result of al_end_action is only relevant if there was no error before */
     }
     
     if (sliceOp) {
       /* Open putSlice context */
-      if (status.code >= 0) status = ual_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP, &amp;putSliceOpCtx);
+      if (status.code >= 0) status = al_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP, &amp;putSliceOpCtx);
       
       if (status.code >= 0) status = put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putSliceOpCtx, homogeneousTime, idsFullName);
       if (putSliceOpCtx > 0) {
-        if (status.code >= 0)  status = ual_write_plugins_metadata(putSliceOpCtx); //writing plugins metadata just after calling the put_slice() operation
-        status_end = ual_end_action(putSliceOpCtx);
-        if (status.code >= 0) status = status_end; /* Result of ual_end_action is only relevant if there was no error before */
+        if (status.code >= 0)  status = al_write_plugins_metadata(putSliceOpCtx); //writing plugins metadata just after calling the put_slice() operation
+        status_end = al_end_action(putSliceOpCtx);
+        if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
       }
     } else {
       /* Call put method */

@@ -11,7 +11,7 @@
     version="2.0">
 
 <xsl:param name="DD_GIT_DESCRIBE" as="xs:string" required="yes"/>
-<xsl:param name="UAL_GIT_DESCRIBE" as="xs:string" required="yes"/>
+<xsl:param name="AL_GIT_DESCRIBE" as="xs:string" required="yes"/>
 
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 

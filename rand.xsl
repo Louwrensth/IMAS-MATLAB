@@ -83,7 +83,7 @@
 	</xsl:when>
 	
 	<xsl:when test="@path='ids_properties/version_put/access_layer'">
-	  data = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
+	  data = mxCreateString("<xsl:value-of select="$AL_GIT_DESCRIBE"/>");
 	</xsl:when>
 	
 	<xsl:when test="@path='ids_properties/version_put/access_layer_language'">
