@@ -1,0 +1,7 @@
+% Create an empty magnetics IDS
+magnetics = ids_init('magnetics')
+
+% Use the IDS ...
+
+% We are done with the IDS, clear it
+clear magnetics

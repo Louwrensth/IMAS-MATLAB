@@ -1,0 +1,7 @@
+% Create an empty core_profiles IDS
+core_profiles = ids_init('core_profiles')
+disp(core_profiles.ids_properties.homogeneous_time)  % -> -999999999 (default INT_0D value)
+
+% Create an empty equilibrium IDS
+equilibrium = ids_init('equilibrium')
+disp(length(equilibrium.time_slice))  % -> 0 (default size of array of structure)

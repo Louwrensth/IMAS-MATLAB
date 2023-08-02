@@ -1,0 +1,23 @@
+% Create an empty interferometer IDS
+interferometer = ids_init('interferometer')
+
+% interferometer/channel is an array of structures, add some data
+interferometer.channel = ids_allocate('interferometer', 'channel', 1)
+disp(length(interferometer.channel))  % -> 1
+interferometer.channel{1}.name = 'test'
+
+% resize, this will destroy the data that we just stored
+interferometer.channel = ids_allocate('interferometer', 'channel', 2)
+disp(interferometer.channel{1}.name)  % -> <empty>
+interferometer.channel{1}.name = 'test'
+interferometer.channel{2}.name = 'test2'
+
+% Resize, preserving existing data
+interferometer.channel = [
+    interferometer.channel;
+    ids_allocate('interferometer', 'channel', 1)
+]
+
+disp(interferometer.channel{1}.name)  % -> test
+disp(interferometer.channel{2}.name)  % -> test2
+disp(interferometer.channel{3}.name)  % -> <empty>

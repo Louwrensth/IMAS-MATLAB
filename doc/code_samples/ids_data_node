@@ -1,0 +1,7 @@
+% Create an empty core_profiles IDS
+core_profiles = ids_init('core_profiles')
+
+% core_profiles/time is a FLT_1D data node
+% We can assign values to it:
+core_profiles.time = [0.5, 1.0, 1.5]
+disp(core_profiles.time) % ->     0.5000    1.0000    1.5000
