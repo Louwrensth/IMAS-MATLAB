@@ -13,16 +13,16 @@
 <xsl:output method="text" version="1.0" encoding="UTF-8" indent="no"/>
 
 <xsl:param name="DD_GIT_DESCRIBE" as="xs:string" required="yes"/>
-<xsl:param name="UAL_GIT_DESCRIBE" as="xs:string" required="yes"/>
+<xsl:param name="AL_GIT_DESCRIBE" as="xs:string" required="yes"/>
 
 <xsl:variable name="version_regex" select="'^([0-9]+)\.([0-9]+)\.([0-9]+)(-.*)?$'"/>
 <xsl:variable name="DD_MAJOR" as="xs:int" select="xs:int(replace($DD_GIT_DESCRIBE, $version_regex, '$1'))"/>
 <xsl:variable name="DD_MINOR" as="xs:int" select="xs:int(replace($DD_GIT_DESCRIBE, $version_regex, '$2'))"/>
 <xsl:variable name="DD_PATCH" as="xs:int" select="xs:int(replace($DD_GIT_DESCRIBE, $version_regex, '$3'))"/>
 
-<xsl:variable name="HLI_MAJOR" as="xs:int" select="xs:int(replace($UAL_GIT_DESCRIBE, $version_regex, '$1'))"/>
-<xsl:variable name="HLI_MINOR" as="xs:int" select="xs:int(replace($UAL_GIT_DESCRIBE, $version_regex, '$2'))"/>
-<xsl:variable name="HLI_PATCH" as="xs:int" select="xs:int(replace($UAL_GIT_DESCRIBE, $version_regex, '$3'))"/>
+<xsl:variable name="HLI_MAJOR" as="xs:int" select="xs:int(replace($AL_GIT_DESCRIBE, $version_regex, '$1'))"/>
+<xsl:variable name="HLI_MINOR" as="xs:int" select="xs:int(replace($AL_GIT_DESCRIBE, $version_regex, '$2'))"/>
+<xsl:variable name="HLI_PATCH" as="xs:int" select="xs:int(replace($AL_GIT_DESCRIBE, $version_regex, '$3'))"/>
 
 <xsl:template match="/IDSs">
     <xsl:result-document href="src/imas_versions.c" method="text">
@@ -59,7 +59,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     arr = mxCreateString(getUALVersion());
     mxSetField(plhs[0], 0, "al_version", arr);
 
-    arr = mxCreateString("<xsl:value-of select="$UAL_GIT_DESCRIBE"/>");
+    arr = mxCreateString("<xsl:value-of select="$AL_GIT_DESCRIBE"/>");
     mxSetField(plhs[0], 0, "hli_version", arr);
 
     arr = mxCreateNumericArray(1, dims, mxINT32_CLASS, mxREAL);
