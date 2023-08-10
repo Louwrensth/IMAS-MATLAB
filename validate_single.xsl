@@ -537,6 +537,7 @@
           <xsl:with-param name="dimension" select="$dimension"/>
           <xsl:with-param name="coord" select="$coord"/>
           <xsl:with-param name="targetdim" select="$targetdim"/>
+          <xsl:with-param name="indexlist" select="''"/>
           </xsl:apply-templates>
         }
         </xsl:if>
@@ -683,6 +684,7 @@
         <xsl:param name="dimension"/>
         <xsl:param name="coord"/>
         <xsl:param name="targetdim"/>
+        <xsl:param name="indexlist"/>
         <xsl:if test="contains($newpath,'/')">
         <xsl:choose>
           <xsl:when test="ancestor::field[@name = substring-before($newpath,'/')]/@data_type='structure'">
@@ -698,6 +700,7 @@
             <xsl:with-param name="dimension" select="$dimension"/>
             <xsl:with-param name="coord" select="$coord"/>
             <xsl:with-param name="targetdim" select="$targetdim"/>
+            <xsl:with-param name="indexlist" select="$indexlist"/>
             </xsl:apply-templates>
             }
           </xsl:when>
@@ -720,6 +723,7 @@
             <xsl:with-param name="dimension" select="$dimension"/>
             <xsl:with-param name="coord" select="$coord"/>
             <xsl:with-param name="targetdim" select="$targetdim"/>
+            <xsl:with-param name="indexlist" select="if ($indexlist='') then concat('&quot;',$act_index,'&quot;' ) else concat($indexlist,',','&quot;',$act_index,'&quot;' )"/>
             </xsl:apply-templates>
               }
             }
@@ -784,7 +788,8 @@
             int i = 0;
             int targetFieldSize = 0;
             int pfieldSize = 0;
-            <xsl:apply-templates select="." mode="possible-coordinates"><xsl:with-param name="coord" select="$coord"/><xsl:with-param name="relativepathdoc" select="$root"/> <xsl:with-param name="targetdim" select="$targetdim"/><xsl:with-param name="self" select="concat($string,@name)"/></xsl:apply-templates>
+            // <xsl:value-of select="$indexlist"/>
+            <xsl:apply-templates select="." mode="possible-coordinates"><xsl:with-param name="coord" select="$coord"/><xsl:with-param name="relativepathdoc" select="$root"/> <xsl:with-param name="targetdim" select="$targetdim"/><xsl:with-param name="self" select="concat($string,@name)"/><xsl:with-param name="indexlist" select="$indexlist"/></xsl:apply-templates>
             if (i&gt;1) { 
               strncpy(status.message,  "Coordinate consistency error for <xsl:value-of select="@path"/> (dimension <xsl:value-of select="number($dimension)"/>). Exactly one of the coordinate must be verified. (<xsl:value-of select="$coord"/>)", MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
@@ -828,6 +833,7 @@
         <xsl:param name="relativepathdoc"/>
         <xsl:param name="targetdim"/>
         <xsl:param name="self"/>
+        <xsl:param name="indexlist"/>
         <xsl:if test="contains($coord,' OR')">
         <xsl:variable name="target">
             <xsl:if test="not($relativepathdoc='/')">
@@ -838,7 +844,7 @@
             </xsl:if>
         </xsl:variable>
         <xsl:if test="not(contains(substring-before($coord,' OR'),'1...'))">
-            pfield = getFieldFromStruct("<xsl:value-of select="$target"/>", data);
+            pfield = getFieldFromPath("<xsl:value-of select="$target"/>", data,(int[]) {<xsl:value-of select="replace($indexlist,'&quot;','')"/>},(const char*[]) {<xsl:value-of select="$indexlist"/>});
             pfieldSize = getDimSize(pfield,<xsl:value-of select="number($targetdim)+1"/>);
             if (pfieldSize != 0) {
               targetFieldSize = pfieldSize;
@@ -850,6 +856,7 @@
           <xsl:with-param name="relativepathdoc" select="$relativepathdoc"/>
           <xsl:with-param name="targetdim" select="$targetdim"/>
           <xsl:with-param name="self" select="$self"/>
+          <xsl:with-param name="indexlist" select="$indexlist"/>
         </xsl:apply-templates>
         </xsl:if>
         <xsl:if test="not(contains($coord,' OR'))">
@@ -862,7 +869,7 @@
             </xsl:if>
         </xsl:variable>
         <xsl:if test="not(contains($coord,'1...'))">
-            pfield = getFieldFromStruct("<xsl:value-of select="$target"/>", data);
+            pfield = getFieldFromPath("<xsl:value-of select="$target"/>", data,(int[]) {<xsl:value-of select="replace($indexlist,'&quot;','')"/>},(const char*[]) {<xsl:value-of select="$indexlist"/>});
             pfieldSize = getDimSize(pfield,<xsl:value-of select="number($targetdim)+1"/>);
             if (pfieldSize != 0) {
               targetFieldSize = pfieldSize;

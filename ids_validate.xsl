@@ -129,6 +129,58 @@ void mexFunction(int nlhs, mxArray *plhs[],
  <xsl:result-document href="src/ids/validate_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
 
+    char *my_strtok_r (char *srcString, char delim, char **save_ptr)
+    {
+      uint openpar  = 0;
+      uint closepar = 0;
+      if(!srcString)
+      {
+          srcString = *save_ptr;
+      }
+      if(!srcString)
+      {
+          return NULL;
+      }
+      // handle beginning of the string containing delims
+      while(1)
+      {
+          if(*srcString==delim)
+          {
+              srcString++;
+              continue;
+          }
+          if(*srcString == '\0')
+          {
+              // we've reached the end of the string
+              return NULL; 
+          }
+          break;
+      }
+      char *ret = srcString;
+      while(1)
+      {
+          if(*srcString == '\0')
+          {
+              /*end of the input string and
+              next exec will return NULL*/
+              *save_ptr = srcString;
+              return ret;
+          }
+          if(*srcString==delim)
+          {
+              if (openpar == closepar) {
+              *srcString = '\0';
+              *save_ptr = srcString + 1;
+              return ret;
+              }
+          }
+          if(*srcString=='(')  openpar++;
+          if(*srcString==')')  closepar++;
+          srcString++;
+      }
+    }
+
+
     const mxArray* getFieldFromStruct(char *path, const mxArray * data)
     {
       /* Extracts field from given structure 'data' following '/'-separated path */
@@ -170,6 +222,71 @@ void mexFunction(int nlhs, mxArray *plhs[],
         token = strtok(NULL, "/");
         index = 0; /* Only the first item can be an array */
       }
+      free(pathcopy);
+      return pfield;
+    }
+
+    const mxArray *getFieldFromPath(const char *path, const mxArray *data, const int *indices_values, const char **indices_names) {
+
+      char *token;
+      char *pathcopy = strdup(path);
+      char *relative_path;
+      char *save_ptr;
+      const mxArray *pfield = data;
+      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+      token = my_strtok_r(NULL, '/', &amp;save_ptr);
+      
+      if (token==NULL) {
+        pathcopy = strdup(path);
+        token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
+        pfield = getFieldFromStruct(token, data);
+        if(pfield != NULL) {
+          token = my_strtok_r(NULL, ')', &amp;save_ptr);
+          if (token != NULL) {
+            if (strlen(token)==1) {
+              int index = atoi(token);
+              pfield = mxGetCell(pfield, index-1);
+              return pfield;
+            } else {
+              // check if is in indices_name array
+              for (int i = 0; i &lt; sizeof(*indices_values)/sizeof(int); i++) {
+                if (strcmp(indices_names[i],token)==0) {
+                  pfield = mxGetCell(pfield, indices_values[i]);
+                  return pfield;
+                }
+              }
+              //
+              const mxArray *indexfield = getFieldFromPath(token, data, indices_values, indices_names);
+              if (indexfield == NULL) {
+                return NULL;
+              } else {
+                if (!mxIsNumeric(indexfield) &amp;&amp; !mxIsScalar(indexfield)) {
+                  return NULL;
+                } else 
+                {
+                  int scalar;
+                  if (mxIsInt32(data)) {
+                    scalar = *(int *) mxGetData(indexfield);
+                  } else {
+                    scalar = (int) mxGetScalar(indexfield);
+                  }
+                  pfield = mxGetCell(pfield, scalar-1);
+                }
+              }
+            }
+          }
+        }
+        return pfield;
+      }
+      pathcopy = strdup(path);
+      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+      while (token != NULL &amp;&amp; pfield != NULL)
+      {
+        relative_path = token;
+        pfield = getFieldFromPath(token, pfield, indices_values, indices_names);
+        token = my_strtok_r(NULL, '/', &amp;save_ptr);
+      }
+      
       free(pathcopy);
       return pfield;
     }
