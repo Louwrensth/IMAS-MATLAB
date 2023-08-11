@@ -301,7 +301,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         ndims = mxGetNumberOfDimensions(data);
         dims = mxGetDimensions(data);
         
-        if (dim &gt; ndims) return 0;
+        if (dim > ndims) return 0;
         /* 1D row vectors particular case */
         if (dim == 1 &amp;&amp; dims[0] == 1) {
           return dims[1];
@@ -311,6 +311,160 @@ void mexFunction(int nlhs, mxArray *plhs[],
           return dims[dim-1];
         }
       }
+
+    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) 
+    {
+      al_status_t status = {0,""};
+      char *pathcopy = strdup(path);
+      const mxArray *pfield;
+      char *save_ptr;
+      char *token;
+      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+      token = my_strtok_r(NULL, '/', &amp;save_ptr);
+
+      //printf("Enter in validate_coordinate with: %s\n\r", path);
+      
+      if (token==NULL) {
+        pathcopy = strdup(path);
+        token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
+        //printf("Get %s\n\r", token);
+        pfield = getFieldFromStruct(token, data);
+        if(pfield != NULL) {
+          int aosArraySize = getDimSize(pfield, cfield_dim);
+          //printf("Size of %s: %d\n\r", token, aosArraySize);
+          if (aosArraySize != 0) {
+
+            bool check = true;
+            bool error = true;
+            int i = 0;
+            int targetFieldSize = 0;
+            int pfieldSize = 0;
+            //printf("Iterate over %d targets\n\r",nb_ctargets);
+            for (int cpathid = 0; cpathid&lt;nb_ctargets;cpathid++) {
+              //printf("Get the target %s\n\r", ctargetfield[cpathid]);
+              pfield = getFieldFromPath(ctargetfield[cpathid], root, indices_values, indices_names);
+              pfieldSize = getDimSize(pfield,ctargetfielddim);
+              //printf("Size of the target %s: %d\n\r", ctargetfield[cpathid], pfieldSize);
+              if (pfieldSize != 0) {
+                targetFieldSize = pfieldSize;
+                i = i + 1;
+              } 
+            }
+
+            //printf("i is %d \n\r",i);
+        
+            if (i!=1) { 
+              check = false;
+            }
+
+            if (i>1) { 
+              size_t neededcoord= snprintf(NULL, 0, "%s%s",crootpath, ctargetfield[0]);
+              for (int target=1; target&lt;nb_ctargets;target++) {
+                neededcoord+= snprintf(NULL, 0, " OR %s%s",crootpath, ctargetfield[target]);
+              }
+              if(spec_dim) neededcoord+=snprintf(NULL, 0, "1...1");
+              char  *buffercoord = malloc(neededcoord+1);
+              sprintf(buffercoord, "%s%s",crootpath, ctargetfield[0]);
+              for (int target=1; target&lt;nb_ctargets;target++) {
+                sprintf(buffercoord, "%s OR %s%s",buffercoord,crootpath, ctargetfield[target]);
+              }
+              if(spec_dim) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim[0]);
+
+              size_t needed = snprintf(NULL, 0, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)", crootpath, path, cfield_dim-1,buffercoord);
+              char  *buffer = malloc(needed+1);
+              sprintf(buffer, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)",crootpath, path, cfield_dim-1, buffercoord);
+              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              status.code = HLI_ERR;
+              free(buffer);
+              free(buffercoord);
+              return status;
+            }
+            if (aosArraySize == targetFieldSize) {
+              error = false; 
+            }
+
+            if (spec_dim &amp;&amp; error==true) {
+              if(aosArraySize==spec_dim[0]) error = false;
+            }
+              
+            if (error &amp;&amp; status.code >= 0) { 
+              size_t neededcoord= snprintf(NULL, 0, "%s%s",crootpath, ctargetfield[0]);
+              for (int target=1; target&lt;nb_ctargets;target++) {
+                neededcoord+= snprintf(NULL, 0, " OR %s%s",crootpath, ctargetfield[target]);
+              }
+              if(spec_dim) neededcoord+=snprintf(NULL, 0, "1...1");
+              char  *buffercoord = malloc(neededcoord+1);
+              sprintf(buffercoord, "%s%s",crootpath, ctargetfield[0]);
+              for (int target=1; target&lt;nb_ctargets;target++) {
+                sprintf(buffercoord, "%s OR %s%s",buffercoord,crootpath, ctargetfield[target]);
+              }
+              if(spec_dim) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim[0]);
+
+              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s. (%s)", cfield_dim-1, crootpath, path, buffercoord);
+              char  *buffer = malloc(needed+1);
+              sprintf(buffer, "Wrong dimension %d for %s%s. (%s)", cfield_dim-1, crootpath, path, buffercoord);
+              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              status.code = HLI_ERR;
+              return status;
+            }
+
+          }
+
+        }
+      } else {
+      pathcopy = strdup(path);
+      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+      while (token != NULL &amp;&amp; pfield != NULL)
+      {
+        pathcopy = strdup(path);
+        token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
+        pfield = getFieldFromStruct(token, data);
+        if(pfield != NULL) {
+          token = my_strtok_r(NULL, ')', &amp;save_ptr);
+          if (token != NULL) {
+            // its a struct_array
+            int field_size = mxGetNumberOfElements(pfield);
+            if (field_size==0) return status;
+            int prev_number_of_indices = sizeof(*indices_values)/sizeof(int);
+            int *new_indices_values = malloc(sizeof(*indices_values) + sizeof(int));
+            char **new_indices_names = malloc(sizeof(*indices_names) + sizeof(char *));
+            memcpy(indices_values, new_indices_values, sizeof(*indices_values));
+            memcpy(indices_names, new_indices_names, sizeof(*indices_names));
+            for (int index=0;index&lt;field_size;index++) {
+              new_indices_values[prev_number_of_indices] = index;
+              new_indices_names[prev_number_of_indices] = strdup(token);
+              const mxArray *pfield_elem = mxGetCell(pfield, index);
+              if (pfield_elem) {
+                status = validate_coordinate(root, pfield_elem, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+                if(status.code &lt; 0) return status;
+              }
+            }
+            free(new_indices_values);
+            free(new_indices_names); //??
+          } else {
+            // it's a structure
+            status = validate_coordinate(root, pfield, crootpath, save_ptr, indices_values, (const char **) indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+            if(status.code &lt; 0) return status;
+          }
+        }
+
+      }
+      
+      free(pathcopy);
+
+      return status;
+
+    }
+    }
+
+    al_status_t validateCoordinateFromPath(const mxArray *data, const char *crootpath, const char *path, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) {
+      const mxArray *root = data;
+      int *indices_values;
+      char *indices_names[] = {};
+
+      return validate_coordinate(root, data, crootpath, path, indices_values, indices_names, cfield_dim, ctargetfield, nb_ctargets,ctargetfielddim, spec_dim);
+
+    }
 
     <xsl:for-each select="IDS">
     <xsl:apply-templates select="field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_VALIDATE_H"/>
