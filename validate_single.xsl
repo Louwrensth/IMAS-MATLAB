@@ -721,14 +721,10 @@
         </xsl:if>
         </xsl:variable>
         <xsl:if test="not($istimeslice='yes')"> 
-        status = validateCoordinateFromPath(data,
+        status = validateCoordinateFromPath(data, idsTimeMode, timeSize,
                                             "<xsl:value-of select="substring-before(@path_doc,@name)"/>",
                                             "<xsl:value-of select="@name"/>",
                                              <xsl:value-of select="number($dimension)+1"/>,
-                                                <!-- (const char*[]) {"grid/z","grid/theta_geometric","grid/theta_straight"}, 3,
-                                                1, 
-                                                NULL); -->
-
                                              (const char*[]) {<xsl:apply-templates select="." mode="possible-coordinates"><xsl:with-param name="coord" select="$coord"/><xsl:with-param name="relativepathdoc" select="$root"/> </xsl:apply-templates>},
                                              <xsl:apply-templates select="." mode="count-field-coordinates">
                                               <xsl:with-param name="coord" select="$coord"/>
@@ -813,6 +809,9 @@
         </xsl:variable>
         <xsl:if test="not(contains($coord,'1...'))">
           <xsl:value-of select="number($record)+1"/>
+        </xsl:if>
+        <xsl:if test="contains($coord,'1...')">
+          <xsl:value-of select="number($record)"/>
         </xsl:if>
         </xsl:if>
         </xsl:template>

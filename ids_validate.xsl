@@ -312,14 +312,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
       }
 
-    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) 
+    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) 
     {
       al_status_t status = {0,""};
       char *pathcopy = strdup(path);
       const mxArray *pfield;
       char *save_ptr;
       char *token;
+      bool is_time_coordinate = false;
       token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+      if (strcmp(token,"time")==0) is_time_coordinate=true;
       token = my_strtok_r(NULL, '/', &amp;save_ptr);
 
       //printf("Enter in validate_coordinate with: %s\n\r", path);
@@ -333,7 +335,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
           int aosArraySize = getDimSize(pfield, cfield_dim);
           //printf("Size of %s: %d\n\r", token, aosArraySize);
           if (aosArraySize != 0) {
-
+            if(is_time_coordinate &amp;&amp; idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS) {
+              if (timeSize != aosArraySize) {
+              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s. (time size is %d)", cfield_dim-1, crootpath, path, timeSize);
+              char  *buffer = malloc(needed+1);
+              sprintf(buffer, "Wrong dimension %d for %s%s. (time size is %d)", cfield_dim-1, crootpath, path, timeSize);
+              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              status.code = HLI_ERR;
+              return status;
+              }
+            }
+            if(is_time_coordinate == (idsTimeMode == IDS_TIME_MODE_HETEROGENEOUS)) {
             bool check = true;
             bool error = true;
             int i = 0;
@@ -357,7 +369,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
               check = false;
             }
 
-            if (i>1) { 
+            if (i&gt;1) { 
               size_t neededcoord= snprintf(NULL, 0, "%s%s",crootpath, ctargetfield[0]);
               for (int target=1; target&lt;nb_ctargets;target++) {
                 neededcoord+= snprintf(NULL, 0, " OR %s%s",crootpath, ctargetfield[target]);
@@ -407,9 +419,19 @@ void mexFunction(int nlhs, mxArray *plhs[],
               status.code = HLI_ERR;
               return status;
             }
-
+              return status;
           }
-
+          if (is_time_coordinate == (idsTimeMode == IDS_TIME_MODE_INDEPENDENT)) {
+            if(aosArraySize != 0) {
+              size_t needed = snprintf(NULL, 0, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim-1);
+              char  *buffer = malloc(needed+1);
+              sprintf(buffer, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim-1);
+              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              status.code = HLI_ERR;
+              return status;
+            }
+          }
+          }
         }
       } else {
       pathcopy = strdup(path);
@@ -435,15 +457,15 @@ void mexFunction(int nlhs, mxArray *plhs[],
               new_indices_names[prev_number_of_indices] = strdup(token);
               const mxArray *pfield_elem = mxGetCell(pfield, index);
               if (pfield_elem) {
-                status = validate_coordinate(root, pfield_elem, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+                status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
                 if(status.code &lt; 0) return status;
               }
             }
             free(new_indices_values);
-            free(new_indices_names); //??
+            free(new_indices_names); //sure??
           } else {
             // it's a structure
-            status = validate_coordinate(root, pfield, crootpath, save_ptr, indices_values, (const char **) indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+            status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, save_ptr, indices_values, (const char **) indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
             if(status.code &lt; 0) return status;
           }
         }
@@ -457,12 +479,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
     }
 
-    al_status_t validateCoordinateFromPath(const mxArray *data, const char *crootpath, const char *path, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) {
+    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) {
       const mxArray *root = data;
       int *indices_values;
       char *indices_names[] = {};
 
-      return validate_coordinate(root, data, crootpath, path, indices_values, indices_names, cfield_dim, ctargetfield, nb_ctargets,ctargetfielddim, spec_dim);
+      return validate_coordinate(root, data, idsTimeMode, timeSize, crootpath, path, indices_values, indices_names, cfield_dim, ctargetfield, nb_ctargets,ctargetfielddim, spec_dim);
 
     }
 
