@@ -18,16 +18,46 @@
   // validation of <xsl:value-of select="@path"/>
   if (status.code &gt;= 0)
         pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
-    if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
+    if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
   <xsl:if test="contains(@coordinate1,'/time')">
+  if (aosArraySize != 0) {
   if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
-      if(aosArraySize != 0 &amp;&amp; aosArraySize != timeSize) {
+      if(aosArraySize != timeSize) {
         strncpy(status.message,  "array size of <xsl:value-of select="@path"/> wrong dimension.", MAX_ERR_MSG_LEN);
         status.code = HLI_ERR;
       }
   }
+  <xsl:variable name="coord" select="@coordinate1"/>
+    <xsl:if test=".//field[@path_doc=$coord and (@data_type='flt_type' or @data_type='FLT_0D')]">
+  if (idsTimeMode == IDS_TIME_MODE_HETEROGENEOUS ) {
+      for (int itime = 0; itime&lt;aosArraySize;itime++) {
+        const mxArray *elem = mxGetCell(pfield, itime); //get the cell of index (itime) 
+        double scalar_time = EMPTY_DOUBLE;
+        if (elem != NULL) {
+        ifield = mxGetFieldNumber(elem, "time");
+        const mxArray *pfieldelem = mxGetFieldByNumber(elem, (mwIndex) 0, ifield);
+        if (pfieldelem != NULL &amp;&amp; status.code &gt;= 0) {
+          if (mxIsNumeric(pfieldelem) || mxIsScalar(pfieldelem)) {
+            if (mxIsDouble(pfieldelem)) {
+              scalar_time = *(double *) mxGetData(pfieldelem);
+            }
+          }
+        }
+      }
+      if ((scalar_time == EMPTY_DOUBLE)) { 
+        size_t needed = snprintf(NULL, 0, "Time coordinate of <xsl:value-of select="@name"/>(%d) wrong. <xsl:value-of select="@name"/>(%d)/time is invalid.", itime+1, itime+1);
+        char *buffer = malloc(needed + 1);
+        sprintf(buffer, "Time coordinate of <xsl:value-of select="@name"/>(%d) wrong. <xsl:value-of select="@name"/>(%d)/time is invalid.", itime+1, itime+1);
+                        
+        strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+        status.code = HLI_ERR;
+      }
+      }
+    }
+  </xsl:if>
   if (status.code &gt;= 0) status = end_dataTree_array_action();
+  }
   }
   </xsl:if>
   <xsl:if test="not(contains(@coordinate1,'/time'))">
@@ -749,6 +779,61 @@
                                               <xsl:with-param name="self" select="concat($string,@name)"/>
                                             </xsl:apply-templates>);
         </xsl:if> 
+        <xsl:if test="$istimeslice='yes'"> 
+          pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
+          <xsl:if test="$enable-logging = 'yes'">
+          printf("<xsl:value-of select="@name"/>: %d\n\r",pfield==NULL);
+          </xsl:if> 
+          if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
+          if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+          if (aosArraySize != 0) {
+          if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
+            if(aosArraySize != timeSize) {
+              strncpy(status.message,  "array size of <xsl:value-of select="@path"/> wrong dimension.", MAX_ERR_MSG_LEN);
+              status.code = HLI_ERR;
+            }
+          }
+          <xsl:if test=".//field[@path_doc=$coord and (@data_type='flt_type' or @data_type='FLT_0D')]">
+          if (idsTimeMode == IDS_TIME_MODE_HETEROGENEOUS ) {        
+            for (int itime = 0; itime&lt;aosArraySize;itime++) {
+              if (status.code &gt;= 0) {
+              const mxArray *elem = mxGetCell(pfield, itime); //get the cell of index (itime) 
+              <xsl:if test="$enable-logging = 'yes'">
+              printf("<xsl:value-of select="@name"/>(%d): %d\n\r",itime,elem==NULL);
+              </xsl:if> 
+              double scalar_time = EMPTY_DOUBLE;
+              if (elem != NULL) {
+              ifield = mxGetFieldNumber(elem, "time");
+              const mxArray *pfieldelem = mxGetFieldByNumber(elem, (mwIndex) 0, ifield);
+              <xsl:if test="$enable-logging = 'yes'">
+                printf("<xsl:value-of select="@name"/>(%d)/time: %d\n\r",itime,pfieldelem==NULL);
+              </xsl:if> 
+              if (pfieldelem != NULL &amp;&amp; status.code &gt;= 0) {
+                if (mxIsNumeric(pfieldelem) || mxIsScalar(pfieldelem)) {
+                  if (mxIsDouble(pfieldelem)) {
+                    scalar_time = *(double *) mxGetData(pfieldelem);
+                  }
+                }
+              }
+              }
+              if ((scalar_time == EMPTY_DOUBLE)) { 
+                size_t needed = snprintf(NULL, 0, "Time coordinate of <xsl:value-of select="@name"/>(%d) wrong. <xsl:value-of select="@name"/>(%d)/time is invalid.", itime+1, itime+1);
+                char *buffer = malloc(needed + 1);
+                sprintf(buffer, "Time coordinate of <xsl:value-of select="@name"/>(%d) wrong. <xsl:value-of select="@name"/>(%d)/time is invalid.", itime+1, itime+1);
+                
+                strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+                status.code = HLI_ERR;
+              }
+            }
+            }
+          }
+        </xsl:if>
+          }
+          if (status.code &gt;= 0) status = end_dataTree_array_action();
+        }
+        </xsl:if> 
+
+
         </xsl:template>
 
 

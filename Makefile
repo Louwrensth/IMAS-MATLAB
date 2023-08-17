@@ -171,8 +171,8 @@ endif
 $(LIB_DIR) $(BUILD_DIR): 
 	$(mkdir_p) $(@)
 
-$(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o
-$(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix $(BUILD_DIR)/, delete_ids.o put_ids.o)
+$(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o $(BUILD_DIR)/validate_ids.o
+$(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix $(BUILD_DIR)/, delete_ids.o put_ids.o validate_ids.o)
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(MEX_ADD_OBJ_FILES) | $(LIB_DIR) $(LIB_DIR)/libal-mex.so
 	$(CC) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -lal-mex $(LIBS) $(LDFLAGS)
 
