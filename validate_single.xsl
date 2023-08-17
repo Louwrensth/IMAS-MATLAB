@@ -24,6 +24,7 @@
         status.code = HLI_ERR;
       }
   }
+  if (status.code &gt;= 0) status = end_dataTree_array_action();
   </xsl:if>
   <xsl:if test="not(contains(@coordinate1,'/time'))">
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;coordSize);
@@ -34,6 +35,7 @@
     strncpy(status.message,  "array size of <xsl:value-of select="@path"/> wrong dimension. Must be the size of <xsl:value-of select="@coordinate1"/>.", MAX_ERR_MSG_LEN);
     status.code = HLI_ERR;
   }
+  if (status.code &gt;= 0) status = end_dataTree_array_action();
   </xsl:if>
   </xsl:when>
   <xsl:otherwise>

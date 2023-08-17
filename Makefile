@@ -151,16 +151,16 @@ $(cell_to_struct_SRC_FILES): cells_structs.xsl
 $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 $(INDSOURCES): $(IDSDEF) | saxonicajar
-	$(SAXON) -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) UAL_GIT_DESCRIBE=$(UAL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
-#ifneq "$(BEAUTIFY)" ""
+	$(SAXON) -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) AL_GIT_DESCRIBE=$(AL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
+ifneq "$(BEAUTIFY)" ""
         # This script will indent the generated files
         # If an error is triggered during indenting, remove the files
-#@[ "$@" = "matlab/IDS_list.m" ] || (echo "[indent] Processing $($(@:_sources=_SOURCES))";\
-#	VERSION_CONTROL="none" $(BEAUTIFY) $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
-#	x=$$?;\
-#	[[ $$x == 0 ]] || rm -f $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
-#	[[ $$x == 0 ]])
-#endif
+	@[ "$@" = "matlab/IDS_list.m" ] || (echo "[indent] Processing $($(@:_sources=_SOURCES))";\
+	VERSION_CONTROL="none" $(BEAUTIFY) $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
+	x=$$?;\
+	[[ $$x == 0 ]] || rm -f $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
+	[[ $$x == 0 ]])
+endif
 
 .PHONY: sources
 
