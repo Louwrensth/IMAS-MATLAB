@@ -120,10 +120,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/ids_validate.h" standalone="yes" method="text">
     #include "mex.h"
     #include "imas_mex_utils.h"
-  <xsl:apply-templates select = "IDS" mode="LIST">
-    <xsl:with-param name="prefix" select="'al_status_t ids_validate_'"/>
-    <xsl:with-param name="suffix" select="'(char* idsFullName, const mxArray* ids);'"/>
-  </xsl:apply-templates>
+    <xsl:for-each select="IDS">
+    al_status_t ids_validate_<xsl:value-of select="@name"/>(char* idsFullName, const mxArray* ids);
+    </xsl:for-each>
  </xsl:result-document>
 
  <xsl:result-document href="src/ids/validate_ids.c" standalone="yes" method="text">
