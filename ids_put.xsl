@@ -155,6 +155,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
  </xsl:result-document>
   <xsl:result-document href="src/ids/put_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+    #include "ids_validate.h"
     <xsl:for-each select="IDS">
 
     al_status_t ids_delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName);
@@ -168,6 +169,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     al_status_t status_end;
     int putOpCtx = -1;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
+
+    int disable_validationID = 0;
+    char* disable_validationSTR = getenv("IMAS_AL_DISABLE_VALIDATE");
+    if (disable_validationSTR != NULL) disable_validationID = atoi(disable_validationSTR);
+    if (disable_validationID!=1) status = ids_validate_<xsl:value-of select="@name"/>(idsFullName, ids);
 
     status = init_dataTree_write((mxArray *) ids);
     /* TODO: move these checks to external function? */

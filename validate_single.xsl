@@ -16,17 +16,24 @@
     <xsl:choose>
   <xsl:when test="not(contains(@coordinate1,' OR ')) and not(contains(@coordinate1, '1...'))">
   // validation of <xsl:value-of select="@path"/>
+  if (status.code &gt;= 0)
+        pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
+    if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
   <xsl:if test="contains(@coordinate1,'/time')">
   if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
-      if(aosArraySize != timeSize) {
+      if(aosArraySize != 0 &amp;&amp; aosArraySize != timeSize) {
         strncpy(status.message,  "array size of <xsl:value-of select="@path"/> wrong dimension.", MAX_ERR_MSG_LEN);
         status.code = HLI_ERR;
       }
   }
   if (status.code &gt;= 0) status = end_dataTree_array_action();
+  }
   </xsl:if>
   <xsl:if test="not(contains(@coordinate1,'/time'))">
+  if (status.code &gt;= 0)
+        pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
+    if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;coordSize);
   if (status.code &gt;= 0 &amp;&amp; !(coordSize &gt; 0)) {
     coordSize = 0;
@@ -36,6 +43,7 @@
     status.code = HLI_ERR;
   }
   if (status.code &gt;= 0) status = end_dataTree_array_action();
+  }
   </xsl:if>
   </xsl:when>
   <xsl:otherwise>
