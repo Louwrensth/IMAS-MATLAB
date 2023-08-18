@@ -15,12 +15,12 @@
 <xsl:template match="field[@data_type='struct_array']" mode="VALIDATE_CHILD_1D">
     <xsl:choose>
   <xsl:when test="not(contains(@coordinate1,' OR ')) and not(contains(@coordinate1, '1...'))">
+   <xsl:if test="contains(@coordinate1,'/time')">
   // validation of <xsl:value-of select="@path"/>
   if (status.code &gt;= 0)
         pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
     if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
-  <xsl:if test="contains(@coordinate1,'/time')">
   if (aosArraySize != 0) {
   if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
       if(aosArraySize != timeSize) {
@@ -938,7 +938,7 @@
       </xsl:if>
       </xsl:if>
       <xsl:if test="not(contains($coord,'1...'))">
-        NULL
+        0
       </xsl:if>
       </xsl:template>
 

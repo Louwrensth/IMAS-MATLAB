@@ -311,7 +311,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
       }
 
-    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) 
+    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int spec_dim) 
     {
       al_status_t status = {0,""};
       char *pathcopy = strdup(path);
@@ -373,13 +373,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
               for (int target=1; target&lt;nb_ctargets;target++) {
                 neededcoord+= snprintf(NULL, 0, " OR %s%s",crootpath, ctargetfield[target]);
               }
-              if(spec_dim) neededcoord+=snprintf(NULL, 0, "1...1");
+              if(spec_dim!=0) neededcoord+=snprintf(NULL, 0, "1...1");
               char  *buffercoord = malloc(neededcoord+1);
               sprintf(buffercoord, "%s%s",crootpath, ctargetfield[0]);
               for (int target=1; target&lt;nb_ctargets;target++) {
                 sprintf(buffercoord, "%s OR %s%s",buffercoord,crootpath, ctargetfield[target]);
               }
-              if(spec_dim) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim[0]);
+              if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
 
               size_t needed = snprintf(NULL, 0, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)", crootpath, path, cfield_dim-1,buffercoord);
               char  *buffer = malloc(needed+1);
@@ -394,8 +394,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
               error = false; 
             }
 
-            if (spec_dim &amp;&amp; error==true) {
-              if(aosArraySize==spec_dim[0]) error = false;
+            if (spec_dim!=0 &amp;&amp; error==true) {
+              if(aosArraySize==spec_dim) error = false;
             }
               
             if (error &amp;&amp; status.code >= 0) { 
@@ -403,13 +403,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
               for (int target=1; target&lt;nb_ctargets;target++) {
                 neededcoord+= snprintf(NULL, 0, " OR %s%s",crootpath, ctargetfield[target]);
               }
-              if(spec_dim) neededcoord+=snprintf(NULL, 0, "1...1");
+              if(spec_dim!=0) neededcoord+=snprintf(NULL, 0, "1...1");
               char  *buffercoord = malloc(neededcoord+1);
               sprintf(buffercoord, "%s%s",crootpath, ctargetfield[0]);
               for (int target=1; target&lt;nb_ctargets;target++) {
                 sprintf(buffercoord, "%s OR %s%s",buffercoord,crootpath, ctargetfield[target]);
               }
-              if(spec_dim) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim[0]);
+              if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
 
               size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s. (%s)", cfield_dim-1, crootpath, path, buffercoord);
               char  *buffer = malloc(needed+1);
@@ -449,8 +449,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
             int prev_number_of_indices = sizeof(*indices_values)/sizeof(int);
             int *new_indices_values = malloc(sizeof(*indices_values) + sizeof(int));
             char **new_indices_names = malloc(sizeof(*indices_names) + sizeof(char *));
-            memcpy(indices_values, new_indices_values, sizeof(*indices_values));
-            memcpy(indices_names, new_indices_names, sizeof(*indices_names));
+            memcpy(new_indices_values, indices_values, sizeof(*indices_values));
+            memcpy(new_indices_names, indices_names, sizeof(*indices_names));
             for (int index=0;index&lt;field_size;index++) {
               new_indices_values[prev_number_of_indices] = index;
               new_indices_names[prev_number_of_indices] = strdup(token);
@@ -478,7 +478,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
     }
 
-    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int *spec_dim) {
+    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int spec_dim) {
       const mxArray *root = data;
       int *indices_values;
       char *indices_names[] = {};
