@@ -761,10 +761,19 @@
         </xsl:if>
         </xsl:variable>
         <xsl:if test="not($istimeslice='yes')"> 
-          // <xsl:value-of select="$root"/>
+        <xsl:variable name="relativepath_doc">
+          <xsl:choose>
+          <xsl:when test="$root='/'">
+          <xsl:value-of select="concat(substring-before(@path_doc,@name),@name)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="concat(substring-before(substring-after(@path_doc,$root),@name),@name)"/>
+          </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
         status = validateCoordinateFromPath(data, idsTimeMode, timeSize,
                                             "<xsl:value-of select="$root"/>",
-                                            "<xsl:value-of select="concat(substring-before(substring-after(@path_doc,$root),@name),@name)"/>",
+                                            "<xsl:value-of select="$relativepath_doc"/>",
                                              <xsl:value-of select="number($dimension)+1"/>,
                                              (const char*[]) {<xsl:apply-templates select="." mode="possible-coordinates"><xsl:with-param name="coord" select="$coord"/><xsl:with-param name="relativepathdoc" select="$root"/> </xsl:apply-templates>},
                                              <xsl:apply-templates select="." mode="count-field-coordinates">

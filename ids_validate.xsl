@@ -311,7 +311,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
       }
 
-    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int spec_dim) 
+    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int nbindices, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int spec_dim) 
     {
       al_status_t status = {0,""};
       char *pathcopy = strdup(path);
@@ -445,17 +445,20 @@ void mexFunction(int nlhs, mxArray *plhs[],
           // its a struct_array
           int field_size = mxGetNumberOfElements(pfield);
           if (field_size==0) return status;
-          int prev_number_of_indices = sizeof(*indices_values)/sizeof(int);
-          int *new_indices_values = malloc(sizeof(*indices_values) + sizeof(int));
-          char **new_indices_names = malloc(sizeof(*indices_names) + sizeof(char *));
-          memcpy(new_indices_values, indices_values, sizeof(*indices_values));
-          memcpy(new_indices_names, indices_names, sizeof(*indices_names));
+          int *new_indices_values = malloc((nbindices+1)*sizeof(int));
+          char **new_indices_names = malloc((nbindices+1)*sizeof(char *));
+          memcpy(new_indices_values, indices_values, nbindices*sizeof(int));
+          memcpy(new_indices_names, indices_names, nbindices*sizeof(char *));
           for (int index=0;index&lt;field_size;index++) {
-            new_indices_values[prev_number_of_indices] = index;
-            new_indices_names[prev_number_of_indices] = strdup(token);
+            ///printf("%s : %d\r\n", token, index);
+            new_indices_values[nbindices] = index;
+            new_indices_names[nbindices] = strdup(token);
             const mxArray *pfield_elem = mxGetCell(pfield, index);
+            ///printf("field_elem(%s) is NULL: %d\n\r", token, pfield_elem==NULL);
             if (pfield_elem) {
-              status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+              char * pathcopy = strdup(path);
+              char * newtoken = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+              status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, nbindices + 1, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
             }
           }
           free(new_indices_values);
@@ -466,7 +469,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
           token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
           printf("%s is a structure: %d\n\r",token, pfield==NULL);
           token = my_strtok_r(NULL, '/', &amp;save_ptr);
-          status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, token, indices_values, (const char **) indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+          status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, token, indices_values, (const char **) indices_names, nbindices, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
         }
       }
       
@@ -481,7 +484,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       int *indices_values;
       char *indices_names[] = {};
 
-      return validate_coordinate(root, data, idsTimeMode, timeSize, crootpath, path, indices_values, indices_names, cfield_dim, ctargetfield, nb_ctargets,ctargetfielddim, spec_dim);
+      return validate_coordinate(root, data, idsTimeMode, timeSize, crootpath, path, indices_values, indices_names, 0, cfield_dim, ctargetfield, nb_ctargets,ctargetfielddim, spec_dim);
 
     }
 
