@@ -467,7 +467,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
           // it's a structure
           pathcopy = strdup(path);
           token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-          printf("%s is a structure: %d\n\r",token, pfield==NULL);
+          ///printf("%s is a structure: %d\n\r",token, pfield==NULL);
           token = my_strtok_r(NULL, '/', &amp;save_ptr);
           status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, token, indices_values, (const char **) indices_names, nbindices, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
         }
