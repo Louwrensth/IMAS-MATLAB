@@ -14,16 +14,16 @@
 
 
 <!--================================================-->
-<!--                Debug logs param                -->
-<!--================================================-->
-<xsl:variable name="enable-logging" select='no'/>
-
-<!--================================================-->
 <!--                 Include section                -->
 <!--================================================-->
 
 <xsl:include href="mex_tools.xsl"/>
 <xsl:include href="validate_single.xsl"/>
+
+<!--================================================-->
+<!--                Debug logs param                -->
+<!--================================================-->
+<xsl:variable name="enable-logging" select="'no'"/>
 
 <!--================================================-->
 <!--         Template for the whole document        -->
@@ -323,16 +323,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
       if (strcmp(token,"time")==0) is_time_coordinate=true;
       token = my_strtok_r(NULL, '/', &amp;save_ptr);
 
-      //printf("Enter in validate_coordinate with: %s\n\r", path);
+      ///printf("Enter in validate_coordinate with: %s\n\r", path);
       
       if (token==NULL) {
         pathcopy = strdup(path);
         token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
-        //printf("Get %s\n\r", token);
+        ///printf("Get %s\n\r", token);
         pfield = getFieldFromStruct(token, data);
         if(pfield != NULL) {
           int aosArraySize = getDimSize(pfield, cfield_dim);
-          //printf("Size of %s: %d\n\r", token, aosArraySize);
+          ///printf("Size of %s: %d\n\r", token, aosArraySize);
           if (aosArraySize != 0) {
             if(is_time_coordinate &amp;&amp; idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS) {
               if (timeSize != aosArraySize) {
@@ -344,25 +344,25 @@ void mexFunction(int nlhs, mxArray *plhs[],
               return status;
               }
             }
-            if(is_time_coordinate == (idsTimeMode == IDS_TIME_MODE_HETEROGENEOUS)) {
+            if((is_time_coordinate == (idsTimeMode == IDS_TIME_MODE_HETEROGENEOUS)) || !is_time_coordinate) {
             bool check = true;
             bool error = true;
             int i = 0;
             int targetFieldSize = 0;
             int pfieldSize = 0;
-            //printf("Iterate over %d targets\n\r",nb_ctargets);
+            ///printf("Iterate over %d targets\n\r",nb_ctargets);
             for (int cpathid = 0; cpathid&lt;nb_ctargets;cpathid++) {
-              //printf("Get the target %s\n\r", ctargetfield[cpathid]);
+              ///printf("Get the target %s\n\r", ctargetfield[cpathid]);
               pfield = getFieldFromPath(ctargetfield[cpathid], root, indices_values, indices_names);
               pfieldSize = getDimSize(pfield,ctargetfielddim);
-              //printf("Size of the target %s: %d\n\r", ctargetfield[cpathid], pfieldSize);
+              ///printf("Size of the target %s: %d\n\r", ctargetfield[cpathid], pfieldSize);
               if (pfieldSize != 0) {
                 targetFieldSize = pfieldSize;
                 i = i + 1;
               } 
             }
 
-            //printf("i is %d \n\r",i);
+            ///printf("i is %d \n\r",i);
         
             if (i!=1) { 
               check = false;
@@ -434,45 +434,43 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
       } else {
       pathcopy = strdup(path);
-      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-      while (token != NULL &amp;&amp; pfield != NULL)
-      {
-        pathcopy = strdup(path);
-        token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
-        pfield = getFieldFromStruct(token, data);
-        if(pfield != NULL) {
-          token = my_strtok_r(NULL, ')', &amp;save_ptr);
-          if (token != NULL) {
-            // its a struct_array
-            int field_size = mxGetNumberOfElements(pfield);
-            if (field_size==0) return status;
-            int prev_number_of_indices = sizeof(*indices_values)/sizeof(int);
-            int *new_indices_values = malloc(sizeof(*indices_values) + sizeof(int));
-            char **new_indices_names = malloc(sizeof(*indices_names) + sizeof(char *));
-            memcpy(new_indices_values, indices_values, sizeof(*indices_values));
-            memcpy(new_indices_names, indices_names, sizeof(*indices_names));
-            for (int index=0;index&lt;field_size;index++) {
-              new_indices_values[prev_number_of_indices] = index;
-              new_indices_names[prev_number_of_indices] = strdup(token);
-              const mxArray *pfield_elem = mxGetCell(pfield, index);
-              if (pfield_elem) {
-                status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
-                if(status.code &lt; 0) return status;
-              }
+      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);    
+      pathcopy = strdup(token);
+      token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
+      ///printf("field: %s\n\r",token);
+      pfield = getFieldFromStruct(token, data);
+      if(pfield != NULL) {
+        token = my_strtok_r(NULL, ')', &amp;save_ptr);
+        if (token != NULL) {
+          // its a struct_array
+          int field_size = mxGetNumberOfElements(pfield);
+          if (field_size==0) return status;
+          int prev_number_of_indices = sizeof(*indices_values)/sizeof(int);
+          int *new_indices_values = malloc(sizeof(*indices_values) + sizeof(int));
+          char **new_indices_names = malloc(sizeof(*indices_names) + sizeof(char *));
+          memcpy(new_indices_values, indices_values, sizeof(*indices_values));
+          memcpy(new_indices_names, indices_names, sizeof(*indices_names));
+          for (int index=0;index&lt;field_size;index++) {
+            new_indices_values[prev_number_of_indices] = index;
+            new_indices_names[prev_number_of_indices] = strdup(token);
+            const mxArray *pfield_elem = mxGetCell(pfield, index);
+            if (pfield_elem) {
+              status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
             }
-            free(new_indices_values);
-            free(new_indices_names); //sure??
-          } else {
-            // it's a structure
-            status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, save_ptr, indices_values, (const char **) indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
-            if(status.code &lt; 0) return status;
           }
+          free(new_indices_values);
+          free(new_indices_names); //sure??
+        } else {
+          // it's a structure
+          pathcopy = strdup(path);
+          token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+          printf("%s is a structure: %d\n\r",token, pfield==NULL);
+          token = my_strtok_r(NULL, '/', &amp;save_ptr);
+          status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, token, indices_values, (const char **) indices_names, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
         }
-
       }
       
       free(pathcopy);
-
       return status;
 
     }
@@ -534,6 +532,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_4D"/>
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_5D"/>
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_6D"/>
+    <xsl:apply-templates select="field" mode="VALIDATE_CHILD_FIXED_SIZE"/>
 
     return status;
     }
@@ -557,6 +556,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:when test="@data_type='struct_array'">
     if (status.code &gt;= 0) pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
     if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
+      <xsl:if test="$enable-logging = 'yes'">
+        printf("Size of struct_array: %d elements.\n\r",(pfield == NULL) ? 0 : mxGetNumberOfElements(pfield));
+      </xsl:if>
     if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
     if (status.code &gt;= 0) {
       <xsl:if test="$enable-logging = 'yes'">
@@ -612,6 +614,7 @@ al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(i
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_4D"/>
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_5D"/>
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_6D"/>
+    <xsl:apply-templates select="field" mode="VALIDATE_CHILD_FIXED_SIZE"/>
     }
 
     <xsl:if test="$enable-logging = 'yes'">

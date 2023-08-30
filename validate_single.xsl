@@ -761,9 +761,10 @@
         </xsl:if>
         </xsl:variable>
         <xsl:if test="not($istimeslice='yes')"> 
+          // <xsl:value-of select="$root"/>
         status = validateCoordinateFromPath(data, idsTimeMode, timeSize,
-                                            "<xsl:value-of select="substring-before(@path_doc,@name)"/>",
-                                            "<xsl:value-of select="@name"/>",
+                                            "<xsl:value-of select="$root"/>",
+                                            "<xsl:value-of select="concat(substring-before(substring-after(@path_doc,$root),@name),@name)"/>",
                                              <xsl:value-of select="number($dimension)+1"/>,
                                              (const char*[]) {<xsl:apply-templates select="." mode="possible-coordinates"><xsl:with-param name="coord" select="$coord"/><xsl:with-param name="relativepathdoc" select="$root"/> </xsl:apply-templates>},
                                              <xsl:apply-templates select="." mode="count-field-coordinates">
@@ -782,7 +783,7 @@
         <xsl:if test="$istimeslice='yes'"> 
           pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
           <xsl:if test="$enable-logging = 'yes'">
-          printf("<xsl:value-of select="@name"/>: %d\n\r",pfield==NULL);
+          printf("<xsl:value-of select="@name"/>: %d\n\r",pfield==NULL, mxGetNumberOfElements(pfield));
           </xsl:if> 
           if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
           if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
