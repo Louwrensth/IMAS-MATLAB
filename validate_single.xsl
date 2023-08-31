@@ -63,7 +63,7 @@
   <xsl:if test="not(contains(@coordinate1,'/time'))">
   if (status.code &gt;= 0)
         pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
-    if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
+    if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;coordSize);
   if (status.code &gt;= 0 &amp;&amp; !(coordSize &gt; 0)) {
     coordSize = 0;
@@ -764,13 +764,14 @@
         <xsl:variable name="relativepath_doc">
           <xsl:choose>
           <xsl:when test="$root='/'">
-          <xsl:value-of select="concat(substring-before(@path_doc,@name),@name)"/>
+          <xsl:value-of select="concat(substring-before(@path_doc,concat(@name,'(:')),@name)"/>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:value-of select="concat(substring-before(substring-after(@path_doc,$root),@name),@name)"/>
+            <xsl:value-of select="concat(substring-before(substring-after(@path_doc,$root),concat(@name,'(:')),@name)"/>
           </xsl:otherwise>
           </xsl:choose>
         </xsl:variable>
+        // <xsl:value-of select="@path_doc"/>"
         status = validateCoordinateFromPath(data, idsTimeMode, timeSize,
                                             "<xsl:value-of select="$root"/>",
                                             "<xsl:value-of select="$relativepath_doc"/>",
@@ -789,10 +790,10 @@
                                               <xsl:with-param name="self" select="concat($string,@name)"/>
                                             </xsl:apply-templates>);
         </xsl:if> 
-        <xsl:if test="$istimeslice='yes'"> 
+        <xsl:if test="$istimeslice='yes' and substring-after($coord,'(itime)/')='time'"> 
           pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
           <xsl:if test="$enable-logging = 'yes'">
-          printf("<xsl:value-of select="@name"/>: %d\n\r",pfield==NULL, mxGetNumberOfElements(pfield));
+          printf("<xsl:value-of select="@name"/>: %d %d\n\r",pfield==NULL, mxGetNumberOfElements(pfield));
           </xsl:if> 
           if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
           if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
