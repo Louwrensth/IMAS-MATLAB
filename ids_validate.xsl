@@ -336,9 +336,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
           if (aosArraySize != 0) {
             if(is_time_coordinate &amp;&amp; idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS) {
               if (timeSize != aosArraySize) {
-              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s. (time size is %d)", cfield_dim-1, crootpath, path, timeSize);
+              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s (%d). (time size is %d)", cfield_dim, crootpath, path, aosArraySize, timeSize);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Wrong dimension %d for %s%s. (time size is %d)", cfield_dim-1, crootpath, path, timeSize);
+              sprintf(buffer, "Wrong dimension %d for %s%s (%d). (time size is %d)", cfield_dim, crootpath, path, aosArraySize, timeSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               return status;
@@ -354,7 +354,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
             for (int cpathid = 0; cpathid&lt;nb_ctargets;cpathid++) {
 	      //printf("Get the target %s\n\r", ctargetfield[cpathid]);
               pfield = getFieldFromPath(ctargetfield[cpathid], root, indices_values, indices_names);
-              pfieldSize = getDimSize(pfield,ctargetfielddim);
+	      pfieldSize = getDimSize(pfield,ctargetfielddim);
 	      //printf("Size of the target %s: %d\n\r", ctargetfield[cpathid], pfieldSize);
               if (pfieldSize != 0) {
                 targetFieldSize = pfieldSize;
@@ -381,9 +381,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
               }
               if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
 
-              size_t needed = snprintf(NULL, 0, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)", crootpath, path, cfield_dim-1,buffercoord);
+              size_t needed = snprintf(NULL, 0, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)", crootpath, path, cfield_dim,buffercoord);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)",crootpath, path, cfield_dim-1, buffercoord);
+              sprintf(buffer, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)",crootpath, path, cfield_dim, buffercoord);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               free(buffer);
@@ -411,9 +411,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
               }
               if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
 
-              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s. (%s)", cfield_dim-1, crootpath, path, buffercoord);
+              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s (%d). (%s)", cfield_dim, crootpath, path, aosArraySize, buffercoord);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Wrong dimension %d for %s%s. (%s)", cfield_dim-1, crootpath, path, buffercoord);
+              sprintf(buffer, "Wrong dimension %d for %s%s (%d). (%s)", cfield_dim, crootpath, path, aosArraySize, buffercoord);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               return status;
@@ -422,9 +422,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
           }
           if (is_time_coordinate == (idsTimeMode == IDS_TIME_MODE_INDEPENDENT)) {
             if(aosArraySize != 0) {
-              size_t needed = snprintf(NULL, 0, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim-1);
+              size_t needed = snprintf(NULL, 0, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim-1);
+              sprintf(buffer, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               return status;

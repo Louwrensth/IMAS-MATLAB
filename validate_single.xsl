@@ -23,9 +23,13 @@
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
   if (aosArraySize != 0) {
   if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
-      if(aosArraySize != timeSize) {
-        strncpy(status.message,  "array size of <xsl:value-of select="@path"/> wrong dimension.", MAX_ERR_MSG_LEN);
+  if(aosArraySize != timeSize) {
+        size_t needed = snprintf(NULL, 0, "array size of <xsl:value-of select="@path"/> (%d) != time (%d)", aosArraySize, timeSize);
+        char  *buffer = malloc(needed+1);
+        sprintf(buffer, "array size of <xsl:value-of select="@path"/> (%d) != time (%d)", aosArraySize, timeSize);
+        strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
         status.code = HLI_ERR;
+        free(buffer);
       }
   }
   <xsl:variable name="coord" select="@coordinate1"/>
@@ -202,8 +206,13 @@
         if (pfield != NULL) {
           if (aosArraySize != 0) {
             if (aosArraySize != <xsl:value-of select = "substring-after($coord,'1...')"/>) {
-              strncpy(status.message,  "array_size of <xsl:value-of select="@path"/> wrong dimension <xsl:value-of select="number($dimension)"/>. Must be <xsl:value-of select = "substring-after($coord,'1...')"/>.", MAX_ERR_MSG_LEN);
+	      size_t needed = snprintf(NULL, 0, "array_size of <xsl:value-of select="@path"/> dimension <xsl:value-of select="number($dimension)"/> (%d) != <xsl:value-of select = "$coord"/> (<xsl:value-of select = "substring-after($coord,'1...')"/>)",aosArraySize);
+              char  *buffer = malloc(needed+1);
+              sprintf(buffer, "array_size of <xsl:value-of select="@path"/> dimension <xsl:value-of select="number($dimension)"/> (%d) != <xsl:value-of select = "$coord"/> (<xsl:value-of select = "substring-after($coord,'1...')"/>)",aosArraySize);
+              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
+              free(buffer);
+	      status.code = HLI_ERR;
             }
           }
         }
