@@ -225,7 +225,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       return pfield;
     }
 
-    const mxArray *getFieldFromPath(const char *path, const mxArray *data, const int *indices_values, const char **indices_names) {
+    const mxArray *getFieldFromPath(const char *path, const mxArray *data, const int *indices_values, const char **indices_names, int nbindices) {
 
       char *token;
       char *pathcopy = strdup(path);
@@ -233,12 +233,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
       char *save_ptr;
       const mxArray *pfield = data;
       token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+    //printf("Log: token: %s\n\r", token);
       token = my_strtok_r(NULL, '/', &amp;save_ptr);
+     //printf("Log: token: %s\n\r", token);
       
       if (token==NULL) {
         pathcopy = strdup(path);
         token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
+       //printf("Log:Get %s\n\r", token);
         pfield = getFieldFromStruct(token, data);
+       //printf("Log: %s is null : %d\n\r",token, pfield==NULL);
         if(pfield != NULL) {
           token = my_strtok_r(NULL, ')', &amp;save_ptr);
           if (token != NULL) {
@@ -248,14 +252,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
               return pfield;
             } else {
               // check if is in indices_name array
-              for (int i = 0; i &lt; sizeof(*indices_values)/sizeof(int); i++) {
+              for (int i = 0; i &lt; nbindices; i++) {
                 if (strcmp(indices_names[i],token)==0) {
                   pfield = mxGetCell(pfield, indices_values[i]);
+                 //printf("Log:indexfield %s is null: %d\n\r",indices_names[i], pfield==NULL);
                   return pfield;
                 }
               }
               //
-              const mxArray *indexfield = getFieldFromPath(token, data, indices_values, indices_names);
+              const mxArray *indexfield = getFieldFromPath(token, data, indices_values, indices_names, nbindices);
+             //printf("Log:indexfield %s is null : %d\n\r",token, pfield==NULL);
               if (indexfield == NULL) {
                 return NULL;
               } else {
@@ -270,30 +276,83 @@ void mexFunction(int nlhs, mxArray *plhs[],
                     scalar = (int) mxGetScalar(indexfield);
                   }
                   pfield = mxGetCell(pfield, scalar-1);
+                 //printf("Log:indexfield cell %s is : %d\n\r",token, scalar);
+                 //printf("Log:indexfield cell %s is null : %d\n\r",token,pfield==NULL);
                 }
               }
             }
           }
         }
         return pfield;
-      }
+      } else {
       pathcopy = strdup(path);
-      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-      while (token != NULL &amp;&amp; pfield != NULL)
-      {
-        relative_path = token;
-        pfield = getFieldFromPath(token, pfield, indices_values, indices_names);
-        token = my_strtok_r(NULL, '/', &amp;save_ptr);
+      token = my_strtok_r(pathcopy, '/', &amp;save_ptr);    
+      pathcopy = strdup(token);
+      token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
+     //printf("Log:field: %s\n\r",token);
+      pfield = getFieldFromStruct(token, data);
+      if(pfield != NULL) {
+        token = my_strtok_r(NULL, ')', &amp;save_ptr);
+        if (token != NULL) {
+          // its a struct_array
+         pathcopy = strdup(path);
+         token = my_strtok_r(pathcopy, '/', &amp;save_ptr); 
+        //printf("Log:%s is a struct_array: %d\n\r",token, pfield==NULL);
+         pfield = getFieldFromPath(token, data, indices_values, indices_names, nbindices);
+         if (pfield!=NULL) {
+         //printf("Log:reenter in getFieldFromPath with field: %s\n\r",save_ptr);
+          pfield = getFieldFromPath(save_ptr, pfield, indices_values, indices_names, nbindices);
+         }
+          
+        } else {
+          // it's a structure
+          pathcopy = strdup(path);
+          token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
+	       //printf("Log:%s is a structure: %d\n\r",token, pfield==NULL);
+          pfield = getFieldFromPath(token, data, indices_values, indices_names, nbindices);
+          if (pfield!=NULL) {
+         //printf("Log:reenter in getFieldFromPath with field: %s\n\r",save_ptr);
+          pfield = getFieldFromPath(save_ptr, pfield, indices_values, indices_names, nbindices);
+          }
+        }
       }
+    }
       
       free(pathcopy);
       return pfield;
     }
 
+    mwSize getDimSizeV2(const mxArray * data, int rank, int dim)
+      {
+        int ndims;
+        const mwSize *dims;
+
+        if (data == NULL) return 0;
+
+        if (dim > rank) return 1;
+ 
+        ndims = mxGetNumberOfDimensions(data);
+        dims = mxGetDimensions(data);
+
+        if (rank > ndims) return 0;
+
+        //printf("In getDimSizeV2: rank: %d, dim: %d, ndims: %d\r\n", rank, dim, ndims);
+
+        /* Allow for 1D row vectors  */
+        if (rank == 1 &amp;&amp; dims[0] == 1) {
+          return dims[1];
+        }
+
+        /* Convert array size and compute total number of elements */
+        return ndims > dim-1 ? dims[dim-1] : 1;
+
+       }
+
     mwSize getDimSize(const mxArray * data, int dim) {
         /* Find the dimension size of the data mxArray */
         int ndims;
         const mwSize * dims;
+
         
         if (data == NULL) return 0;
         
@@ -302,7 +361,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         
         if (dim > ndims) return 0;
         /* 1D row vectors particular case */
-        if (ndims == 1 &amp;&amp; dims[0] == 1) {
+        if (ndims == 2 &amp;&amp; dim == 1 &amp;&amp; dims[0] == 1) {
           return dims[1];
         } 
         /* Other cases */
@@ -311,7 +370,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         }
       }
 
-    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, const int *indices_values, const char *indices_names[], int nbindices, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int spec_dim) 
+    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int rank, const int *indices_values, const char *indices_names[], int nbindices, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) 
     {
       al_status_t status = {0,""};
       char *pathcopy = strdup(path);
@@ -323,16 +382,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
       if (strcmp(token,"time")==0) is_time_coordinate=true;
       token = my_strtok_r(NULL, '/', &amp;save_ptr);
 
-      //printf("Enter in validate_coordinate with: %s\n\r", path);
+     //printf("Log:Enter in validate_coordinate with: %s\n\r", path);
       
       if (token==NULL) {
         pathcopy = strdup(path);
         token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
-	//printf("Get %s\n\r", token);
+	      //printf("Log:Get %s\n\r", token);
         pfield = getFieldFromStruct(token, data);
         if(pfield != NULL) {
-          mwSize aosArraySize = getDimSize(pfield, cfield_dim);
-	  //printf("Size of %s: %d\n\r", token, (int)aosArraySize);
+          mwSize aosArraySize = getDimSizeV2(pfield, rank, cfield_dim);
+	        //printf("Log:Size of %s: %d\n\r", token, (int)aosArraySize);
+         //printf("Logv2:Size of %s (dim %d/%d): %d\n\r", token, cfield_dim, rank, (int) getDimSizeV2(pfield, rank, cfield_dim));
           if (aosArraySize != 0) {
             if(is_time_coordinate &amp;&amp; idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS) {
               if (timeSize != aosArraySize) {
@@ -340,7 +400,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Wrong dimension %d for %s%s (%d). (time size is %d)", cfield_dim, crootpath, path, aosArraySize, timeSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
-              status.code = HLI_ERR;
+	      status.code = HLI_ERR;
+	      //printf("Log:Consistency error: %s\n\r",buffer);
+	      free(buffer);
               return status;
               }
             }
@@ -350,19 +412,20 @@ void mexFunction(int nlhs, mxArray *plhs[],
             int i = 0;
             mwSize targetFieldSize = 0;
 	    mwSize pfieldSize = 0;
-	    //printf("Iterate over %d targets\n\r",nb_ctargets);
+	    //printf("Log:Iterate over %d targets\n\r",nb_ctargets);
             for (int cpathid = 0; cpathid&lt;nb_ctargets;cpathid++) {
-	      //printf("Get the target %s\n\r", ctargetfield[cpathid]);
-              pfield = getFieldFromPath(ctargetfield[cpathid], root, indices_values, indices_names);
-	      pfieldSize = getDimSize(pfield,ctargetfielddim);
-	      //printf("Size of the target %s: %d\n\r", ctargetfield[cpathid], pfieldSize);
+	         //printf("Log:Get the target %s\n\r", ctargetfield[cpathid]);
+            pfield = getFieldFromPath(ctargetfield[cpathid], root, indices_values, indices_names, nbindices);
+        pfieldSize = getDimSizeV2(pfield, target_ranks[cpathid], ctargetfielddim);
+	     //printf("Log:Size of the target %s: %d\n\r", ctargetfield[cpathid], pfieldSize);
+        //printf("Logv2:Size of the target %s: %d\n\r", ctargetfield[cpathid], (int) getDimSizeV2(pfield, target_ranks[cpathid], ctargetfielddim));
               if (pfieldSize != 0) {
                 targetFieldSize = pfieldSize;
                 i = i + 1;
               } 
             }
 
-	    //printf("i is %d \n\r",i);
+	    //printf("Log:i is %d \n\r",i);
         
             if (i!=1) { 
               check = false;
@@ -385,9 +448,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)",crootpath, path, cfield_dim, buffercoord);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
-              status.code = HLI_ERR;
+	      status.code = HLI_ERR;
+	      //printf("Log:Consistency error: %s\n\r",buffer);
               free(buffer);
-              free(buffercoord);
+	      free(buffercoord);
               return status;
             }
             if (aosArraySize == targetFieldSize) {
@@ -437,7 +501,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       token = my_strtok_r(pathcopy, '/', &amp;save_ptr);    
       pathcopy = strdup(token);
       token = my_strtok_r(pathcopy, '(', &amp;save_ptr);
-      //printf("field: %s\n\r",token);
+      //printf("Log:field: %s\n\r",token);
       pfield = getFieldFromStruct(token, data);
       if(pfield != NULL) {
         token = my_strtok_r(NULL, ')', &amp;save_ptr);
@@ -450,15 +514,15 @@ void mexFunction(int nlhs, mxArray *plhs[],
           memcpy(new_indices_values, indices_values, nbindices*sizeof(int));
           memcpy(new_indices_names, indices_names, nbindices*sizeof(char *));
           for (int index=0;index&lt;field_size;index++) {
-	    //printf("%s : %d\r\n", token, index);
+	    //printf("Log:%s : %d\r\n", token, index);
             new_indices_values[nbindices] = index;
             new_indices_names[nbindices] = strdup(token);
             const mxArray *pfield_elem = mxGetCell(pfield, index);
-	    //printf("field_elem(%s) is NULL: %d\n\r", token, pfield_elem==NULL);
+	    //printf("Log:field_elem(%s) is NULL: %d\n\r", token, pfield_elem==NULL);
             if (pfield_elem) {
               char * pathcopy = strdup(path);
               char * newtoken = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-              status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, new_indices_values, (const char **) new_indices_names, nbindices + 1, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+              status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, rank, new_indices_values, (const char **) new_indices_names, nbindices + 1, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
             }
           }
           free(new_indices_values);
@@ -467,9 +531,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
           // it's a structure
           pathcopy = strdup(path);
           token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-	  //printf("%s is a structure: %d\n\r",token, pfield==NULL);
-	  //printf("reenter in validate_coordinate with field: %s\n\r",save_ptr);
-          status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, save_ptr, indices_values, (const char **) indices_names, nbindices, cfield_dim, ctargetfield, nb_ctargets, ctargetfielddim, spec_dim);
+	  //printf("Log:%s is a structure: %d\n\r",token, pfield==NULL);
+	  //printf("Log:reenter in validate_coordinate with field: %s\n\r",save_ptr);
+          status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, save_ptr, rank, indices_values, (const char **) indices_names, nbindices, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
         }
       }
       
@@ -479,12 +543,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     }
     }
 
-    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int ctargetfielddim, int spec_dim) {
+    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
       const mxArray *root = data;
       int *indices_values;
       char *indices_names[] = {};
 
-      return validate_coordinate(root, data, idsTimeMode, timeSize, crootpath, path, indices_values, indices_names, 0, cfield_dim, ctargetfield, nb_ctargets,ctargetfielddim, spec_dim);
+      return validate_coordinate(root, data, idsTimeMode, timeSize, crootpath, path, rank, indices_values, indices_names, 0, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
 
     }
 
@@ -495,7 +559,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     {
     al_status_t status;
     int ifield;
-    const mxArray* data=NULL;
+    const mxArray* data=NULL; 
     const mxArray* pfield=NULL;
     int idsTimeMode = IDS_TIME_MODE_UNKNOWN;
     int timeSize;
@@ -516,17 +580,20 @@ void mexFunction(int nlhs, mxArray *plhs[],
     else if ( idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
       ifield = mxGetFieldNumber(ids, "time");
       data = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-      if (data == NULL)
+      if (data == NULL) {
         mexErrMsgIdAndTxt("IMAS:ids_validate:invalid_time",
-        "Unable to retrieve ids%%time");
+	"Unable to retrieve ids%%time");
+	status.code = HLI_ERR;
+      }
       timeSize = mxGetNumberOfElements(data);
       if (timeSize &lt; 1)
       mexErrMsgIdAndTxt("IMAS:ids_validate:empty_time",
       "If time is homogeneous, ids%%time must have at least one element");
     }
 
-    status = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
+    if (status.code &gt;= 0) status = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
 
+    if (status.code &gt;= 0) {
     <xsl:apply-templates select="field" mode="VALIDATE_CHILD_CALL"/>
     <xsl:apply-templates select="field[@data_type='struct_array']" mode="VALIDATE_CHILD_1D"/>
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_1D"/>
@@ -536,6 +603,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_5D"/>
     <xsl:apply-templates select="." mode="VALIDATE_DESCENDANT_6D"/>
     <xsl:apply-templates select="field" mode="VALIDATE_CHILD_FIXED_SIZE"/>
+    }
 
     return status;
     }

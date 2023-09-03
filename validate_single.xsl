@@ -17,7 +17,7 @@
   <xsl:when test="not(contains(@coordinate1,' OR ')) and not(contains(@coordinate1, '1...'))">
    <xsl:if test="contains(@coordinate1,'/time')">
   // validation of <xsl:value-of select="@path"/>
-  if (status.code &gt;= 0)
+  if (status.code &gt;= 0) {
         pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
     if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
   if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
@@ -56,6 +56,7 @@
                         
         strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
         status.code = HLI_ERR;
+        free(buffer);
       }
       }
     }
@@ -63,12 +64,13 @@
   if (status.code &gt;= 0) status = end_dataTree_array_action();
   }
   }
+  }
   </xsl:if>
   <xsl:if test="not(contains(@coordinate1,'/time'))">
-  if (status.code &gt;= 0)
+  if (status.code &gt;= 0) {
         pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
     if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
-  if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;coordSize);
+  if (status.code &gt;= 0)status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;coordSize);
   if (status.code &gt;= 0 &amp;&amp; !(coordSize &gt; 0)) {
     coordSize = 0;
     }
@@ -77,6 +79,7 @@
     status.code = HLI_ERR;
   }
   if (status.code &gt;= 0) status = end_dataTree_array_action();
+  }
   }
   </xsl:if>
   </xsl:when>
@@ -780,17 +783,24 @@
           </xsl:otherwise>
           </xsl:choose>
         </xsl:variable>
-        // <xsl:value-of select="@path_doc"/>"
+        <xsl:variable name="numbtargets">
+        <xsl:apply-templates select="." mode="count-field-coordinates">
+              <xsl:with-param name="coord" select="$coord"/>
+              <xsl:with-param name="relativepathdoc" select="$root"/> 
+              <xsl:with-param name="record" select="'0'"/>
+        </xsl:apply-templates>
+        </xsl:variable>
         status = validateCoordinateFromPath(data, idsTimeMode, timeSize,
                                             "<xsl:value-of select="$root"/>",
                                             "<xsl:value-of select="$relativepath_doc"/>",
+                                            <xsl:apply-templates select='.' mode="get-rank"/>,
                                              <xsl:value-of select="number($dimension)+1"/>,
                                              (const char*[]) {<xsl:apply-templates select="." mode="possible-coordinates"><xsl:with-param name="coord" select="$coord"/><xsl:with-param name="relativepathdoc" select="$root"/> </xsl:apply-templates>},
-                                             <xsl:apply-templates select="." mode="count-field-coordinates">
-                                              <xsl:with-param name="coord" select="$coord"/>
-                                              <xsl:with-param name="relativepathdoc" select="$root"/> 
-                                              <xsl:with-param name="record" select="'0'"/>
-                                            </xsl:apply-templates>,
+                                             <xsl:value-of select="$numbtargets"/>,
+                                            (int[<xsl:value-of select="$numbtargets"/>]){<xsl:apply-templates select="." mode="get-rank-coordinates">
+                                            <xsl:with-param name="coord" select="$coord"/>
+                                            <xsl:with-param name="numbtargets" select="$numbtargets"/>
+                                            </xsl:apply-templates>},
                                              <xsl:value-of select="number($targetdim)+1"/>,
                                             <xsl:apply-templates select="." mode="check-specific-coordinates">
                                               <xsl:with-param name="coord" select="$coord"/>
@@ -802,7 +812,7 @@
         <xsl:if test="$istimeslice='yes' and substring-after($coord,'(itime)/')='time'"> 
           pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
           <xsl:if test="$enable-logging = 'yes'">
-          printf("<xsl:value-of select="@name"/>: %d %d\n\r",pfield==NULL, mxGetNumberOfElements(pfield));
+          printf("<xsl:value-of select="@name"/>: %d %d\n\r",pfield==NULL, (pfield==NULL) ? 0 : mxGetNumberOfElements(pfield));
           </xsl:if> 
           if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
           if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
@@ -890,6 +900,63 @@
                                             "<xsl:value-of select="$target"/>"
         </xsl:if>
         </xsl:if>
+        </xsl:template>
+
+
+        <xsl:template match='field' mode="get-rank-coordinates">
+        <xsl:param name="coord"/>
+        <xsl:param name="numbtargets"/>
+        <xsl:if test="contains($coord,' OR')">
+        <xsl:if test="not(contains(substring-before($coord,' OR'),'1...'))">
+                                            <xsl:apply-templates select="." mode="get-rank-from-pathdoc">
+                                              <xsl:with-param name="coord" select="substring-before($coord,' OR')"/>
+                                            </xsl:apply-templates>
+                                            <xsl:if test="not(numbtargets='1')">,</xsl:if>
+        </xsl:if>
+        <xsl:apply-templates select="." mode="get-rank-coordinates">
+          <xsl:with-param name="coord" select="substring-after($coord,' OR ')"/>
+          <xsl:with-param name="numbtargets" select="$numbtargets"/>
+        </xsl:apply-templates>
+        </xsl:if>
+        <xsl:if test="not(contains($coord,' OR'))">
+        <xsl:if test="not(contains($coord,'1...'))">
+                                            <xsl:apply-templates select="." mode="get-rank-from-pathdoc">
+                                              <xsl:with-param name="coord" select="$coord"/>
+                                            </xsl:apply-templates>
+        </xsl:if>
+        </xsl:if>
+        </xsl:template>
+
+
+        <xsl:template match='field' mode="get-rank-from-pathdoc">
+        <xsl:param name="coord"/>
+        <xsl:variable name="targetname">
+            <xsl:if test="contains($coord,'/')">
+              <xsl:value-of select="tokenize($coord,'/')[last()]"/>
+            </xsl:if>
+            <xsl:if test="not(contains($coord,'/'))">
+              <xsl:value-of select="$coord"/>
+            </xsl:if>
+        </xsl:variable>
+        <!-- <xsl:value-of select="$coord"/>
+        <xsl:value-of select="ancestor::IDS//field[starts-with(@path_doc,concat($coord,'('))]/@path_doc"/> -->
+        <xsl:if test="ancestor::IDS//field[starts-with(@path_doc,concat($coord,'(')) and (@name = $targetname)]">
+        <xsl:apply-templates select="ancestor::IDS//field[starts-with(@path_doc,concat($coord,'(')) and (@name = $targetname)]" mode="get-rank"/>
+        </xsl:if>
+        <xsl:if test="not(ancestor::IDS//field[starts-with(@path_doc,concat($coord,'(')) and (@name = $targetname)])">
+        <xsl:apply-templates select="ancestor::IDS//field[(@name = $targetname)]" mode="get-rank"/>
+        </xsl:if>
+        </xsl:template> 
+
+        <xsl:template match='field' mode="get-rank">
+        <xsl:if test="@data_type='struct_array' or @data_type='flt_1d_type' or @data_type='FLT_1D'
+              or @data_type='int_1d_type' or @data_type='INT_1D'
+              or @data_type='cpx_1d_type' or @data_type='CPX_1D' or @data_type='STR_1D'">1</xsl:if>
+        <xsl:if test="@data_type='FLT_2D' or @data_type='INT_2D' or @data_type='CPX_2D'">2</xsl:if>
+        <xsl:if test="@data_type='FLT_3D' or @data_type='INT_3D' or @data_type='CPX_3D'">3</xsl:if>
+        <xsl:if test="@data_type='FLT_4D' or @data_type='INT_4D' or @data_type='CPX_4D'">4</xsl:if>
+        <xsl:if test="@data_type='FLT_5D' or @data_type='INT_5D' or @data_type='CPX_5D'">5</xsl:if>
+        <xsl:if test="@data_type='FLT_6D' or @data_type='INT_6D' or @data_type='CPX_6D'">6</xsl:if>
         </xsl:template>
 
         <xsl:template match='field' mode="count-field-coordinates">
