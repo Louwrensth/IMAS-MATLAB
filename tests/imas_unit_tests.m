@@ -29,11 +29,19 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       hT = int32(homogeneousTime);
       for name = IDS_list.'
         testCase.TestData.IDS.(name{1}) = ids_rand(name{1},ntime,0);
-        testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = hT;
+	if isfield(testCase.TestData.IDS.(name{1}), "time") 
+           testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = hT;
+	else %IDS is constant, homogeneous_time is set to 2
+           testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = int32(2);
+	end
         testCase.TestData.IDS_slice.(name{1}) = cell(ntime,1);
         for itime = 1:ntime
           testCase.TestData.IDS_slice.(name{1}){itime} = ids_rand(name{1},ntime,itime);
-          testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = hT;
+	  if isfield(testCase.TestData.IDS.(name{1}), "time")
+	     testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = hT;
+	  else
+             testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = int32(2);
+	  end
         end
       end
       %
@@ -57,10 +65,16 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       sdi = ids_get(idx,IDSname);
       comparator(ids,sdi,IDSname);
       % Test get_slice
-      itime = 2;
-      interp = 1; % closest sample
-      sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
-      comparator(ids_slice{itime},sdi,IDSname);
+      if isfield(ids,'time')
+        itime = 2;
+        interp = 1; % closest sample
+        sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
+        comparator(ids_slice{itime},sdi,IDSname);
+      else %IDS is constant, ids_get_slice() should behave as get()
+	sdi_slice = ids_get_slice(idx,IDSname,0,1);
+	comparator(sdi,sdi_slice,IDSname);
+      end	
+
     end
     
     function testPutSlice(testCase, IDSname)
@@ -75,10 +89,14 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       sdi = ids_get(idx,IDSname);
       comparator(ids,sdi,IDSname);
       % Test get_slice
-      itime = 2;
-      interp = 1; % closest sample
-      sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
-      comparator(ids_slice{itime},sdi,IDSname);
+      if isfield(ids,'time')
+        itime = 2;
+        interp = 1; % closest sample
+        sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
+        comparator(ids_slice{itime},sdi,IDSname);
+      else %IDS is constant, ids_put_slice() should behave as put()
+	comparator(sdi,ids,IDSname);
+      end
     end
 
   end
