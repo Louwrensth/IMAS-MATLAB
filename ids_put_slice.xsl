@@ -163,7 +163,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       al_status_t ids_delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName);
       <xsl:apply-templates select="." mode="METHOD_PUT_H"/>
     </xsl:if>
-    <xsl:if test="@type='dynamic'">
+    <xsl:if test="@type='dynamic' or not(@type)">
       <xsl:apply-templates select="." mode="METHOD_PUT_SLICE_H"/>
     </xsl:if>
     
@@ -172,12 +172,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:if test="@type='constant'">
         <xsl:call-template name="put_implementation"/>
     </xsl:if>
-    <xsl:if test="@type='dynamic'">
+    <xsl:if test="@type='dynamic' or not(@type)">
       <xsl:call-template name="put_slice_implementation"/>
     </xsl:if>
     }
 
-    <xsl:if test="@type='dynamic'">
+    <xsl:if test="@type='dynamic' or not(@type)">
       <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE_H"/>
 
       <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE">

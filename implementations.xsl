@@ -122,7 +122,7 @@
     return status;
     }
     <xsl:choose>
-      <xsl:when test="@type='dynamic'">
+      <xsl:when test="@type='dynamic' or not(@type)">
         else if ( homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
         /* Top-level ids_put functions check that ids is a scalar struct */
         ifield = mxGetFieldNumber(ids, "time");

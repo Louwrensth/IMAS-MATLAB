@@ -80,7 +80,7 @@
   <xsl:param name="ignore_nbc_change"/>
   <xsl:param name="ids_type"/>
   <xsl:choose>
-    <xsl:when test="$ids_type='dynamic' and @type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
+    <xsl:when test="$ids_type='dynamic' or $ids_type='' and @type='dynamic' and not(ancestor::field[@type='dynamic' and @data_type='struct_array'])">
       <xsl:text>if (homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS) {&#xA;</xsl:text> 
       <xsl:text>&#032;strcpy(field.timebasePath, "/time");&#xA;</xsl:text>
       <xsl:text>&#032;}&#xA;</xsl:text>

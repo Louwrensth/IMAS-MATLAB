@@ -172,7 +172,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     <xsl:if test="@type='constant'">
       <xsl:apply-templates select="." mode="METHOD_GET_H"/>
     </xsl:if>
-    <xsl:if test="@type='dynamic'">
+    <xsl:if test="@type='dynamic' or not(@type)">
       <xsl:apply-templates select="." mode="METHOD_GET_SLICE_H"/>
     </xsl:if>
     al_status_t ids_get_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, double inTime, int interpolMode, mxArray** ids)
@@ -182,13 +182,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
       <xsl:call-template name="get_implementation"/>
     </xsl:if>
 
-    <xsl:if test="@type='dynamic'">
+    <xsl:if test="@type='dynamic' or not(@type)">
       <xsl:call-template name="get_slice_implementation"/>
     </xsl:if>
 
     }
 
-    <xsl:if test="@type='dynamic'">
+    <xsl:if test="@type='dynamic' or not(@type)">
       <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE_H"/>
 
       <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE">
