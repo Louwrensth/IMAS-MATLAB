@@ -134,17 +134,30 @@
         mexErrMsgIdAndTxt("IMAS:ids_put:empty_time",
         "If time is homogeneous, ids%%time must have at least one element");
         }
+        /* Delete existing IDS if any */
+        if (status.code >= 0) status = ids_delete_<xsl:value-of select="@name"/>(expIdx, idsFullName);
       </xsl:when>
        <xsl:when test="@type='constant'">
         else if ( homogeneousTime != IDS_TIME_MODE_INDEPENDENT ) {
           mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
           "The 'homogeneous_time' attribute should be set to 2 for a constant IDS");
         }
+        int getCtx = -1;
+        if (status.code >= 0) status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
+        if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
+        if (getCtx > 0) {
+           status_end = al_end_action(getCtx);
+           if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
+        }
+        if (status.code >= 0) {
+          if (homogeneousTime != IDS_TIME_MODE_UNKNOWN)
+             return status;
+        }
+
        </xsl:when> 
     </xsl:choose>
 
-    /* Delete existing IDS if any */
-    if (status.code >= 0) status = ids_delete_<xsl:value-of select="@name"/>(expIdx, idsFullName);
+    
     /* Open put context */
     if (status.code >= 0) status = al_begin_global_action(expIdx, idsFullName, "", WRITE_OP, &amp;putOpCtx);
 
