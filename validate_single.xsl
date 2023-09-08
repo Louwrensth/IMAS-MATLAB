@@ -205,7 +205,7 @@
         // validation of <xsl:value-of select="@path"/> dimension <xsl:value-of select="number($dimension)"/>
         ifield = mxGetFieldNumber(data, "<xsl:value-of select="@name"/>");
         pfield = mxGetFieldByNumber(data, (mwIndex) 0, ifield);
-        aosArraySize = getDimSize(pfield,<xsl:value-of select="number($dimension)+1"/>);
+        aosArraySize = getDimSize(pfield,<xsl:apply-templates select='.' mode="get-rank"/>,<xsl:value-of select="number($dimension)+1"/>);
         if (pfield != NULL) {
           if (aosArraySize != 0) {
             if (aosArraySize != <xsl:value-of select = "substring-after($coord,'1...')"/>) {

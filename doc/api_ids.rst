@@ -19,3 +19,5 @@ IDS API
 .. mat:autofunction:: ids_init()
 
 .. mat:autofunction:: ids_allocate()
+
+.. mat:autofunction:: ids_validate()
