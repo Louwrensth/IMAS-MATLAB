@@ -1,6 +1,6 @@
 % Open the database entry by providing an IMAS URI
 data_entry = imas_open( ...
-    'imas:mdsplus?user=public;shot=131024;run=41;database=ITER?version=3')
+    'imas:mdsplus?user=public;pulse=131024;run=41;database=ITER?version=3')
 
 % Load the core_profiles IDS, occurrence 0
 cp = ids_get(data_entry, 'core_profiles')

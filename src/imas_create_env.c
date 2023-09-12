@@ -10,7 +10,7 @@
 
    Usage:
    \code{.m} 
-   idx = imas_create_env(name, shot, run, refShot, refRun, user, tokamak, version)
+   idx = imas_create_env(name, pulse, run, refPulse, refRun, user, tokamak, version)
    \endcode
 
    MATLAB help:
@@ -36,7 +36,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     /* make sure the 2nd input argument is scalar */
     if (!mxIsNumeric(prhs[1]) || !mxIsScalar(prhs[1])) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_env:notScalar", "Input shot must be a scalar.");
+        mexErrMsgIdAndTxt("IMAS:imas_create_env:notScalar", "Input pulse must be a scalar.");
     }
     /* make sure the 3rd input argument is scalar */
     if (!mxIsNumeric(prhs[2]) || !mxIsScalar(prhs[2])) {
@@ -44,7 +44,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     /* make sure the 4th input argument is scalar */
     if (!mxIsNumeric(prhs[3]) || !mxIsScalar(prhs[3])) {
-        mexErrMsgIdAndTxt("IMAS:imas_create_env:notScalar", "Input refShot must be a scalar.");
+        mexErrMsgIdAndTxt("IMAS:imas_create_env:notScalar", "Input refPulse must be a scalar.");
     }
     /* make sure the 5th input argument is scalar */
     if (!mxIsNumeric(prhs[4]) || !mxIsScalar(prhs[4])) {
@@ -71,20 +71,20 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (params.verbosity >= 4)
         mexPrintf("The input name is:  %s\n", name);
 
-    /* Get the value of the shot */
-    int shot = (int) mxGetScalar(prhs[1]);
+    /* Get the value of the pulse */
+    int pulse = (int) mxGetScalar(prhs[1]);
     if (params.verbosity >= 4)
-        mexPrintf("The input shot is:  %d\n", shot);
+        mexPrintf("The input pulse is:  %d\n", pulse);
 
     /* Get the value of the run */
     int run = (int) mxGetScalar(prhs[2]);
     if (params.verbosity >= 4)
         mexPrintf("The input run is:  %d\n", run);
 
-    /* Get the value of the refShot */
-    int refShot = (int) mxGetScalar(prhs[3]);
+    /* Get the value of the refPulse */
+    int refPulse = (int) mxGetScalar(prhs[3]);
     if (params.verbosity >= 4)
-        mexPrintf("The input refShot is:  %d\n", refShot);
+        mexPrintf("The input refPulse is:  %d\n", refPulse);
 
     /* Get the value of the refRun */
     int refRun = (int) mxGetScalar(prhs[4]);
@@ -111,11 +111,11 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     char* uri;
     int backend = get_default_backend();
 
-    al_build_uri_from_legacy_parameters(backend, shot, run, user, tokamak, version, "", &uri);
+    al_build_uri_from_legacy_parameters(backend, pulse, run, user, tokamak, version, "", &uri);
     status = al_begin_dataentry_action(uri, FORCE_CREATE_PULSE, &idx);
 
     if (status.code != 0)
-      mexErrMsgIdAndTxt("IMAS:imas_create_env:Failed", "Error creating imas shot %d, run %d\n\tuser %s, tokamak %s, version %s:\n\t%s", shot, run, user, tokamak, version, status.message);
+      mexErrMsgIdAndTxt("IMAS:imas_create_env:Failed", "Error creating imas pulse %d, run %d\n\tuser %s, tokamak %s, version %s:\n\t%s", pulse, run, user, tokamak, version, status.message);
     /* Prepare the return argument */
     plhs[0] = mxCreateDoubleScalar(idx);
 
