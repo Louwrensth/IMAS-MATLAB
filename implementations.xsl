@@ -123,17 +123,6 @@
     }
     <xsl:choose>
       <xsl:when test="@type='dynamic' or not(@type)">
-        else if ( homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
-        /* Top-level ids_put functions check that ids is a scalar struct */
-        ifield = mxGetFieldNumber(ids, "time");
-        ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-        if (ptime == NULL)
-          mexErrMsgIdAndTxt("IMAS:ids_put:invalid_time",
-          "Unable to retrieve ids%%time");
-        if (mxGetNumberOfElements(ptime) &lt; 1)
-        mexErrMsgIdAndTxt("IMAS:ids_put:empty_time",
-        "If time is homogeneous, ids%%time must have at least one element");
-        }
         /* Delete existing IDS if any */
         if (status.code >= 0) status = ids_delete_<xsl:value-of select="@name"/>(expIdx, idsFullName);
       </xsl:when>
@@ -195,17 +184,6 @@
       {
       mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT_SLICE quits with no action.");
       return status;
-      }
-      else if ( homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
-      /* Top-level ids_put_slice functions check that ids is a scalar struct */
-      ifield = mxGetFieldNumber(ids, "time");
-      ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-      if (ptime == NULL)
-        mexErrMsgIdAndTxt("IMAS:ids_put_slice:invalid_time",
-        "Unable to retrieve ids%%time");
-      if (mxGetNumberOfElements(ptime) &lt; 1)
-      mexErrMsgIdAndTxt("IMAS:ids_put_slice:empty_time",
-      "If time is homogeneous, ids%%time must have at least one element");
       }
       else if( homogeneousTime == IDS_TIME_MODE_INDEPENDENT )
       {
