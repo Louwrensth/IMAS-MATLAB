@@ -29,19 +29,19 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       hT = int32(homogeneousTime);
       for name = IDS_list.'
         testCase.TestData.IDS.(name{1}) = ids_rand(name{1},ntime,0);
-	if isfield(testCase.TestData.IDS.(name{1}), "time") 
-           testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = hT;
-	else %IDS is constant, homogeneous_time is set to 2
-           testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = int32(2);
-	end
+    if isfield(testCase.TestData.IDS.(name{1}), "time") 
+        testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = hT;
+    else %IDS is constant, homogeneous_time is set to 2
+        testCase.TestData.IDS.(name{1}).ids_properties.homogeneous_time = int32(2);
+    end
         testCase.TestData.IDS_slice.(name{1}) = cell(ntime,1);
         for itime = 1:ntime
           testCase.TestData.IDS_slice.(name{1}){itime} = ids_rand(name{1},ntime,itime);
-	  if isfield(testCase.TestData.IDS.(name{1}), "time")
-	     testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = hT;
-	  else
-             testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = int32(2);
-	  end
+      if isfield(testCase.TestData.IDS.(name{1}), "time")
+        testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = hT;
+      else
+        testCase.TestData.IDS_slice.(name{1}){itime}.ids_properties.homogeneous_time = int32(2);
+      end
         end
       end
       %
