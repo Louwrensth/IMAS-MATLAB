@@ -71,8 +71,8 @@ classdef imas_unit_tests < matlab.unittest.TestCase
         sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
         comparator(ids_slice{itime},sdi,IDSname);
       else %IDS is constant, ids_get_slice() should behave as get()
-	sdi_slice = ids_get_slice(idx,IDSname,0,1);
-	comparator(sdi,sdi_slice,IDSname);
+        sdi_slice = ids_get_slice(idx,IDSname,0,1);
+        comparator(sdi,sdi_slice,IDSname);
       end	
 
     end
@@ -95,7 +95,7 @@ classdef imas_unit_tests < matlab.unittest.TestCase
         sdi = ids_get_slice(idx,IDSname,ids.time(itime),interp);
         comparator(ids_slice{itime},sdi,IDSname);
       else %IDS is constant, ids_put_slice() should behave as put()
-	comparator(sdi,ids,IDSname);
+        comparator(sdi,ids,IDSname);
       end
     end
 
