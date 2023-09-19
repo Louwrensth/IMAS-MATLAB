@@ -108,8 +108,7 @@
 
 <!-- Declare variables which contain data provided by the DD concerning fields, AOSs or structures which have been renamed -->
 <xsl:template name ="declareAndAllocateNBCVariables">
-  <xsl:variable name="level" select="count(ancestor::field[@data_type='struct_array' or @data_type='struct'])"/>
-  <xsl:if test="ancestor::field[@change_nbc_version] or @change_nbc_version or count(descendant::field[count(ancestor::field[@data_type='struct_array' or @data_type='struct']) = $level and @change_nbc_version]) > 0">
+  <xsl:if test="ancestor::field[@change_nbc_version] or @change_nbc_version or count(descendant::field[@change_nbc_version]) > 0">
     <xsl:text>&#xA;</xsl:text> 
     <xsl:text>char change_nbc_description[20];&#xA;</xsl:text>    
     <xsl:text>char *ancestors_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
