@@ -96,11 +96,12 @@ char* generate_tmp_file()
 	const char* ASCII_SERIALIZER_TMP_DIR = getenv("ASCII_SERIALIZER_TMP_DIR");
 	if(ASCII_SERIALIZER_TMP_DIR != NULL)
 	{
-		char * prefix = ASCII_SERIALIZER_TMP_DIR "al_serialize_";
+		prefix = malloc(strlen(ASCII_SERIALIZER_TMP_DIR) + strlen("al_serialize_") + 1);
+        strcpy(prefix, ASCII_SERIALIZER_TMP_DIR);
 	}
 	else
 	{
-		char * prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";		
+		prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";		
 	}
     char* fname;
     FILE *fp;
