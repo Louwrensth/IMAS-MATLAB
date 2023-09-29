@@ -118,6 +118,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
      void *array;
      mxArray* data;
      status = init_dataTree_read();
+     <xsl:if test="@type='constant'">
+      if (status.code >= 0) status = setHomogeneousTime(IDS_TIME_MODE_INDEPENDENT);
+     </xsl:if>
      <xsl:apply-templates select="field" mode="ALLOCATE"/>
      if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);
      /* Error handling */
