@@ -92,7 +92,16 @@ char* concat(const char *s1, const char *s2)
 char* generate_tmp_file()
 {
     const char fs_safe_characters[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
-    char * prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";
+	char * prefix;
+	const char* ASCII_SERIALIZER_TMP_DIR = getenv("ASCII_SERIALIZER_TMP_DIR");
+	if(ASCII_SERIALIZER_TMP_DIR != NULL)
+	{
+		char * prefix = ASCII_SERIALIZER_TMP_DIR "al_serialize_";
+	}
+	else
+	{
+		char * prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";		
+	}
     char* fname;
     FILE *fp;
     
