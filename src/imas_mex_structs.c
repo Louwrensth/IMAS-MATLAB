@@ -884,25 +884,3 @@ al_status_t getHomogeneousTime(int *homogeneousTime)
   }
   return status;
 }
-
-/**
-   Set ids_properties/homogeneous_time from an IDS in MATLAB format.
-   
-   \param[int] homogeneousTime Value of ids_properties/homogeneous_time.
-   \returns error flag.
- */
-al_status_t setHomogeneousTime(int homogeneousTime)
-{
-  al_status_t status;
-  const mxArray *data = NULL;
-  status = getSimpleFieldStruct("ids_properties/homogeneous_time", &data);
-  if (status.code < 0) {
-    mex_errmsgid = "unable to find field ids_properties/homogeneous_time";
-    strncpy(mex_errmsgtxt,"unable to find field ids_properties/homogeneous_time",52);
-    msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-    status.code = HLI_ERR;
-    return status;
-  }
-  *(int *) mxGetData(data) = homogeneousTime;
-  return status;
-}
