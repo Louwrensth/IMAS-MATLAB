@@ -128,8 +128,9 @@
       </xsl:when>
        <xsl:when test="@type='constant'">
         else if ( homogeneousTime != IDS_TIME_MODE_INDEPENDENT ) {
-          mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
-          "The 'homogeneous_time' attribute should be set to 2 for a constant IDS");
+           if (status.code >= 0) status = setHomogeneousTime(IDS_TIME_MODE_INDEPENDENT);
+           printf("AL warning:ids_properties/homogeneous_time has been set to %d for the constant IDS %s, 
+           please check the program which has filled this IDS since this is the mandatory value for a constant IDS", IDS_TIME_MODE_INDEPENDENT, idsFullName);
         }
         int getCtx = -1;
         if (status.code >= 0) status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
