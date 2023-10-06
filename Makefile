@@ -102,7 +102,8 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_al_bind_plugin \
 				imas_al_unbind_plugin \
 				imas_al_setvalue_parameter_plugin \
-				imas_serialize imas_deserialize\
+				imas_serialize imas_deserialize \
+				imas_list_all_occurrences \
 				)
 SOURCES = $(GENSOURCES)
 UTL_SRC_FILES = $(addsuffix .c, imas_mex_utils imas_mex_structs imas_mex_params imas_mex_casts imas_mex_rand)
