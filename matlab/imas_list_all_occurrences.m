@@ -1,4 +1,4 @@
-% imas_list_all_occurrences (idx, ids_name, node_path)
+% imas_list_all_occurrences (idx, ids_name[, node_path])
 %
 %  List all non-empty occurrences of IDSname in the dataset, and optionnally return the content of a descriptive node path in MATLAB External Interfaces 
 %

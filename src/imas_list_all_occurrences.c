@@ -29,9 +29,11 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (!mxIsChar(prhs[1])) {
         mexErrMsgIdAndTxt("IMAS:imas_list_all_occurrences:notChar", "IDS name must be a string.");
     }
-    /* make sure the 3rd input argument is a string */
-    if (!mxIsChar(prhs[2])) {
-        mexErrMsgIdAndTxt("IMAS:imas_list_all_occurrences:notChar", "Node path must be a string.");
+    if (nrhs == 3){ 
+        /* make sure the 3rd optional input argument is a string */
+        if (!mxIsChar(prhs[2])) {
+            mexErrMsgIdAndTxt("IMAS:imas_list_all_occurrences:notChar", "Node path must be a string.");
+        }
     }
     
     /* Get the value of the IDS name */
@@ -39,10 +41,13 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (params.verbosity >= 4)
         mexPrintf("The IDS name is:  %s\n", ids_name);
         
-    /* Get the value of the node path */
-    char *node_path = mxArrayToString(prhs[2]);
-    if (params.verbosity >= 4)
-        mexPrintf("The node path is:  %s\n", node_path);
+    /* Get the value of the optional node path */
+    char *node_path = NULL;
+    if (nrhs == 3) { 
+        node_path = mxArrayToString(prhs[2]);
+        if (params.verbosity >= 4)
+            mexPrintf("The node path is:  %s\n", node_path);
+    }
     
     int* occurrences_list;
     int size;
@@ -127,7 +132,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
             //for (int i = 0; i < size; i++)
             //    mexPrintf("reply[%d]=%s\n", i, replies[i]);
 
-            // Create an mxArray with 1 rows and size columns
+            // Create an mxArray with 1 row and size columns
             plhs[1] = mxCreateCellMatrix(1, size);
 
             // Fill plhs[1] with data from replies
@@ -136,6 +141,14 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
             
             free(replies);
             free(idsFullNames);
+    }
+    else {
+        // Create an mxArray with 1 row and size columns
+        plhs[1] = mxCreateCellMatrix(1, size);
+
+        // Fill plhs[1] with empty strings
+        for (int i = 0; i < size; i++)
+            mxSetCell(plhs[1], i, mxCreateString(""));
     }
 
 }
