@@ -11,8 +11,8 @@
 void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
     /* Check for one input arguments   */
-    if (nrhs != 3) {
-        mexErrMsgIdAndTxt("IMAS:imas_list_all_occurrences:nargin", "Three inputs required.");
+    if (nrhs != 2 && nrhs != 3) {
+        mexErrMsgIdAndTxt("IMAS:imas_list_all_occurrences:nargin", "Two or three inputs required.");
     }
     /* make sure idx is scalar */
     if( !mxIsNumeric(prhs[0]) ||
