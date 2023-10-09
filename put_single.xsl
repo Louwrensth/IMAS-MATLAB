@@ -18,6 +18,7 @@
 
 <xsl:template match="field" mode="PUT_SINGLE">
 <xsl:param name="dynamic_only"/>
+<xsl:param name="ids_type"/>
 <xsl:variable name="methodName">
   <xsl:choose>
     <xsl:when test="$dynamic_only !='yes'" >
@@ -45,6 +46,7 @@
       </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
         <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+        <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
       </xsl:call-template>
       aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
 
@@ -117,6 +119,7 @@
   	</xsl:call-template>
     <xsl:call-template name="generateTimebasePath">
   		<xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+      <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
   	</xsl:call-template>
     field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
     field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;
