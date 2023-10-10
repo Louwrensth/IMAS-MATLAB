@@ -11,7 +11,7 @@
 
    Usage:
    \code{.m} 
-   idx = imas_open_env(name, shot, run, user, tokamak, version)
+   idx = imas_open_env(name, pulse, run, user, tokamak, version)
    \endcode
 
    MATLAB help:
@@ -37,7 +37,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     /* make sure the 2nd input argument is scalar */
     if (!mxIsNumeric(prhs[1]) || !mxIsScalar(prhs[1])) {
-        mexErrMsgIdAndTxt("IMAS:imas_open_env:notScalar", "Input shot must be a scalar.");
+        mexErrMsgIdAndTxt("IMAS:imas_open_env:notScalar", "Input pulse must be a scalar.");
     }
     /* make sure the 3rd input argument is scalar */
     if (!mxIsNumeric(prhs[2]) || !mxIsScalar(prhs[2])) {
@@ -64,10 +64,10 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (params.verbosity >= 4)
         mexPrintf("The input name is:  %s\n", name);
 
-    /* Get the value of the shot */
-    int shot = (int) mxGetScalar(prhs[1]);
+    /* Get the value of the pulse */
+    int pulse = (int) mxGetScalar(prhs[1]);
     if (params.verbosity >= 4)
-        mexPrintf("The input shot is:  %d\n", shot);
+        mexPrintf("The input pulse is:  %d\n", pulse);
 
     /* Get the value of the run */
     int run = (int) mxGetScalar(prhs[2]);
@@ -95,20 +95,20 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     int fallback;
     char* uri;
 
-    al_build_uri_from_legacy_parameters(backend, shot, run, user, tokamak, version, "", &uri);
+    al_build_uri_from_legacy_parameters(backend, pulse, run, user, tokamak, version, "", &uri);
     status = al_begin_dataentry_action(uri, OPEN_PULSE, &idx);
 
     if ( status.code < 0 ) {
       fallback = get_fallback_backend();
       if (fallback != NO_BACKEND) {
 	mexPrintf("WARNING: the pulse file is not available with the backend %d, now attempting to access it with the fallback backend %d\n",backend,fallback);
-	al_build_uri_from_legacy_parameters(fallback, shot, run, user, tokamak, version, "", &uri);
+	al_build_uri_from_legacy_parameters(fallback, pulse, run, user, tokamak, version, "", &uri);
 	status = al_begin_dataentry_action(uri, OPEN_PULSE, &idx);
       }
     }
 
     if (status.code < 0)
-      mexErrMsgIdAndTxt("IMAS:imas_open_env:Failed", "Error opening imas shot %d, run %d\n\tuser %s, tokamak %s, version %s:\n\t%s", shot, run, user, tokamak, version, status.message);
+      mexErrMsgIdAndTxt("IMAS:imas_open_env:Failed", "Error opening imas pulse %d, run %d\n\tuser %s, tokamak %s, version %s:\n\t%s", pulse, run, user, tokamak, version, status.message);
     /* Prepare the return argument */
     plhs[0] = mxCreateDoubleScalar(idx);
 

@@ -11,7 +11,7 @@
 
    Usage:
    \code{.m} 
-   idx = imas_open_env_backend(shot, run, user, tokamak, version, backend_id)
+   idx = imas_open_env_backend(pulse, run, user, tokamak, version, backend_id)
    \endcode
 
    MATLAB help:
@@ -33,7 +33,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     /* make sure the 1st input argument is scalar */
     if (!mxIsNumeric(prhs[0]) || !mxIsScalar(prhs[0])) {
-        mexErrMsgIdAndTxt("IMAS:imas_open_env_backend:notScalar", "Input shot must be a scalar.");
+        mexErrMsgIdAndTxt("IMAS:imas_open_env_backend:notScalar", "Input pulse must be a scalar.");
     }
     /* make sure the 2nd input argument is scalar */
     if (!mxIsNumeric(prhs[1]) || !mxIsScalar(prhs[1])) {
@@ -60,10 +60,10 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         mexErrMsgIdAndTxt("IMAS:imas_open_env_backend:nargout", "One output maximum required.");
     }
 
-    /* Get the value of the shot */
-    int shot = (int) mxGetScalar(prhs[0]);
+    /* Get the value of the pulse */
+    int pulse = (int) mxGetScalar(prhs[0]);
     if (params.verbosity >= 4)
-        mexPrintf("The input shot is:  %d\n", shot);
+        mexPrintf("The input pulse is:  %d\n", pulse);
 
     /* Get the value of the run */
     int run = (int) mxGetScalar(prhs[1]);
@@ -94,11 +94,11 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     al_status_t status;
 
     char* uri;
-    al_build_uri_from_legacy_parameters(backend_id, shot, run, user, tokamak, version, "", &uri);
+    al_build_uri_from_legacy_parameters(backend_id, pulse, run, user, tokamak, version, "", &uri);
     status = al_begin_dataentry_action(uri, OPEN_PULSE, &idx);
 
     if (status.code < 0)
-      mexErrMsgIdAndTxt("IMAS:imas_open_env_backend:Failed", "Error opening imas shot %d, run %d\n\tuser %s, tokamak %s, version %s, backend id %d:\n\t%s", shot, run, user, tokamak, version, backend_id, status.message);
+      mexErrMsgIdAndTxt("IMAS:imas_open_env_backend:Failed", "Error opening imas pulse %d, run %d\n\tuser %s, tokamak %s, version %s, backend id %d:\n\t%s", pulse, run, user, tokamak, version, backend_id, status.message);
     /* Prepare the return argument */
     plhs[0] = mxCreateDoubleScalar(idx);
 
