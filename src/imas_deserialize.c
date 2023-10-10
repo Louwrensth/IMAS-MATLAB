@@ -38,15 +38,12 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
     char *data = mxArrayToString(prhs[0]);
 
-    
-    char protocol_string[3];
-    strncpy(protocol_string, data, 2);
-    int protocol = atoi(protocol_string);
+    int protocol = data[0];
+
     if (params.verbosity >= 4)
         mexPrintf("Protocol retrieved:  %d\n", protocol);
 
-    //Skip two bytes as we have protocol stored there
-    data++;
+    //Skip one byte as we have protocol stored there
     data++;
     char *IDSName = mxArrayToString(prhs[1]);
     if (params.verbosity >= 4)
