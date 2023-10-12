@@ -18,6 +18,7 @@
 
 <xsl:include href="mex_tools.xsl"/>
 <xsl:include href="put_single.xsl"/>
+<xsl:include href="implementations.xsl"/>
 
 <!--================================================-->
 <!--         Template for the whole document        -->
@@ -156,100 +157,34 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/put_slice_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
+     <xsl:variable name="ids_type" select="@type"/>
     al_status_t ids_put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids);
-    <xsl:apply-templates select="." mode="METHOD_PUT_SLICE_H"/>
-
+    <xsl:if test="@type='constant'">
+      al_status_t ids_delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName);
+      <xsl:apply-templates select="." mode="METHOD_PUT_H"/>
+    </xsl:if>
+    <xsl:if test="@type='dynamic' or not(@type)">
+      <xsl:apply-templates select="." mode="METHOD_PUT_SLICE_H"/>
+    </xsl:if>
+    
     al_status_t ids_put_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
     {
-    int ifield;
-    const mxArray* ptime=NULL;
-    al_status_t status;
-    al_status_t status_end;
-    int putSliceOpCtx = -1;
-    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
-    int getOpCtx = -1;
-    int homogeneousTimeStored = IDS_TIME_MODE_UNKNOWN;
-    int sliceOp = 1;
-
-    status = init_dataTree_write((mxArray *) ids);
-    /* TODO: move these checks to external function? */
-    if (status.code >= 0) status = getHomogeneousTime(&amp;homogeneousTime);
-    if (status.code &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
-    "Unable to retrieve ids%%ids_properties%%homogeneous_time");
-    if( homogeneousTime == IDS_TIME_MODE_UNKNOWN )
-    {
-    mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT_SLICE quits with no action.");
-    return status;
-    }
-    else if ( homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
-    /* Top-level ids_put_slice functions check that ids is a scalar struct */
-    ifield = mxGetFieldNumber(ids, "time");
-    ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-    if (ptime == NULL)
-      mexErrMsgIdAndTxt("IMAS:ids_put_slice:invalid_time",
-      "Unable to retrieve ids%%time");
-    if (mxGetNumberOfElements(ptime) &lt; 1)
-    mexErrMsgIdAndTxt("IMAS:ids_put_slice:empty_time",
-    "If time is homogeneous, ids%%time must have at least one element");
-    }
-    else if( homogeneousTime == IDS_TIME_MODE_INDEPENDENT )
-    {
-    mexWarnMsgIdAndTxt("IMAS:ids_put_slice:empty_ids", "homogeneous_time=2 makes an IDS <xsl:value-of select="@name"/> with static/constant data only. No static data stored with put_slice operation.");
-    return status;
-    }
-    /* Check stored homogeneousTime mode */
-    /* Open read context */
-    if (status.code >= 0) status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getOpCtx);
-    if (status.code >= 0) status = getHomogeneousTimeCtx(getOpCtx, &amp;homogeneousTimeStored);
-    if (status.code >= 0) {
-      /* If no IDS previously stored */
-      if (homogeneousTimeStored == IDS_TIME_MODE_UNKNOWN) {
-        sliceOp = 0;
-      }
-      /* Otherwise check that the stored and new value match */
-      else if (homogeneousTimeStored != homogeneousTime) { 
-        snprintf(mex_errmsgtxt, MAXERRMSGTXTSIZE, "homogeneous_time mode from input IDS <xsl:value-of select="@name"/> (%d) differs from value already stored in database (%d)",homogeneousTime, homogeneousTimeStored);
-        msglen = strnlen(mex_errmsgtxt, MAXERRMSGTXTSIZE-1);
-        status.code = -5;
-      }
-    }
-    if (getOpCtx > 0) {
-      status_end = al_end_action(getOpCtx);
-      if (status.code >= 0) status.code = status_end.code; /* Result of al_end_action is only relevant if there was no error before */
-    }
-    
-    if (sliceOp) {
-      /* Open putSlice context */
-      if (status.code >= 0) status = al_begin_slice_action(expIdx, idsFullName, WRITE_OP, UNDEFINED_TIME, UNDEFINED_INTERP, &amp;putSliceOpCtx);
-      
-      if (status.code >= 0) status = put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putSliceOpCtx, homogeneousTime, idsFullName);
-      if (putSliceOpCtx > 0) {
-        if (status.code >= 0)  status = al_write_plugins_metadata(putSliceOpCtx); //writing plugins metadata just after calling the put_slice() operation
-        status_end = al_end_action(putSliceOpCtx);
-        if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
-      }
-    } else {
-      /* Call put method */
-      if (status.code >= 0) {
-        status = ids_put_<xsl:value-of select="@name"/>(expIdx, idsFullName, ids);
-        /* Error handling
-             Ensures the error is shown as originating in ids_put
-               and avoids displaying twice the ids name */
-        if (status.code &lt; 0) my_mexErrMsgIdAndTxt(status, "IMAS:ids_put:");
-        return status;
-      }
-    }
-    /* Error handling */
-    if (status.code &lt; 0) {
-    addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
+    <xsl:if test="@type='constant'">
+        <xsl:call-template name="put_implementation"/>
+    </xsl:if>
+    <xsl:if test="@type='dynamic' or not(@type)">
+      <xsl:call-template name="put_slice_implementation"/>
+    </xsl:if>
     }
 
-    return status;
-    }
+    <xsl:if test="@type='dynamic' or not(@type)">
+      <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE_H"/>
 
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE_H"/>
+      <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE">
+        <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+      </xsl:apply-templates>
+    </xsl:if>
 
-    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_SLICE"/>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
@@ -258,6 +193,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 al_status_t put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT_SLICE">
+<xsl:param name="ids_type"/>
 al_status_t put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName)
     {
     struct imas_mex_actionInfo action;
@@ -276,6 +212,40 @@ al_status_t put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(
     
     <xsl:apply-templates select="field" mode="PUT_SINGLE">
       <xsl:with-param name="dynamic_only" select="'yes'"/>
+      <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+    </xsl:apply-templates>
+    
+    free(field.fieldPath);
+    free(field.timebasePath);
+
+    return status;
+    }
+</xsl:template>
+
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT_H">
+al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName);</xsl:template>
+
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT">
+<xsl:param name="ids_type"/>
+al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName)
+    {
+    struct imas_mex_actionInfo action;
+    struct imas_mex_fieldInfo field;
+    const mxArray* data=NULL;
+    al_status_t status = {0,""};
+    al_status_t status_end;
+    int aosArraySize = -1;
+    int aosCtx = -1;
+    int isEmpty;
+
+    action.context = ctx;
+    
+    field.fieldPath = malloc(IMAS_PATH_MAX_LENGTH);
+    field.timebasePath = malloc(IMAS_PATH_MAX_LENGTH);
+        
+    <xsl:apply-templates select="field" mode="PUT_SINGLE">
+      <xsl:with-param name="dynamic_only" select="'no'"/>
+      <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
     </xsl:apply-templates>
     
     free(field.fieldPath);

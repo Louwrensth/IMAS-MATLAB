@@ -1,4 +1,4 @@
-% idx = imas_create_env_backend(shot, run, user, tokamak, version, backend_id)
+% idx = imas_create_env_backend(pulse, run, user, tokamak, version, backend_id)
 %
 % Create a new database entry.
 %
@@ -6,7 +6,7 @@
 %   This method erases the previous entry if it existed!
 %
 % Args:
-%   shot:       Shot number.
+%   pulse:      Pulse number.
 %   run:        Run number.
 %   user:       User name
 %   tokamak:    Tokamak name, also known as Database name

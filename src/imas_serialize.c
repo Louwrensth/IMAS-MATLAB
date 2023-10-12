@@ -89,7 +89,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         if (status_open.code != 0)
         {
             al_end_action(idx);
-            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas shot %s",  status_open.message);
+            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas pulse %s",  status_open.message);
         }
 
         // Call ids_put(idx, IDSName, prhs[0]);
@@ -121,7 +121,9 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
             mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error in reading temporary file");
             my_exceptionGetReport(exception);
         }
-        char* protocol_string = itoa(ASCII_SERIALIZER_PROTOCOL);
+        char protocol_string[2];
+        protocol_string[0]=(char)ASCII_SERIALIZER_PROTOCOL;
+        protocol_string[1] = '\0';
         char *fileread_lhs_cstring = mxArrayToString(fileread_lhs);
 
         char *output = concat(protocol_string, fileread_lhs_cstring);
