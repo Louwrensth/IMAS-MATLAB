@@ -56,7 +56,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     mxInt32 *version_data;
     const mwSize dims[] = {3};
 
-    arr = mxCreateString(getUALVersion());
+    arr = mxCreateString(getALVersion());
     mxSetField(plhs[0], 0, "al_version", arr);
 
     arr = mxCreateString("<xsl:value-of select="$AL_GIT_DESCRIBE"/>");
