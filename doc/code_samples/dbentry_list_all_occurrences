@@ -1,0 +1,10 @@
+% Opens an existing DBEntry object, using the hdf5 backend
+idx = imas_open('imas:hdf5?path=my-data')
+
+% Get all occurrences of the 'magnetics' IDS (integers) contained in the idx dataset 
+% The argument 'ids_properties/comment' is optional; the function will retrieve the content of this path
+% for each occurrence found in the idx dataset
+[occurrence_list, node_content_list] = imas_list_all_occurrences(idx, 'magnetics', 'ids_properties/comment')
+
+% Closing the dataset
+imas_close(idx)
