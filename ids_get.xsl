@@ -18,6 +18,7 @@
 
 <xsl:include href="mex_tools.xsl"/>
 <xsl:include href="get_single.xsl"/>
+<xsl:include href="implementations.xsl"/>
 
 <!--================================================-->
 <!--         Template for the whole document        -->
@@ -146,52 +147,18 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/get_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
+    <xsl:variable name="ids_type" select="@type"/>
     <xsl:apply-templates select="." mode="METHOD_GET_H"/>
-
     al_status_t ids_get_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids)
     {
-    al_status_t status;
-    al_status_t status_end;
-    int getOpCtx = -1;
-    char* dataDictionaryVersion = NULL;
-	bool taggedDataDictionaryVersion = false;
-    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
-    
-    /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
-    int getCtx = -1;
-    status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
-	if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion, &amp;taggedDataDictionaryVersion);
-    if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
-    if (getCtx > 0) {
-    status_end = al_end_action(getCtx);
-    if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
-    }
-    
-    if (status.code >= 0) status = init_dataTree_read();
-    
-    /* Open get context */
-    if (status.code >= 0) status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getOpCtx);
-    if (status.code >= 0) status = al_bind_readback_plugins(getOpCtx); //binding readback plugins just before the get() operation
-	if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
-    if (getOpCtx > 0) {
-    if (status.code >= 0) status = al_unbind_readback_plugins(getOpCtx); //unbinding readback plugins just after the get() operation
-    status_end = al_end_action(getOpCtx);
-    if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
-    }
-    
-    if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);
-    /* Error handling */
-    if (status.code &lt; 0) {
-    addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
-    }
-    if (dataDictionaryVersion != NULL) free(dataDictionaryVersion);
-
-    return status;
+      <xsl:call-template name="get_implementation"/>
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
 
-    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET"/>
+    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET">
+      <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+    </xsl:apply-templates>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
@@ -200,6 +167,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
+  <xsl:param name="ids_type"/>
   <xsl:call-template name="COMMENT_FIELD"/>
   al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)
   {
@@ -214,7 +182,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   
   <xsl:call-template name="declareAndAllocateNBCVariables"/>
 
-  <xsl:apply-templates select="field" mode="GET_SINGLE"/>
+  <xsl:apply-templates select="field" mode="GET_SINGLE">
+    <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+  </xsl:apply-templates>
   
   <xsl:call-template name="freeNBCVariables"/>
 

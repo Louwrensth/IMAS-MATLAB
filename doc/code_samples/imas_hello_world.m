@@ -1,2 +1,3 @@
 disp('Hello world!')
-disp(['Using access layer version: ' getenv('AL_VERSION')])
+disp('Access Layer version info:')
+disp(imas_versions())

@@ -1,10 +1,10 @@
-% idx = imas_open_env (name, shot, run, user, tokamak, version)
+% idx = imas_open_env (name, pulse, run, user, tokamak, version)
 %
 % Open the Data Entry defined by the provided parameters.
 %
 % Args:
 %   name:       Name of the database (by convention 'ids').
-%   shot:       Shot number.
+%   pulse:      Pulse number.
 %   run:        Run number.
 %   user:       User name
 %   tokamak:    Tokamak name, also known as Database name

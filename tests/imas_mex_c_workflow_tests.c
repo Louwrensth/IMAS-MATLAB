@@ -37,7 +37,7 @@ int test_imas_mex(int nnames, const char ** IDSnames)
   
   mxArray * ids;
   mxArray * m_treename;
-  mxArray * m_shot;
+  mxArray * m_pulse;
   mxArray * m_runr;
   mxArray * m_runw;
   mxArray * m_name;
@@ -59,7 +59,7 @@ int test_imas_mex(int nnames, const char ** IDSnames)
   double mean;
   
   m_treename = mxCreateString("ids");
-  m_shot = mxCreateDoubleScalar(9999);
+  m_pulse = mxCreateDoubleScalar(9999);
   m_usr  = mxCreateString(getenv("USER"));
   m_tok  = mxCreateString("test");
   m_ver  = mxCreateString("3");
@@ -78,7 +78,7 @@ int test_imas_mex(int nnames, const char ** IDSnames)
 
     // IMAS_OPEN_ENV
     args_open_env[0] = m_treename;
-    args_open_env[1] = m_shot;
+    args_open_env[1] = m_pulse;
     args_open_env[2] = m_runr;
     args_open_env[3] = m_usr;
     args_open_env[4] = m_tok;
@@ -88,9 +88,9 @@ int test_imas_mex(int nnames, const char ** IDSnames)
 
     // IMAS_CREATE_ENV
     args_create_env[0] = m_treename;
-    args_create_env[1] = m_shot;
+    args_create_env[1] = m_pulse;
     args_create_env[2] = m_runw;
-    args_create_env[3] = m_shot;
+    args_create_env[3] = m_pulse;
     args_create_env[4] = m_runw;
     args_create_env[5] = m_usr;
     args_create_env[6] = m_tok;

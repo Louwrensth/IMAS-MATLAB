@@ -86,7 +86,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         if (status_open.code != 0)
         {
             al_end_action(idx);
-            mexErrMsgIdAndTxt("IMAS:imas_deserialize:Failed", "Error creating imas shot %s",  status_open.message);
+            mexErrMsgIdAndTxt("IMAS:imas_deserialize:Failed", "Error creating imas pulse %s",  status_open.message);
         }
 
         //Call ids_get function

@@ -1,4 +1,4 @@
-% idx = imas_create_env(name, shot, run, refshot, refrun, user, tokamak, version)
+% idx = imas_create_env(name, pulse, run, refpulse, refrun, user, tokamak, version)
 %
 % Create a new database entry.
 %
@@ -7,9 +7,9 @@
 %
 % Args:
 %   name:       Name of the database (by convention 'ids').
-%   shot:       Shot number.
+%   pulse:      Pulse number.
 %   run:        Run number.
-%   refshot:    `not used`
+%   refpulse:   `not used`
 %   refrun:     `not used`
 %   user:       User name
 %   tokamak:    Tokamak name, also known as Database name
