@@ -1,9 +1,9 @@
-% idx = imas_open_env_backend (shot, run, user, tokamak, version, backend_id)
+% idx = imas_open_env_backend (pulse, run, user, tokamak, version, backend_id)
 %
 % Open the Data Entry defined by the provided parameters.
 %
 % Args:
-%   shot:       Shot number.
+%   pulse:      Pulse number.
 %   run:        Run number.
 %   user:       User name
 %   tokamak:    Tokamak name, also known as Database name

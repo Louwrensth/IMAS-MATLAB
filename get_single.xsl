@@ -18,6 +18,7 @@
 
 <xsl:template match="field" mode="GET_SINGLE">
   <xsl:param name="slice"/>
+  <xsl:param name="ids_type"/>
 
 <xsl:variable name="method_name">
   <xsl:choose>
@@ -40,6 +41,7 @@
       </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
         <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+        <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
       </xsl:call-template>
       aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
       <xsl:if test="@type='dynamic'">
@@ -95,6 +97,7 @@
   	  </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
   		<xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+      <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
   	  </xsl:call-template>
       field.datatype = <xsl:value-of select="my:get_datatype(@data_type)"/>;
       field.dim = <xsl:value-of select="my:get_dim(@data_type)"/>;

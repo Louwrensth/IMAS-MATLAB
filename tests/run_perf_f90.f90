@@ -17,7 +17,7 @@ program run_perf_f90
   character(len = 132) :: IDSname
   integer :: idxr
   integer :: idxw
-  integer :: shot
+  integer :: pulse
   integer :: run
   character(len = 132) :: user
   character(len = 132) :: tokamak
@@ -37,7 +37,7 @@ program run_perf_f90
   tokamak = 'test'
   dataversion = '3'
 
-  shot = 9999;
+  pulse = 9999;
 
   argc = command_argument_count()
   if (argc.gt.0) then 
@@ -63,7 +63,7 @@ program run_perf_f90
      ! ######################################################
      !                          GET
      ! ######################################################
-     call al_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run, user, tokamak, dataversion, uri, options, status);
+     call al_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, pulse, run, user, tokamak, dataversion, uri, options, status);
 
      call al_begin_dataentry_action(uri, OPEN_PULSE, idxr, status);
      if (status < 0) then
@@ -71,7 +71,7 @@ program run_perf_f90
      end if
 
      run_new = run + 9800;
-     call al_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, shot, run_new, user, tokamak, dataversion, uri, options, status);
+     call al_build_uri_from_legacy_parameters(MDSPLUS_BACKEND, pulse, run_new, user, tokamak, dataversion, uri, options, status);
 
      call al_begin_dataentry_action(uri, CREATE_PULSE, idxw, status);
      if (status < 0) then

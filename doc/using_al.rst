@@ -12,6 +12,7 @@ to print the version of the access layer and data dictionary.
 .. literalinclude:: code_samples/imas_hello_world.m
     :caption: ``imas_hello_world.m``
 
+.. seealso:: :ref:`Version constants`
 
 If you save this as a file ``imas_hello_world.m``, you can run it as follows:
 
@@ -23,7 +24,12 @@ If you save this as a file ``imas_hello_world.m``, you can run it as follows:
     [...]
 
     Hello world!
-    Using access layer version: 5rc
+    Access Layer version info:
+               al_version: '5.0.0'
+              hli_version: '5.0.0'
+               dd_version: '3.39.0'
+        hli_version_array: [3x1 int32]
+         dd_version_array: [3x1 int32]
 
 
 Congratulations if this runs successfully! In the next sections of the

@@ -1,6 +1,7 @@
 build
 lib
 src/ids
+src/imas_versions.c
 matlab/IDS_list.m
 tests/*.o
 tests/*.mod
