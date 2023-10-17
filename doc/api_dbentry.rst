@@ -12,3 +12,13 @@ Data entry API
 .. mat:autofunction:: imas_create_env()
 
 .. mat:autofunction:: imas_create_env_backend()
+<<<<<<< HEAD
+=======
+
+.. mat:autofunction:: imas_list_all_occurrences()
+
+Version constants
+-----------------
+
+.. mat:autofunction:: imas_versions()
+>>>>>>> f774c4b4... backup
