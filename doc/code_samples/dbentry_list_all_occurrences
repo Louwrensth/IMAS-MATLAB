@@ -1,4 +1,4 @@
-% Opens an existing DBEntry object, using the hdf5 backend
+% Opens an existing Data Entry object (dataset), using the hdf5 backend
 idx = imas_open('imas:hdf5?path=my-data')
 
 % Get all occurrences of the 'magnetics' IDS (integers) contained in the idx dataset 
