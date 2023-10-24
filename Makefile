@@ -186,7 +186,7 @@ $(LIB_DIR)/libal-mex.so: $(LIB_DIR)/libal-mex.so.$(MEX_SO_NUM)
 $(MEX_ADD_OBJ_FILES): $(MEXSRC) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $(@)
 
-$(OBJ_FILES): $(BUILD_DIR)/%.o : %.c |  $(BUILD_DIR)
+$(OBJ_FILES): $(BUILD_DIR)/%.o : $(SRC_DIR)/%.c |  $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(@)
 
 $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c  $(addprefix $(SRC_DIR)/,$(UTL_SRC_FILES:.c=.h)) | $(BUILD_DIR)
