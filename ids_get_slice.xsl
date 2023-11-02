@@ -18,6 +18,7 @@
 
 <xsl:include href="mex_tools.xsl"/>
 <xsl:include href="get_single.xsl"/>
+<xsl:include href="implementations.xsl"/>
 
 <!--================================================-->
 <!--         Template for the whole document        -->
@@ -167,52 +168,43 @@ void mexFunction(int nlhs, mxArray *plhs[],
   <xsl:result-document href="src/ids/get_slice_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
    <xsl:for-each select="IDS">
-    <xsl:apply-templates select="." mode="METHOD_GET_SLICE_H"/>
-
+    <xsl:variable name="ids_type" select="@type"/>
+    <xsl:if test="@type='constant'">
+      <xsl:apply-templates select="." mode="METHOD_GET_H"/>
+    </xsl:if>
+    <xsl:if test="@type='dynamic' or not(@type)">
+      <xsl:apply-templates select="." mode="METHOD_GET_SLICE_H"/>
+    </xsl:if>
     al_status_t ids_get_slice_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, double inTime, int interpolMode, mxArray** ids)
     {
-    al_status_t status;
-    al_status_t status_end;
-    int getSliceOpCtx = -1;
-    char* dataDictionaryVersion = NULL;
-	bool taggedDataDictionaryVersion = false;
-    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
 
-    /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
-    int getCtx = -1;
-	status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
-	if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion, &amp;taggedDataDictionaryVersion);
-    if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
-    if (getCtx > 0) {
-    status_end = al_end_action(getCtx);
-    if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
+    <xsl:if test="@type='constant'">
+      <xsl:call-template name="get_implementation"/>
+    </xsl:if>
+
+    <xsl:if test="@type='dynamic' or not(@type)">
+      <xsl:call-template name="get_slice_implementation"/>
+    </xsl:if>
+
     }
+
+    <xsl:if test="@type='dynamic' or not(@type)">
+      <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE_H"/>
+
+      <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE">
+        <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+      </xsl:apply-templates>
+    </xsl:if>
+
+     <xsl:if test="@type='constant'">
+      <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_H"/>
+
+      <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET">
+        <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+      </xsl:apply-templates>
+    </xsl:if>
+
     
-    if (status.code >= 0) status = init_dataTree_read();
-    
-    /* Open getSlice context */
-    if (status.code >= 0) status = al_begin_slice_action(expIdx, idsFullName, READ_OP, inTime, interpolMode, &amp;getSliceOpCtx);
-    if (status.code >= 0) status = al_bind_readback_plugins(getSliceOpCtx); //binding readback plugins just before calling the get_slice() operation
-	if (status.code >= 0) status = get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getSliceOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
-    if (getSliceOpCtx > 0) {
-    if (status.code >= 0) status = al_unbind_readback_plugins(getSliceOpCtx); //unbinding readback plugins just after callig the get_slice() operation
-    status_end = al_end_action(getSliceOpCtx);
-    if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
-    }
-
-    if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);
-    /* Error handling */
-    if (status.code &lt; 0) {
-    addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
-    }
-    if (dataDictionaryVersion != NULL) free(dataDictionaryVersion);
-
-    return status;
-    }
-
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE_H"/>
-
-    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SLICE"/>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
@@ -221,6 +213,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SLICE">
+  <xsl:param name="ids_type"/>
   <xsl:call-template name="COMMENT_FIELD"/>
   al_status_t get_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)
   {
@@ -237,6 +230,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   <xsl:apply-templates select="field" mode="GET_SINGLE">
     <xsl:with-param name="slice" select="'yes'"/>
+    <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
   </xsl:apply-templates>
   
   <xsl:call-template name="freeNBCVariables"/>
@@ -244,5 +238,37 @@ void mexFunction(int nlhs, mxArray *plhs[],
   return status;
   }
 </xsl:template>
+
+
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_H">
+  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
+
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET">
+  <xsl:param name="ids_type"/>
+  <xsl:call-template name="COMMENT_FIELD"/>
+  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)
+  {
+  struct imas_mex_actionInfo action;
+  struct imas_mex_fieldInfo field;
+  mxArray* data=NULL;
+  al_status_t status = {0,""};
+  al_status_t status_end;
+  int aosArraySize = -1;
+  int aosCtx = -1;
+  action.context = ctx;
+  
+  <xsl:call-template name="declareAndAllocateNBCVariables"/>
+
+  <xsl:apply-templates select="field" mode="GET_SINGLE">
+    <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+  </xsl:apply-templates>
+  
+  <xsl:call-template name="freeNBCVariables"/>
+
+  return status;
+  }
+</xsl:template>
+
+
 
 </xsl:stylesheet>

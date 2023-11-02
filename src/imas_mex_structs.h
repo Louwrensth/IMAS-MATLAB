@@ -39,4 +39,6 @@ al_status_t getSimpleFieldStruct(char *path, const mxArray ** data);
 
 al_status_t getHomogeneousTime(int *homogeneousTime);
 
+al_status_t setHomogeneousTime(int homogeneousTime);
+
 #endif

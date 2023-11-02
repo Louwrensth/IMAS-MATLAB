@@ -18,6 +18,7 @@
 
 <xsl:include href="mex_tools.xsl"/>
 <xsl:include href="put_single.xsl"/>
+<xsl:include href="implementations.xsl"/>
 
 <!--================================================-->
 <!--         Template for the whole document        -->
@@ -157,68 +158,20 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include "imas_mex_utils.h"
     #include "ids_validate.h"
     <xsl:for-each select="IDS">
-
+    <xsl:variable name="ids_type" select="@type"/>
     al_status_t ids_delete_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName);
     <xsl:apply-templates select="." mode="METHOD_PUT_H"/>
 
     al_status_t ids_put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids)
     {
-    int ifield;
-    const mxArray* ptime=NULL;
-    al_status_t status;
-    al_status_t status_end;
-    int putOpCtx = -1;
-    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
-
-    int disable_validationID = 0;
-    char* disable_validationSTR = getenv("IMAS_AL_DISABLE_VALIDATE");
-    if (disable_validationSTR != NULL) disable_validationID = atoi(disable_validationSTR);
-    if (disable_validationID!=1) status = ids_validate_<xsl:value-of select="@name"/>(idsFullName, ids);
-
-    status = init_dataTree_write((mxArray *) ids);
-    /* TODO: move these checks to external function? */
-    if (status.code >= 0) status = getHomogeneousTime(&amp;homogeneousTime);
-    if (status.code &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_put:invalid_homogeneous_time",
-    "Unable to retrieve ids%%ids_properties%%homogeneous_time");
-    if( homogeneousTime == IDS_TIME_MODE_UNKNOWN )
-    {
-    mexWarnMsgIdAndTxt("IMAS:ids_put:empty_ids", "IDS <xsl:value-of select="@name"/> is found to be EMPTY (homogeneous_time undefined). PUT quits with no action.");
-    return status;
-    }
-    else if ( homogeneousTime == IDS_TIME_MODE_HOMOGENEOUS ) {
-    /* Top-level ids_put functions check that ids is a scalar struct */
-    ifield = mxGetFieldNumber(ids, "time");
-    ptime = mxGetFieldByNumber(ids, (mwIndex) 0, ifield);
-    if (ptime == NULL)
-      mexErrMsgIdAndTxt("IMAS:ids_put:invalid_time",
-      "Unable to retrieve ids%%time");
-    if (mxGetNumberOfElements(ptime) &lt; 1)
-    mexErrMsgIdAndTxt("IMAS:ids_put:empty_time",
-    "If time is homogeneous, ids%%time must have at least one element");
-    }
-
-    /* Delete existing IDS if any */
-    if (status.code >= 0) status = ids_delete_<xsl:value-of select="@name"/>(expIdx, idsFullName);
-    /* Open put context */
-    if (status.code >= 0) status = al_begin_global_action(expIdx, idsFullName, "", WRITE_OP, &amp;putOpCtx);
-
-    if (status.code >= 0) status = put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(putOpCtx, homogeneousTime, idsFullName);
-    if (putOpCtx > 0) {
-    if (status.code >= 0)  status = al_write_plugins_metadata(putOpCtx); //writing plugins metadata just after calling the put() operation
-    status_end = al_end_action(putOpCtx);
-    if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
-    }
-    /* Error handling */
-    if (status.code &lt; 0) {
-    addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
-    }
-
-    return status;
+      <xsl:call-template name="put_implementation"/>
     }
 
     <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT_H"/>
 
-    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT"/>
+    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_PUT">
+     <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+    </xsl:apply-templates>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
@@ -227,6 +180,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName);</xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_PUT">
+<xsl:param name="ids_type"/>
 al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, const char* idsFullName)
     {
     struct imas_mex_actionInfo action;
@@ -245,6 +199,7 @@ al_status_t put_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ct
         
     <xsl:apply-templates select="field" mode="PUT_SINGLE">
       <xsl:with-param name="dynamic_only" select="'no'"/>
+      <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
     </xsl:apply-templates>
     
     free(field.fieldPath);
