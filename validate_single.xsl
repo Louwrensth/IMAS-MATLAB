@@ -561,9 +561,8 @@
       </xsl:choose>
       </xsl:variable> 
       <!-- missing IDS coordinate exception--> 
-      <xsl:if test="starts-with($coord,$currpath) and contains($ispresent,'yes')">
+      <xsl:if test="(starts-with($coord,$currpath) and contains($ispresent,'yes')) or ($coord='time')">
         <xsl:if test="$test='false'">
-      // validation of <xsl:value-of select="@path"/> dimension <xsl:value-of select="number($dimension)"/>
           <xsl:variable name="newpath">
             <xsl:if test="not($currpath='')">
               <xsl:value-of select="substring-before(@path_doc,concat(ancestor::field[@path_doc = $currpath]/@name,'/'))"/>
@@ -790,6 +789,7 @@
               <xsl:with-param name="record" select="'0'"/>
         </xsl:apply-templates>
         </xsl:variable>
+        <xsl:if test="not($coord='time') or ($coord='time' and .//field[@path_doc=$coord])"> 
         status = validateCoordinateFromPath(data, idsTimeMode, timeSize,
                                             "<xsl:value-of select="$root"/>",
                                             "<xsl:value-of select="$relativepath_doc"/>",
@@ -808,6 +808,28 @@
                                               <xsl:with-param name="dimension" select="$dimension"/>
                                               <xsl:with-param name="self" select="concat($string,@name)"/>
                                             </xsl:apply-templates>);
+        </xsl:if> 
+        <xsl:if test="$coord='time' and not(.//field[@path_doc=$coord])"> 
+          pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
+          <xsl:if test="$enable-logging = 'yes'">
+          printf("<xsl:value-of select="@name"/>: %d %d\n\r",pfield==NULL, (pfield==NULL) ? 0 : mxGetNumberOfElements(pfield));
+          </xsl:if> 
+          if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
+         mwSize aosArraySize = getDimSize(pfield, <xsl:apply-templates select='.' mode="get-rank"/>, <xsl:value-of select="number($dimension)+1"/>);
+          if (aosArraySize != 0) {
+          if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
+            if(aosArraySize != timeSize) {
+              size_t needed = snprintf(NULL, 0, "array size of <xsl:value-of select="@path"/> (%d) wrong. Must be size of time (%d)", aosArraySize, timeSize);
+              char  *buffer = malloc(needed+1);
+              sprintf(buffer, "array size of <xsl:value-of select="@path"/> (%d) wrong. Must be size of time (%d)", aosArraySize, timeSize);
+              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              free(buffer);
+              status.code = HLI_ERR;
+            }
+          }
+          }
+        }
+        </xsl:if> 
         </xsl:if> 
         <xsl:if test="$istimeslice='yes' and substring-after($coord,'(itime)/')='time'"> 
           pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
