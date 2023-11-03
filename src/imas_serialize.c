@@ -81,10 +81,10 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         int idx;
         char * options = concat(";filename=", tmpfilename);
         char *uri = (char*) malloc(500);
-        const char* ASCII_SERIALIZER_TMP_DIR = getenv("ASCII_SERIALIZER_TMP_DIR");
-        if(ASCII_SERIALIZER_TMP_DIR != NULL)
+        const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
+        if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
         {
-            uri = concat("imas:ascii?path=", ASCII_SERIALIZER_TMP_DIR);
+            uri = concat("imas:ascii?path=", IMAS_AL_SERIALIZER_TMP_DIR);
         }
         else
         {

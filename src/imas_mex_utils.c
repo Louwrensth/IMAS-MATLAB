@@ -93,11 +93,11 @@ char* generate_tmp_file()
 {
     const char fs_safe_characters[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
 	char * prefix;
-	const char* ASCII_SERIALIZER_TMP_DIR = getenv("ASCII_SERIALIZER_TMP_DIR");
-	if(ASCII_SERIALIZER_TMP_DIR != NULL)
+	const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
+	if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
 	{
-		prefix = malloc(strlen(ASCII_SERIALIZER_TMP_DIR) + strlen("al_serialize_") + 1);
-        strcpy(prefix, ASCII_SERIALIZER_TMP_DIR);
+		prefix = malloc(strlen(IMAS_AL_SERIALIZER_TMP_DIR) + strlen("al_serialize_") + 1);
+        strcpy(prefix, IMAS_AL_SERIALIZER_TMP_DIR);
 	}
 	else
 	{
