@@ -202,6 +202,7 @@ al_status_t put_slice_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(
     al_status_t status = {0,""};
     al_status_t status_end;
     int aosArraySize = -1;
+    int hliAosArraySize;
     int aosCtx = -1;
     int isEmpty;
 
