@@ -11,7 +11,7 @@ IDSDEF= ../../xml/IDSDef.xml
 
 # Test environment (mimics loaded imas environment), write ids to tmp dir
 ids_path = $(realpath $(AL_BUILD)/models/mdsplus)
-test_ENV = IMAS_AL_PLUGINS=$(AL_BUILD)/plugins  LD_LIBRARY_PATH=$(AL_BUILD)/mexinterface/lib:$(AL_BUILD)/lowlevel:$$LD_LIBRARY_PATH ids_path="$$PWD/tmp;$(ids_path)"
+test_ENV = IMAS_AL_DISABLE_VALIDATE=1 IMAS_AL_PLUGINS=$(AL_BUILD)/plugins  LD_LIBRARY_PATH=$(AL_BUILD)/mexinterface/lib:$(AL_BUILD)/lowlevel:$$LD_LIBRARY_PATH ids_path="$$PWD/tmp;$(ids_path)"
 
 # Get a list of IDS from IDSDEF file
 IDSNAMES := $(shell sed '/<IDS name=/!d;s/.*name="\([^"]*\)".*/\1/' $(IDSDEF))

@@ -21,3 +21,5 @@ IDS API
 .. mat:autofunction:: ids_allocate()
 
 .. mat:autofunction:: ids_isdefined()
+
+.. mat:autofunction:: ids_validate()

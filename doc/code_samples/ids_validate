@@ -1,2 +1,9 @@
-% IDS Validation is not yet implemented in MATLAB.
-% See https://jira.iter.org/browse/IMAS-4650
+% Open the database entry by providing an IMAS URI
+data_entry = imas_open( ...
+    'imas:mdsplus?user=public;shot=131024;run=41;database=ITER?version=3')
+
+% Load an ids as example, here: the core_profiles IDS, occurrence 0
+cp = ids_get(data_entry, 'core_profiles')
+
+% Validate the coordinates of core_profiles
+ids_validate('core_profiles', cp)
