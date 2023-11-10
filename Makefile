@@ -158,7 +158,7 @@ $(INDSOURCES): $(IDSDEF) | saxonicajar
 ifneq "$(BEAUTIFY)" ""
         # This script will indent the generated files
         # If an error is triggered during indenting, remove the files
-	@[ "$@" = "matlab/IDS_list.m" ] || (echo "[indent] Processing $($(@:_sources=_SOURCES))";\
+	@[ "$@" = "matlab/IDS_list.m" ] || [ "$@" = "src/imas_versions.c" ] || (echo "[indent] Processing $($(@:_sources=_SOURCES))";\
 	VERSION_CONTROL="none" $(BEAUTIFY) $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
 	x=$$?;\
 	[[ $$x == 0 ]] || rm -f $(addprefix $(IDS_SRC_DIR)/,$($(@:_sources=_SOURCES)));\
