@@ -67,7 +67,7 @@ $(LIB_DIR)/ids_$(1).mexa64:           $(BUILD_DIR)/$(1)_ids.o
 $(BUILD_DIR)/ids_$(1).o:           $(IDS_SRC_DIR)/ids_$(1).h
 endef
 
-METHODS = get get_slice put put_slice delete allocate gen init int_to_double double_to_int empty_to_nan nan_to_empty cell_to_struct struct_to_cell rand
+METHODS = validate get get_slice put put_slice delete allocate gen init int_to_double double_to_int empty_to_nan nan_to_empty cell_to_struct struct_to_cell rand
 
 $(foreach method,$(METHODS),$(eval $(call TEMPLATE,$(method))))
 
@@ -104,6 +104,7 @@ MEX_SRC_FILES = $(addsuffix .c, imas_open_env \
 				imas_al_setvalue_parameter_plugin \
 				imas_serialize imas_deserialize \
 				imas_list_all_occurrences \
+				ids_isdefined \
 				imas_versions \
 				)
 SOURCES = $(GENSOURCES)
@@ -135,6 +136,7 @@ _all: sources $(TARGETS)
 
 sources: $(GENSOURCES)
 
+$(validate_SRC_FILES):       validate_single.xsl
 $(get_SRC_FILES):            get_single.xsl
 $(get_slice_SRC_FILES):      get_single.xsl
 $(put_SRC_FILES):            put_single.xsl
@@ -153,7 +155,7 @@ $(rand_SRC_FILES):           rand.xsl
 matlab/IDS_list.m:           IDS_list.xsl
 src/imas_versions.c:		 imas_versions.xsl
 $(INDSOURCES): $(IDSDEF) | saxonicajar
-	$(SAXON) -t -warnings:fatal -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^)) DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) AL_GIT_DESCRIBE=$(AL_GIT_DESCRIBE)
+	$(SAXON) -t -warnings:fatal DD_GIT_DESCRIBE=$(DD_GIT_DESCRIBE) AL_GIT_DESCRIBE=$(AL_GIT_DESCRIBE) -s:$(IDSDEF) -xsl:$(firstword $(filter %.xsl,$^))
 ifneq "$(BEAUTIFY)" ""
         # This script will indent the generated files
         # If an error is triggered during indenting, remove the files
@@ -173,8 +175,8 @@ endif
 $(LIB_DIR) $(BUILD_DIR): 
 	$(mkdir_p) $(@)
 
-$(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o
-$(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix $(BUILD_DIR)/, delete_ids.o put_ids.o)
+$(LIB_DIR)/ids_put.mexa64:           $(BUILD_DIR)/delete_ids.o $(BUILD_DIR)/validate_ids.o
+$(LIB_DIR)/ids_put_slice.mexa64:     $(addprefix $(BUILD_DIR)/, delete_ids.o put_ids.o validate_ids.o)
 $(LIB_DIR)/%.mexa64: $(BUILD_DIR)/%.o $(MEX_ADD_OBJ_FILES) | $(LIB_DIR) $(LIB_DIR)/libal-mex.so
 	$(CC) $^ -o $@ -L $(realpath $(CURDIR)/$(LIB_DIR)) -lal-mex $(LIBS) $(LDFLAGS)
 
@@ -187,7 +189,7 @@ $(LIB_DIR)/libal-mex.so: $(LIB_DIR)/libal-mex.so.$(MEX_SO_NUM)
 $(MEX_ADD_OBJ_FILES): $(MEXSRC) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $(@)
 
-$(OBJ_FILES): $(BUILD_DIR)/%.o : %.c |  $(BUILD_DIR)
+$(OBJ_FILES): $(BUILD_DIR)/%.o : $(SRC_DIR)/%.c |  $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(@)
 
 $(IDS_OBJ_FILES): $(BUILD_DIR)/%.o : $(IDS_SRC_DIR)/%.c  $(addprefix $(SRC_DIR)/,$(UTL_SRC_FILES:.c=.h)) | $(BUILD_DIR)
