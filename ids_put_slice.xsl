@@ -156,6 +156,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
  </xsl:result-document>
   <xsl:result-document href="src/ids/put_slice_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+    #include "ids_validate.h"
     <xsl:for-each select="IDS">
      <xsl:variable name="ids_type" select="@type"/>
     al_status_t ids_put_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, const mxArray* ids);

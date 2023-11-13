@@ -39,5 +39,5 @@
 .. |tm_heterogeneous| replace:: ``IDS_TIME_MODE_HETEROGENEOUS``
 .. |tm_independent| replace:: ``IDS_TIME_MODE_INDEPENDENT``
 
-.. |ids_validate| replace:: `not implemented yet for MATLAB`
+.. |ids_validate| replace:: :mat:func:`ids_validate`
 .. |validate_error| replace:: throws an error

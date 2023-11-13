@@ -92,7 +92,17 @@ char* concat(const char *s1, const char *s2)
 char* generate_tmp_file()
 {
     const char fs_safe_characters[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
-    char * prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";
+	char * prefix;
+	const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
+	if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
+	{
+		prefix = malloc(strlen(IMAS_AL_SERIALIZER_TMP_DIR) + strlen("al_serialize_") + 1);
+        strcpy(prefix, IMAS_AL_SERIALIZER_TMP_DIR);
+	}
+	else
+	{
+		prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";		
+	}
     char* fname;
     FILE *fp;
     
