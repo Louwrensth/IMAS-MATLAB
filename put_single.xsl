@@ -48,11 +48,20 @@
         <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
         <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
       </xsl:call-template>
+
       aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
 
       status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+      hliAosArraySize = aosArraySize;
+
       if (status.code >= 0) {
-      status = al_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
+        status = al_begin_arraystruct_action(ctx, field.fieldPath, field.timebasePath, &amp;aosArraySize, &amp;aosCtx);
+
+        if(aosCtx&gt;0 &amp;&amp; aosArraySize&gt;0 &amp;&amp; hliAosArraySize == 0)
+          status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+      }
+
+      if (status.code >= 0) {
       for (int i=0; i&lt;aosArraySize; i++) {
       if (status.code >= 0) status = iterate_dataTree_array(i);
       if (status.code >= 0) status = <xsl:value-of select="concat($methodName,'_',@name,'_',generate-id(.))"/>(aosCtx, homogeneousTime, idsFullName);
