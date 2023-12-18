@@ -26,3 +26,5 @@
 .. |dbentry_put| replace:: :mat:func:`ids_put`
 .. |dbentry_put_slice| replace:: :mat:func:`ids_put_slice`
 
+.. |list_all_occurrences| replace:: :mat:func:`imas_list_all_occurrences`
+

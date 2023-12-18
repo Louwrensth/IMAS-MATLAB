@@ -13,6 +13,7 @@ Data entry API
 
 .. mat:autofunction:: imas_create_env_backend()
 
+.. mat:autofunction:: imas_list_all_occurrences()
 
 Version constants
 -----------------
