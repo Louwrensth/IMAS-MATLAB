@@ -35,7 +35,7 @@ project( al-matlab
   LANGUAGES C CXX
 )
 if( NOT PROJECT_VERSION_TWEAK EQUAL 0 )
-  message( "Building a development version of the Access Layer C++ HLI" )
+  message( "Building a development version of the Access Layer Matlab HLI" )
 endif()
 
 # Compiler settings
