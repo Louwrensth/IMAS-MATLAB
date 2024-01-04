@@ -3,7 +3,7 @@ find_package( Matlab COMPONENTS MAIN_PROGRAM )
 set( LIB_FOLDER ${CMAKE_CURRENT_BINARY_DIR}/../ )
 set( M_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../matlab )
 
-if( IMAS_MDSPLUS )
+if( AL_BACKEND_MDSPLUS )
   get_target_property( MDSPLUS_MODEL_DIR al-mdsplus-model BINARY_DIR )
 endif()
 
@@ -20,7 +20,7 @@ set_tests_properties( al-mex-test PROPERTIES
 )
 
 # Tests require MDSPLUS and HDF5
-if( NOT IMAS_MDSPLUS OR NOT IMAS_HDF5 )
+if( NOT AL_BACKEND_MDSPLUS OR NOT AL_BACKEND_HDF5 )
   set_tests_properties( al-mex-test PROPERTIES DISABLED ON )
 endif()
 

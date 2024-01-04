@@ -211,6 +211,10 @@ install( DIRECTORY matlab/ DESTINATION mex )
 # Tests
 ################################################################################
 
-if( IMAS_TESTS )
+if( AL_TESTS )
   add_subdirectory( tests )
+endif()
+
+if( AL_EXAMPLES )
+  add_subdirectory( examples )
 endif()
