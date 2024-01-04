@@ -22,7 +22,7 @@ if( AL_BACKEND_HDF5 )
   find_package( HDF5 COMPONENTS C HL REQUIRED )
   # LD_PRELOAD expects a space-separated list:
   string( REPLACE ";" " " PRELOAD_LIBS "${HDF5_HL_LIBRARIES}" )
-  list( APPEND MATLAB_ENV "${PRELOAD_LIBS}" )
+  list( APPEND MATLAB_ENV "LD_PRELOAD=${PRELOAD_LIBS}" )
 endif()
 
 set_tests_properties( al-mex-test PROPERTIES
