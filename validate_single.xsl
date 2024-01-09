@@ -24,9 +24,9 @@
   if (aosArraySize != 0) {
   if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
   if(aosArraySize != timeSize) {
-        size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield), 1, timeSize);
+        size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
         char  *buffer = malloc(needed+1);
-        sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield), 1, timeSize);
+        sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
         strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
         status.code = HLI_ERR;
         free(buffer);
@@ -76,9 +76,9 @@
     coordSize = 0;
     }
   if (aosArraySize != coordSize) {
-    size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('<xsl:value-of select="@coordinate1"/>') has size %d.", getShapeStr(pfield), 1, coordSize);
+    size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('<xsl:value-of select="@coordinate1"/>') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, coordSize);
     char  *buffer = malloc(needed+1);
-    sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('<xsl:value-of select="@coordinate1"/>') has size %d.", getShapeStr(pfield), 1, coordSize);
+    sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('<xsl:value-of select="@coordinate1"/>') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, coordSize);
     strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
     status.code = HLI_ERR;
     free(buffer);
@@ -214,9 +214,9 @@
         if (pfield != NULL) {
           if (aosArraySize != 0) {
             if (aosArraySize != <xsl:value-of select = "substring-after($coord,'1...')"/>) {
-	            size_t needed = snprintf(NULL, 0, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: dimension <xsl:value-of select="number($dimension)+1"/> must have size <xsl:value-of select = "substring-after($coord,'1...')"/>.",getShapeStr(pfield));
+	            size_t needed = snprintf(NULL, 0, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: dimension <xsl:value-of select="number($dimension)+1"/> must have size <xsl:value-of select = "substring-after($coord,'1...')"/>.",getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>));
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: dimension <xsl:value-of select="number($dimension)+1"/> must have size <xsl:value-of select = "substring-after($coord,'1...')"/>.",getShapeStr(pfield));
+              sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: dimension <xsl:value-of select="number($dimension)+1"/> must have size <xsl:value-of select = "substring-after($coord,'1...')"/>.",getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>));
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               free(buffer);
@@ -794,7 +794,7 @@
         </xsl:apply-templates>
         </xsl:variable>
         <xsl:if test="not($coord='time') or ($coord='time' and .//field[@path_doc=$coord])"> 
-        status = validateCoordinateFromPath(data, idsTimeMode, timeSize,
+        status = validateCoordinateFromPath(data, idsTimeMode, timeSize,<xsl:if test="$coord='time' or contains($coord,'/time')">true</xsl:if> <xsl:if test="not($coord='time') and not(contains($coord,'/time'))">false</xsl:if>,
                                             "<xsl:value-of select="$root"/>",
                                             "<xsl:value-of select="$relativepath_doc"/>",
                                             <xsl:apply-templates select='.' mode="get-rank"/>,
@@ -823,9 +823,9 @@
           if (aosArraySize != 0) {
           if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
             if(aosArraySize != timeSize) {
-              size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield), 1, timeSize);
+              size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield), 1, timeSize);
+              sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               free(buffer);
@@ -845,9 +845,9 @@
           if (aosArraySize != 0) {
           if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
             if(aosArraySize != timeSize) {
-              size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield), 1, timeSize);
+              size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield), 1, timeSize);
+              sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               free(buffer);

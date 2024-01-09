@@ -403,7 +403,7 @@ end_repl_str:
       return pfield;
     }
 
-    char* getShapeStr(const mxArray* data)
+    char* getShapeStr(const mxArray* data, int rank)
      {
       char* result; 
       int ndims;
@@ -419,11 +419,11 @@ end_repl_str:
         return result;
       } else {
         size_t needed = snprintf(NULL, 0, "%s%d","(",dims[0]);
-        for (int i=1;i&lt;ndims;i++) needed = needed + snprintf(NULL, 0, ",%d",dims[i]);
+        for (int i=1;i&lt;rank;i++) needed = needed + snprintf(NULL, 0, ",%d",dims[i]);
         needed = needed + snprintf(NULL, 0, ")");
         char  *result = malloc(needed+1);
         sprintf(result,"%s%d","(",dims[0]);
-        for (int i=1;i&lt;ndims;i++) sprintf(result,"%s,%d",result,dims[i]);
+        for (int i=1;i&lt;rank;i++) sprintf(result,"%s,%d",result,dims[i]);
         sprintf(result,"%s)",result);
         return result;
       }
@@ -455,16 +455,14 @@ end_repl_str:
 
        }
 
-    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int rank, const int *indices_values, const char *indices_names[], int nbindices, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) 
+    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, bool is_time_coordinate, int timeSize, const char *initialpath, const char *crootpath, const char *path, int rank, const int *indices_values, const char *indices_names[], int nbindices, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) 
     {
       al_status_t status = {0,""};
       char *pathcopy = strdup(path);
       const mxArray *pfield;
       char *save_ptr;
       char *token;
-      bool is_time_coordinate = false;
       token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-      if (strcmp(token,"time")==0) is_time_coordinate=true;
       token = my_strtok_r(NULL, '/', &amp;save_ptr);
       
       if (token==NULL) {
@@ -476,9 +474,9 @@ end_repl_str:
           if (aosArraySize != 0) {
             if(is_time_coordinate &amp;&amp; idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS) {
               if (timeSize != aosArraySize) {
-              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim, timeSize);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim, timeSize);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim, timeSize);
+              sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim, timeSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
 	            status.code = HLI_ERR;
 	           free(buffer);
@@ -525,9 +523,9 @@ end_repl_str:
               }
               if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
 
-              size_t needed = snprintf(NULL, 0, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')", crootpath, path, cfield_dim,buffercoord);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')", crootpath, initialpath, cfield_dim,buffercoord);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')",crootpath, path, cfield_dim, buffercoord);
+              sprintf(buffer, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')",crootpath, initialpath, cfield_dim, buffercoord);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
 	            status.code = HLI_ERR;
              free(buffer);
@@ -560,9 +558,9 @@ end_repl_str:
                 sprintf(buffercoord, "%s OR %s",buffercoord,ctargetfield[target]);
               }
               if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
-              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim,ctargetfield[targetcpathid], targetFieldSize);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s%s') has size %d.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim,crootpath,ctargetfield[targetcpathid], targetFieldSize);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim,ctargetfield[targetcpathid], targetFieldSize);
+              sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s%s') has size %d.", crootpath, initialpath,getShapeStr(pfield,rank), cfield_dim,crootpath,ctargetfield[targetcpathid], targetFieldSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               free(buffer);
@@ -575,9 +573,9 @@ end_repl_str:
           }
           if (is_time_coordinate == (idsTimeMode == IDS_TIME_MODE_INDEPENDENT)) {
             if(aosArraySize != 0) {
-              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, path, getShapeStr(pfield), cfield_dim);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer,  "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, path, getShapeStr(pfield), cfield_dim);
+              sprintf(buffer,  "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               free(pathcopy);
@@ -614,7 +612,7 @@ end_repl_str:
             if (pfield_elem) {
               pathcopy = strdup(path);
               char * newtoken = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-              status = validate_coordinate(root, pfield_elem, idsTimeMode, timeSize, crootpath, save_ptr, rank, new_indices_values, (const char **) new_indices_names, nbindices + 1, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
+              status = validate_coordinate(root, pfield_elem, idsTimeMode, is_time_coordinate, timeSize, initialpath, crootpath, save_ptr, rank, new_indices_values, (const char **) new_indices_names, nbindices + 1, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
             }
           }
          free(new_indices_values);
@@ -624,7 +622,7 @@ end_repl_str:
           // it's a structure
           pathcopy = strdup(path);
           token = my_strtok_r(pathcopy, '/', &amp;save_ptr);
-          status = validate_coordinate(root, pfield, idsTimeMode, timeSize, crootpath, save_ptr, rank, indices_values, (const char **) indices_names, nbindices, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
+          status = validate_coordinate(root, pfield, idsTimeMode, is_time_coordinate, timeSize, initialpath, crootpath, save_ptr, rank, indices_values, (const char **) indices_names, nbindices, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
         }
       }
       
@@ -634,12 +632,13 @@ end_repl_str:
     }
     }
 
-    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
+    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, bool is_time_coordinate, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
       const mxArray *root = data;
       int *indices_values;
       char *indices_names[] = {};
+      const char *initialpath = path;
 
-      return validate_coordinate(root, data, idsTimeMode, timeSize, crootpath, path, rank, indices_values, (const char **) indices_names, 0, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
+      return validate_coordinate(root, data, idsTimeMode, is_time_coordinate, timeSize, initialpath, crootpath, path, rank, indices_values, (const char **) indices_names, 0, cfield_dim, ctargetfield, nb_ctargets, target_ranks, ctargetfielddim, spec_dim);
 
     }
 
