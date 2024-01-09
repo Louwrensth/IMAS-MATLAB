@@ -127,6 +127,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
  <xsl:result-document href="src/ids/validate_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+    #if (__STDC_VERSION__ >= 199901L)
+    #include &lt;stdint.h&gt;
+    #endif
 
 
     // a hardcoded strok_r. same function but by moving the save pointer
@@ -228,6 +231,92 @@ void mexFunction(int nlhs, mxArray *plhs[],
       return pfield;
     }
 
+    // Function to replace all the occurrences
+// of the substring S1 to S2 in string S
+
+char *str_replace(const char *str, const char *from, const char *to) {
+
+	/* Adjust each of the below values to suit your needs. */
+
+	/* Increment positions cache size initially by this number. */
+	size_t cache_sz_inc = 16;
+	/* Thereafter, each time capacity needs to be increased,
+	 * multiply the increment by this factor. */
+	const size_t cache_sz_inc_factor = 3;
+	/* But never increment capacity by more than this number. */
+	const size_t cache_sz_inc_max = 1048576;
+
+	char *pret, *ret = NULL;
+	const char *pstr2, *pstr = str;
+	size_t i, count = 0;
+	#if (__STDC_VERSION__ >= 199901L)
+	uintptr_t *pos_cache_tmp, *pos_cache = NULL;
+	#else
+	ptrdiff_t *pos_cache_tmp, *pos_cache = NULL;
+	#endif
+	size_t cache_sz = 0;
+	size_t cpylen, orglen, retlen, tolen, fromlen = strlen(from);
+
+	/* Find all matches and cache their positions. */
+	while ((pstr2 = strstr(pstr, from)) != NULL) {
+		count++;
+
+		/* Increase the cache size when necessary. */
+		if (cache_sz &lt; count) {
+			cache_sz += cache_sz_inc;
+			pos_cache_tmp = realloc(pos_cache, sizeof(*pos_cache) * cache_sz);
+			if (pos_cache_tmp == NULL) {
+				goto end_repl_str;
+			} else pos_cache = pos_cache_tmp;
+			cache_sz_inc *= cache_sz_inc_factor;
+			if (cache_sz_inc > cache_sz_inc_max) {
+				cache_sz_inc = cache_sz_inc_max;
+			}
+		}
+
+		pos_cache[count-1] = pstr2 - str;
+		pstr = pstr2 + fromlen;
+	}
+
+	orglen = pstr - str + strlen(pstr);
+
+	/* Allocate memory for the post-replacement string. */
+	if (count > 0) {
+		tolen = strlen(to);
+		retlen = orglen + (tolen - fromlen) * count;
+	} else	retlen = orglen;
+	ret = malloc(retlen + 1);
+	if (ret == NULL) {
+		goto end_repl_str;
+	}
+
+	if (count == 0) {
+		/* If no matches, then just duplicate the string. */
+		strcpy(ret, str);
+	} else {
+		/* Otherwise, duplicate the string whilst performing
+		 * the replacements using the position cache. */
+		pret = ret;
+		memcpy(pret, str, pos_cache[0]);
+		pret += pos_cache[0];
+		for (i = 0; i &lt; count; i++) {
+			memcpy(pret, to, tolen);
+			pret += tolen;
+			pstr = str + pos_cache[i] + fromlen;
+			cpylen = (i == count-1 ? orglen : pos_cache[i+1]) - pos_cache[i] - fromlen;
+			memcpy(pret, pstr, cpylen);
+			pret += cpylen;
+		}
+		ret[retlen] = '\0';
+	}
+
+end_repl_str:
+	/* Free the cache and return the post-replacement string,
+	 * which will be NULL in the event of an error. */
+	free(pos_cache);
+	return ret;
+}
+
     // recursive function: get the pointer of the field following his path from a position field (data) of the tree
     const mxArray *getFieldFromPath(const char *path, const mxArray *data, const int *indices_values, const char **indices_names, int nbindices) {
 
@@ -314,6 +403,34 @@ void mexFunction(int nlhs, mxArray *plhs[],
       return pfield;
     }
 
+    char* getShapeStr(const mxArray* data)
+     {
+      char* result; 
+      int ndims;
+      const mwSize *dims;
+      ndims = mxGetNumberOfDimensions(data);
+      dims = mxGetDimensions(data);
+
+      /* Allow for 1D row vectors  */
+      if (ndims == 1 &amp;&amp; dims[0] == 1) {
+        size_t needed = snprintf(NULL, 0, "%s,%d,%s","(",dims[1],")");
+        char  *result = malloc(needed+1);
+        sprintf(result,"%s,%d,%s","(",dims[1],")");
+        return result;
+      } else {
+        size_t needed = snprintf(NULL, 0, "%s%d","(",dims[0]);
+        for (int i=1;i&lt;ndims;i++) needed = needed + snprintf(NULL, 0, ",%d",dims[i]);
+        needed = needed + snprintf(NULL, 0, ")");
+        char  *result = malloc(needed+1);
+        sprintf(result,"%s%d","(",dims[0]);
+        for (int i=1;i&lt;ndims;i++) sprintf(result,"%s,%d",result,dims[i]);
+        sprintf(result,"%s)",result);
+        return result;
+      }
+
+
+     }
+
     mwSize getDimSize(const mxArray * data, int rank, int dim)
       {
         int ndims;
@@ -359,9 +476,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
           if (aosArraySize != 0) {
             if(is_time_coordinate &amp;&amp; idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS) {
               if (timeSize != aosArraySize) {
-              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s (%d). (time size is %d)", cfield_dim, crootpath, path, aosArraySize, timeSize);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim, timeSize);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Wrong dimension %d for %s%s (%d). (time size is %d)", cfield_dim, crootpath, path, aosArraySize, timeSize);
+              sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim, timeSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
 	            status.code = HLI_ERR;
 	           free(buffer);
@@ -374,11 +491,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
             bool error = true;
             int i = 0;
             mwSize targetFieldSize = 0;
+            int targetcpathid = 0;
 	          mwSize pfieldSize = 0;
             for (int cpathid = 0; cpathid&lt;nb_ctargets;cpathid++) {
-            pfield = getFieldFromPath(ctargetfield[cpathid], root, indices_values, indices_names, nbindices);
-            pfieldSize = getDimSize(pfield, target_ranks[cpathid], ctargetfielddim);
+            const mxArray *pfieldtarget = getFieldFromPath(ctargetfield[cpathid], root, indices_values, indices_names, nbindices);
+            pfieldSize = getDimSize(pfieldtarget, target_ranks[cpathid], ctargetfielddim);
             if (pfieldSize != 0) {
+                targetcpathid = i;
                 targetFieldSize = pfieldSize;
                 i = i + 1;
               } 
@@ -388,7 +507,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
               check = false;
             }
 
-            if (i&gt;1) { 
+            if (spec_dim==0 &amp;&amp; i!=1) { 
               size_t neededcoord= snprintf(NULL, 0, "%s%s",crootpath, ctargetfield[0]);
               for (int target=1; target&lt;nb_ctargets;target++) {
                 neededcoord+= snprintf(NULL, 0, " OR %s%s",crootpath, ctargetfield[target]);
@@ -406,25 +525,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
               }
               if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
 
-              char  *bufferindices = malloc(neededindices+1);
-              if (nbindices > 0) {
-                sprintf(bufferindices, "\r\nFor %s = %d",indices_names[0], indices_values[0]+1);
-                for (int index=1; index&lt;nbindices; index++) {
-                    sprintf(bufferindices, "%s\r\nFor %s = %d",bufferindices,indices_names[index], indices_values[index]+1);
-                }
-              } 
-              else {
-                bufferindices[0] = '\0';
-              }
-
-              size_t needed = snprintf(NULL, 0, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)%s", crootpath, path, cfield_dim,buffercoord,bufferindices);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')", crootpath, path, cfield_dim,buffercoord);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Coordinate consistency error for %s%s (dimension %d). Exactly one of the coordinate must be verified. (%s)%s",crootpath, path, cfield_dim, buffercoord,bufferindices);
+              sprintf(buffer, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')",crootpath, path, cfield_dim, buffercoord);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
 	            status.code = HLI_ERR;
              free(buffer);
 	           free(buffercoord);
-	           free(bufferindices);
              free(pathcopy);
               return status;
             }
@@ -453,26 +560,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
                 sprintf(buffercoord, "%s OR %s",buffercoord,ctargetfield[target]);
               }
               if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
-
-              char  *bufferindices = malloc(neededindices+1);
-              if (nbindices > 0) {
-                sprintf(bufferindices, "\r\nFor %s = %d",indices_names[0], indices_values[0]+1);
-                for (int index=1; index&lt;nbindices; index++) {
-                    sprintf(bufferindices, "%s\r\nFor %s = %d",bufferindices,indices_names[index], indices_values[index]+1);
-                }
-              } 
-              else {
-                bufferindices[0] = '\0';
-              }
-              size_t needed = snprintf(NULL, 0, "Wrong dimension %d for %s%s (%d). (%s)%s", cfield_dim, crootpath, path, aosArraySize, buffercoord, bufferindices);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim,ctargetfield[targetcpathid], targetFieldSize);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Wrong dimension %d for %s%s (%d). (%s)%s", cfield_dim, crootpath, path, aosArraySize, buffercoord, bufferindices);
+              sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s') has size %d.", crootpath, path, getShapeStr(pfield), cfield_dim,ctargetfield[targetcpathid], targetFieldSize);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
-             free(buffer);
-	           free(buffercoord);
-	           free(bufferindices);
-             free(pathcopy);
+              free(buffer);
+              free(buffercoord);
+              free(pathcopy);
               return status;
             }
               free(pathcopy);
@@ -480,9 +575,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
           }
           if (is_time_coordinate == (idsTimeMode == IDS_TIME_MODE_INDEPENDENT)) {
             if(aosArraySize != 0) {
-              size_t needed = snprintf(NULL, 0, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, path, getShapeStr(pfield), cfield_dim);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "arraySize of %s%s wrong dimension %d. The size must be different of 0.", crootpath, path, cfield_dim);
+              sprintf(buffer,  "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, path, getShapeStr(pfield), cfield_dim);
               strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
               status.code = HLI_ERR;
               free(pathcopy);
@@ -638,10 +733,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
           if (status.code &gt;= 0) status = iterate_dataTree_array(i);
           if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(idsTimeMode, timeSize);
           if (status.code &lt; 0) {
-              size_t needed = snprintf(NULL, 0, "%s\r\n For <xsl:value-of select="substring-before(substring-after(@path_doc,concat(@name,'(')),')')"/> = %d.", status.message, i+1);
-              char  *buffer = malloc(needed+1);
-              sprintf(buffer, "%s\r\n For <xsl:value-of select="substring-before(substring-after(@path_doc,concat(@name,'(')),')')"/> = %d.", status.message, i+1);
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              char *buffer = strdup(status.message);
+              size_t needed = snprintf(NULL,0,"%d",i+1);
+              char* indexstr = "<xsl:value-of select="substring-before(substring-after(@path_doc,concat(@name,'(')),')')"/>";
+              char* valuestr = malloc(needed+1); 
+              sprintf(valuestr,"%d", i+1);
+              char* newbuff = str_replace(buffer,indexstr,valuestr);
+              strncpy(status.message, newbuff, MAX_ERR_MSG_LEN);
+              free(valuestr);
+              free(newbuff);
+              free(buffer);
           }
         }
         }
