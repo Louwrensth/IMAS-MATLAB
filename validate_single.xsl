@@ -20,14 +20,17 @@
   if (status.code &gt;= 0) {
         pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
     if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
-  if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+      if (status.code &gt;= 0) {
+      alStatus = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+     }
   if (aosArraySize != 0) {
   if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
   if(aosArraySize != timeSize) {
         size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
         char  *buffer = malloc(needed+1);
         sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
-        strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+        strncpy(status.message, buffer, needed);
         status.code = HLI_ERR;
         free(buffer);
       }
@@ -53,14 +56,17 @@
         size_t needed = snprintf(NULL, 0, "Time coordinate of '<xsl:value-of select="@name"/>' ('<xsl:value-of select="@name"/>(%d)/time') has empty values.", itime+1);
         char *buffer = malloc(needed + 1);
         sprintf(buffer, "Time coordinate of '<xsl:value-of select="@name"/>' ('<xsl:value-of select="@name"/>(%d)/time') has empty values.", itime+1);
-        strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+        strncpy(status.message, buffer, needed);
         status.code = HLI_ERR;
         free(buffer);
       }
       }
     }
   </xsl:if>
-  if (status.code &gt;= 0) status = end_dataTree_array_action();
+  if (status.code &gt;= 0) {
+      alStatus = end_dataTree_array_action();
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+     }
   }
   }
   }
@@ -69,7 +75,10 @@
   if (status.code &gt;= 0) {
         pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
     if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
-  if (status.code &gt;= 0)status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+  if (status.code &gt;= 0) {
+      alStatus = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+     }
   const mxArray *pfieldcoord = getFieldFromStruct("<xsl:value-of select="@coordinate1"/>", data);
   mwSize coordSize = getDimSize(pfieldcoord, 1, 1);
   if (status.code &gt;= 0 &amp;&amp; !(coordSize &gt; 0)) {
@@ -79,11 +88,14 @@
     size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('<xsl:value-of select="@coordinate1"/>') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, coordSize);
     char  *buffer = malloc(needed+1);
     sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('<xsl:value-of select="@coordinate1"/>') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, coordSize);
-    strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+    strncpy(status.message, buffer, needed);
     status.code = HLI_ERR;
     free(buffer);
   }
-  if (status.code &gt;= 0) status = end_dataTree_array_action();
+  if (status.code &gt;= 0) {
+      alStatus = end_dataTree_array_action();
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+     }
   }
   }
   </xsl:if>
@@ -217,7 +229,7 @@
 	            size_t needed = snprintf(NULL, 0, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: dimension <xsl:value-of select="number($dimension)+1"/> must have size <xsl:value-of select = "substring-after($coord,'1...')"/>.",getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>));
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: dimension <xsl:value-of select="number($dimension)+1"/> must have size <xsl:value-of select = "substring-after($coord,'1...')"/>.",getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>));
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              strncpy(status.message, buffer, needed);
               status.code = HLI_ERR;
               free(buffer);
             }
@@ -826,7 +838,7 @@
               size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              strncpy(status.message, buffer, needed);
               status.code = HLI_ERR;
               free(buffer);
             }
@@ -841,14 +853,17 @@
           printf("<xsl:value-of select="@name"/>: %d %d\n\r",pfield==NULL, (pfield==NULL) ? 0 : mxGetNumberOfElements(pfield));
           </xsl:if> 
           if (pfield != NULL &amp;&amp; !mxIsEmpty(pfield)) {
-          if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+            if (status.code &gt;= 0) {
+              alStatus = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+              status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+            }
           if (aosArraySize != 0) {
           if (idsTimeMode == IDS_TIME_MODE_HOMOGENEOUS ) {
             if(aosArraySize != timeSize) {
               size_t needed = snprintf(NULL, 0,  "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Element '<xsl:value-of select="@path"/>' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", getShapeStr(pfield,<xsl:apply-templates select='.' mode="get-rank"/>), 1, timeSize);
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              strncpy(status.message, buffer, needed);
               status.code = HLI_ERR;
               free(buffer);
             }
@@ -880,7 +895,7 @@
                 size_t needed = snprintf(NULL, 0, "Time coordinate of '<xsl:value-of select="@name"/>' ('<xsl:value-of select="@name"/>(%d)/time') has empty values.", itime+1);
                 char *buffer = malloc(needed + 1);
                 sprintf(buffer, "Time coordinate of '<xsl:value-of select="@name"/>' ('<xsl:value-of select="@name"/>(%d)/time') has empty values.", itime+1);
-                strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+                strncpy(status.message, buffer, needed);
                 status.code = HLI_ERR;
                 free(buffer);
               }
@@ -889,7 +904,10 @@
           }
         </xsl:if>
           }
-          if (status.code &gt;= 0) status = end_dataTree_array_action();
+          if (status.code &gt;= 0) {
+              alStatus = end_dataTree_array_action();
+              status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+            }
         }
         </xsl:if> 
 

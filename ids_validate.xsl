@@ -97,7 +97,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = IDSname;
 
   /* Declare Function Pointer */
-  al_status_t(*ids_validate)(char*,const mxArray*) = NULL;
+  al_validation_status_t(*ids_validate)(char*,const mxArray*) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">ids_validate</xsl:with-param>
@@ -109,9 +109,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Clean-up previous errors */
   resetErrMsgIdAndTxt();
   /* Call function */
-  al_status_t err = ids_validate(IDSname, prhs[1]);
+  al_validation_status_t err = ids_validate(IDSname, prhs[1]);
   if (err.code &lt; 0 )
-  my_mexErrMsgIdAndTxt(err, "IMAS:ids_validate:");
+  my_validation_mexErrMsgIdAndTxt(err, "IMAS:ids_validate:");
   return;
 
 }
@@ -121,7 +121,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include "mex.h"
     #include "imas_mex_utils.h"
     <xsl:for-each select="IDS">
-    al_status_t ids_validate_<xsl:value-of select="@name"/>(char* idsFullName, const mxArray* ids);
+    al_validation_status_t ids_validate_<xsl:value-of select="@name"/>(char* idsFullName, const mxArray* ids);
     </xsl:for-each>
  </xsl:result-document>
 
@@ -455,9 +455,10 @@ end_repl_str:
 
        }
 
-    al_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, bool is_time_coordinate, int timeSize, const char *initialpath, const char *crootpath, const char *path, int rank, const int *indices_values, const char *indices_names[], int nbindices, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) 
+    al_validation_status_t validate_coordinate(const mxArray *root, const mxArray *data, int idsTimeMode, bool is_time_coordinate, int timeSize, const char *initialpath, const char *crootpath, const char *path, int rank, const int *indices_values, const char *indices_names[], int nbindices, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) 
     {
-      al_status_t status = {0,""};
+      al_status_t alStatus = {0,""};
+      al_validation_status_t status = {0,""};
       char *pathcopy = strdup(path);
       const mxArray *pfield;
       char *save_ptr;
@@ -477,7 +478,7 @@ end_repl_str:
               size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim, timeSize);
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('time') has size %d.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim, timeSize);
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              strncpy(status.message, buffer, needed);
 	            status.code = HLI_ERR;
 	           free(buffer);
              free(pathcopy);
@@ -526,11 +527,23 @@ end_repl_str:
               size_t needed = snprintf(NULL, 0, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')", crootpath, initialpath, cfield_dim,buffercoord);
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')",crootpath, initialpath, cfield_dim, buffercoord);
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              strncpy(status.message, buffer, needed);
+              for (int k=0;k&lt;nbindices; k++) {
+                char *initbuffer = strdup(status.message);
+                size_t indexstrneeded = snprintf(NULL,0,"%d",indices_values[k]+1);
+                const char* indexstr = indices_names[k];
+                char* valuestr = malloc(indexstrneeded+1); 
+                sprintf(valuestr,"%d", indices_values[k]+1);
+                char* newbuff = str_replace(initbuffer,indexstr,valuestr);
+                strncpy(status.message, newbuff, MAXERRMSGTXTSIZE);
+                free(valuestr);
+                free(newbuff);
+                free(initbuffer);
+              }
 	            status.code = HLI_ERR;
-             free(buffer);
-	           free(buffercoord);
-             free(pathcopy);
+              free(buffer);
+              free(buffercoord);
+              free(pathcopy);
               return status;
             }
             if (aosArraySize == targetFieldSize) {
@@ -561,7 +574,21 @@ end_repl_str:
               size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s%s') has size %d.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim,crootpath,ctargetfield[targetcpathid], targetFieldSize);
               char  *buffer = malloc(needed+1);
               sprintf(buffer, "Element '%s%s' has incorrect shape %s: its coordinate in dimension %d ('%s%s') has size %d.", crootpath, initialpath,getShapeStr(pfield,rank), cfield_dim,crootpath,ctargetfield[targetcpathid], targetFieldSize);
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              strncpy(status.message, buffer, needed);
+              /// --- replacement of each index by its value
+              for (int k=0;k&lt;nbindices; k++) {
+                char *initbuffer = strdup(status.message);
+                size_t indexstrneeded = snprintf(NULL,0,"%d",indices_values[k]+1);
+                const char* indexstr = indices_names[k];
+                char* valuestr = malloc(indexstrneeded+1); 
+                sprintf(valuestr,"%d", indices_values[k]+1);
+                char* newbuff = str_replace(initbuffer,indexstr,valuestr);
+                strncpy(status.message, newbuff, MAXERRMSGTXTSIZE );
+                free(valuestr);
+                free(newbuff);
+                free(initbuffer);
+              }
+              ///
               status.code = HLI_ERR;
               free(buffer);
               free(buffercoord);
@@ -576,7 +603,7 @@ end_repl_str:
               size_t needed = snprintf(NULL, 0, "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim);
               char  *buffer = malloc(needed+1);
               sprintf(buffer,  "Element '%s%s' has incorrect shape %s: dimension %d must have size 0.", crootpath, initialpath, getShapeStr(pfield,rank), cfield_dim);
-              strncpy(status.message, buffer, MAX_ERR_MSG_LEN);
+              strncpy(status.message, buffer, needed);
               status.code = HLI_ERR;
               free(pathcopy);
               return status;
@@ -632,7 +659,7 @@ end_repl_str:
     }
     }
 
-    al_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, bool is_time_coordinate, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
+    al_validation_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, bool is_time_coordinate, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
       const mxArray *root = data;
       int *indices_values;
       char *indices_names[] = {};
@@ -645,9 +672,10 @@ end_repl_str:
     <xsl:for-each select="IDS">
     <xsl:apply-templates select="field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_VALIDATE_H"/>
     
-    al_status_t ids_validate_<xsl:value-of select="@name"/>(char* idsFullName, const mxArray* ids)
+    al_validation_status_t ids_validate_<xsl:value-of select="@name"/>(char* idsFullName, const mxArray* ids)
     {
-    al_status_t status;
+    al_validation_status_t status = {0,""};
+    al_status_t alStatus = {0,""};
     int ifield;
     const mxArray* data=NULL; 
     const mxArray* pfield=NULL;
@@ -658,8 +686,12 @@ end_repl_str:
     int aosArraySize;
     int coordSize;
 
-    status = init_dataTree_write((mxArray *) ids);
-    if (status.code >= 0) status = getHomogeneousTime(&amp;idsTimeMode);
+    alStatus = init_dataTree_write((mxArray *) ids);
+    status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+    if (status.code >= 0) {
+      alStatus = getHomogeneousTime(&amp;idsTimeMode);
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+    }
     if (status.code &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_validate:invalid_homogeneous_time",
     "Unable to retrieve ids%%ids_properties%%homogeneous_time"); 
     if( idsTimeMode == IDS_TIME_MODE_UNKNOWN )
@@ -681,7 +713,10 @@ end_repl_str:
       "If time is homogeneous, ids%%time must have at least one element");
     }
 
-    if (status.code &gt;= 0) status = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
+    if (status.code &gt;= 0) {
+      alStatus = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+    }
 
     if (status.code &gt;= 0) {
     <xsl:apply-templates select="field" mode="VALIDATE_CHILD_CALL"/>
@@ -709,7 +744,10 @@ end_repl_str:
   <xsl:when test="@data_type='structure'"> 
     if (status.code &gt;= 0) pfield = getFieldFromStruct("<xsl:value-of select="@name"/>", data);
     if (pfield != NULL &amp;&amp; status.code &gt;= 0) {
-    if (status.code &gt;= 0) status = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
+      if (status.code &gt;= 0) {
+      alStatus = begin_dataTree_write("<xsl:value-of select="@name"/>", &amp;isEmpty);
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+      }
     if (!isEmpty &amp;&amp; status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(idsTimeMode, timeSize);
     if (status.code &gt;= 0) end_dataTree_action();
     }
@@ -720,7 +758,10 @@ end_repl_str:
       <xsl:if test="$enable-logging = 'yes'">
         printf("Size of struct_array: %d elements.\n\r",(pfield == NULL) ? 0 : mxGetNumberOfElements(pfield));
       </xsl:if>
-    if (status.code &gt;= 0) status = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+    if (status.code &gt;= 0) {
+      alStatus = begin_dataTree_array_write("<xsl:value-of select="@name"/>", &amp;aosArraySize);
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+    }
     if (status.code &gt;= 0) {
       <xsl:if test="$enable-logging = 'yes'">
         printf("Loop for <xsl:value-of select="@name"/> over %d elements.\n\r",aosArraySize);
@@ -729,7 +770,10 @@ end_repl_str:
       const mxArray* elem = mxGetCell(pfield, i);
       if (elem != NULL) {
         if (status.code &gt;= 0 &amp;&amp; (mxIsStruct(elem))) {
-          if (status.code &gt;= 0) status = iterate_dataTree_array(i);
+          if (status.code &gt;= 0) {
+            alStatus = iterate_dataTree_array(i);
+            status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+          }
           if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(idsTimeMode, timeSize);
           if (status.code &lt; 0) {
               char *buffer = strdup(status.message);
@@ -747,23 +791,27 @@ end_repl_str:
         }
       }
     }
-    if (status.code &gt;= 0) status = end_dataTree_array_action();
+    if (status.code &gt;= 0) {
+      alStatus = end_dataTree_array_action();
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+    }
     }
   </xsl:when>
   </xsl:choose>
 </xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_VALIDATE_H">
-al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int idsTimeMode, int timeSize);
+al_validation_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int idsTimeMode, int timeSize);
 </xsl:template>
 
 <xsl:template match="field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_VALIDATE">
 <xsl:apply-templates select="field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_VALIDATE_H"/>
-    al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int idsTimeMode, int timeSize)
+    al_validation_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int idsTimeMode, int timeSize)
     {
     const mxArray* data=NULL;
     const mxArray* pfield=NULL;
-    al_status_t status = {0,""};
+    al_validation_status_t status = {0,""};
+    al_status_t alStatus = {0,""};
     int isEmpty;
     int aosArraySize;
     int ifield;
@@ -771,7 +819,10 @@ al_status_t validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(i
     int i1max, i2max, i3max, i4max, itimemax;
 	  const mwSize *dims;
 
-    status = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
+    if (status.code &gt;= 0) {
+      alStatus = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
+      status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
+    }
 
     if (data != NULL &amp;&amp; !mxIsEmpty(data)) {
 
