@@ -524,9 +524,9 @@ end_repl_str:
               }
               if(spec_dim!=0) sprintf(buffercoord,"%s OR %d",buffercoord,spec_dim);
 
-              size_t needed = snprintf(NULL, 0, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')", crootpath, initialpath, cfield_dim,buffercoord);
+              size_t needed = snprintf(NULL, 0, "Element '%s%s' must have its coordinate in dimension %d (any of '%s') filled.", crootpath, initialpath, cfield_dim,buffercoord);
               char  *buffer = malloc(needed+1);
-              sprintf(buffer, "Element '%s%s' must have its coordinate in dimension %d (any of '%s')",crootpath, initialpath, cfield_dim, buffercoord);
+              sprintf(buffer, "Element '%s%s' must have its coordinate in dimension %d (any of '%s') filled.",crootpath, initialpath, cfield_dim, buffercoord);
               strncpy(status.message, buffer, needed);
               for (int k=0;k&lt;nbindices; k++) {
                 char *initbuffer = strdup(status.message);
