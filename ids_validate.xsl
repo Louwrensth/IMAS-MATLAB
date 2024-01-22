@@ -511,11 +511,7 @@ end_repl_str:
               for (int target=1; target&lt;nb_ctargets;target++) {
                 neededcoord+= snprintf(NULL, 0, " OR %s%s",crootpath, ctargetfield[target]);
               }
-              if(spec_dim!=0) neededcoord+=snprintf(NULL, 0, "1...1");
-              size_t neededindices =0;
-              for (int index=0; index&lt;nbindices; index++) {
-                  neededindices+=snprintf(NULL, 0, "\r\nFor %s = %d",indices_names[index], indices_values[index]+1);
-              }
+              if(spec_dim!=0)  neededcoord +=  snprintf(NULL, 0, " OR %d",spec_dim);
 
               char  *buffercoord = malloc(neededcoord+1);
               sprintf(buffercoord, "%s%s",crootpath, ctargetfield[0]);
@@ -777,12 +773,15 @@ end_repl_str:
           if (status.code &gt;= 0) status = validate_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(idsTimeMode, timeSize);
           if (status.code &lt; 0) {
               char *buffer = strdup(status.message);
+              size_t needed_nb_char = snprintf(NULL, 0, "%s", buffer);
               size_t needed = snprintf(NULL,0,"%d",i+1);
               char* indexstr = "<xsl:value-of select="substring-before(substring-after(@path_doc,concat(@name,'(')),')')"/>";
               char* valuestr = malloc(needed+1); 
               sprintf(valuestr,"%d", i+1);
+              needed_nb_char += needed-snprintf(NULL,0,"%s",indexstr);;
               char* newbuff = str_replace(buffer,indexstr,valuestr);
-              strncpy(status.message, newbuff, MAX_ERR_MSG_LEN);
+              needed = snprintf(NULL, 0, "%s", newbuff);
+              strncpy(status.message, newbuff, needed_nb_char);
               free(valuestr);
               free(newbuff);
               free(buffer);
