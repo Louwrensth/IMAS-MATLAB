@@ -69,6 +69,8 @@ extern const int IDS_TIME_MODE_INDEPENDENT;
 
 /** \endcond */
 
+typedef struct { int code; char message[MAXERRMSGTXTSIZE]; } al_validation_status_t;
+
 /**
    Structure containing information about the current LowLevel context.
  */
@@ -105,6 +107,8 @@ char * getFilenameFromPath(char *);
 void resetErrMsgIdAndTxt(void);
 
 void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix);
+
+void my_validation_mexErrMsgIdAndTxt(al_validation_status_t status, const char * prefix);
 
 void my_exceptionGetReport(mxArray* exception);
 

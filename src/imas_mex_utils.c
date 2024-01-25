@@ -175,6 +175,26 @@ void my_mexErrMsgIdAndTxt(al_status_t status, const char * prefix)
 	}
 }
 
+void my_validation_mexErrMsgIdAndTxt(al_validation_status_t status, const char * prefix)
+{
+	char msgid[MAXERRMSGIDSIZE];
+	char* errtype;
+
+	strncpy(msgid, prefix, strnlen(prefix, MAXERRMSGIDSIZE-1)+1);
+	if (mex_errmsgid != NULL && strnlen(mex_errmsgid, MAXERRMSGIDSIZE-1)) {
+		strncat(msgid, mex_errmsgid, MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
+		mexErrMsgIdAndTxt(msgid,mex_errmsgtxt);
+	} else {
+		strncat(msgid, "internal_error", MAXERRMSGIDSIZE - strnlen(msgid, MAXERRMSGIDSIZE-1));
+		if (status.code == HLI_ERR) errtype = "HLI";
+		else if (status.code == LOWLEVEL_ERR) errtype = "LOWLEVEL";
+		else if (status.code == BACKEND_ERR) errtype = "BACKEND";
+		else if (status.code == CONTEXT_ERR) errtype = "CONTEXT";
+		else errtype = "UNKNOWN";
+		
+		mexErrMsgIdAndTxt(msgid,"internal error of type %s occured with message:\n %s%s", errtype, status.message, mex_errmsgtxt);
+	}
+}
 /**
    Appends MException message to global error message text
    Typically called if an exception occurs during a call to a MATLAB function in a MEX-file, this function will add the message of the corresponding MException object to the mex_errmsgtxt global variable.

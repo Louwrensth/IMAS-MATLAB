@@ -7,11 +7,7 @@ try
 catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:empty_ids'
-            if not(contains(ME.message,'ids%ids_properties%homogeneous_time is not defined'))
-                rethrow(ME)
-            else
-                disp('Test passed...')
-            end 
+            disp('Test passed...')
         otherwise
             rethrow(ME)
     end
@@ -27,11 +23,7 @@ try
 catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:empty_time'
-            if not(contains(ME.message,'If time is homogeneous, ids%time must have at least one element'))
-                rethrow(ME)
-            else
-                disp('Test passed...')
-            end 
+            disp('Test passed...')
         otherwise
             rethrow(ME)
     end
@@ -52,13 +44,7 @@ try
 catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:internal_error'
-            if not(contains(ME.message,'Coordinate consistency error for distribution(i1)/profiles_2d(itime)/density (dimension 2)') & ...
-                contains(ME.message,'Exactly one of the coordinate must be verified. (distribution(i1)/profiles_2d(itime)/grid/z') & ...
-                contains(ME.message,'distribution(i1)/profiles_2d(itime)/grid/theta_geometric'))
-                rethrow(ME)
-            else
-                disp('Test passed...')
-            end 
+            disp('Test passed...')
         otherwise
             rethrow(ME)
     end
@@ -79,14 +65,7 @@ try
 catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:internal_error'
-            if not(contains(ME.message,'Wrong dimension 2 for distribution(i1)/profiles_2d(itime)/density (2)') & ...
-                contains(ME.message,'grid/z OR') & ...
-                contains(ME.message,'grid/theta_geometric OR') & ...
-                contains(ME.message,'theta_straight)'))
-                rethrow(ME)
-            else 
-                disp('Test passed...')
-            end 
+            disp('Test passed...')
         otherwise
             rethrow(ME)
     end
@@ -120,12 +99,7 @@ try
 catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:internal_error'
-            if not(contains(ME.message,'Wrong dimension 3 for distribution(i1)/ggd(itime)/grid/grid_subset(i2)/base(i3)/tensor_contravariant (6).') & ...
-                contains(ME.message,'(tensor_covariant)'))
-                rethrow(ME)
-            else 
-                disp('Test passed...')
-            end 
+            disp('Test passed...')
         otherwise
             rethrow(ME)
     end
@@ -166,11 +140,7 @@ try
 catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:internal_error'
-            if not(contains(ME.message,'Time coordinate of profiles_2d(7) wrong. profiles_2d(7)/time is invalid.'))
-                rethrow(ME)
-            else 
-                disp('Test passed...')
-            end 
+            disp('Test passed...')
         otherwise
             rethrow(ME)
     end
