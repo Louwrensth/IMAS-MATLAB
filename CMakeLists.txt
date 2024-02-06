@@ -3,8 +3,9 @@ cmake_minimum_required( VERSION 3.16 )
 
 # Configuration options for common assets
 ################################################################################
-option( AL_DOWNLOAD_DEPENDENCIES "Automatically download common assets from the AL git repository" OFF )
-# set( AL_COMMON_GIT_REPOSITORY "ssh://git@git.iter.org/imas/al-common.git" CACHE STRING "Git repository of AL-common")
+option( AL_DOWNLOAD_DEPENDENCIES "Automatically download common assets from the AL git repository" ON )
+set( AL_COMMON_GIT_REPOSITORY "ssh://git@git.iter.org/imas/al-common.git" CACHE STRING "Git repository of AL-common" )
+set( AL_COMMON_VERSION "c17b18dfd8c65c802c165f0e9403d3ef58902523" CACHE STRING "Git commit/tag/branch of AL-common" )
 
 include(FetchContent)
 
@@ -12,7 +13,11 @@ include(FetchContent)
 ################################################################################
 if( ${AL_DOWNLOAD_DEPENDENCIES} )
   # Download common assets from the ITER git:
-  message( FATAL_ERROR "Not implemented yet" )
+  FetchContent_Declare(
+    al-common
+    GIT_REPOSITORY "${AL_COMMON_GIT_REPOSITORY}"
+    GIT_TAG "${AL_COMMON_VERSION}"
+  )
 else()
   # Look in ../al-common for common files
   FetchContent_Declare(
