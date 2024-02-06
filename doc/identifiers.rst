@@ -1,6 +1,6 @@
 .. highlight:: matlab
 
-.. include:: ../../doc_common/identifiers.rst
+.. include:: ./doc_common/identifiers.rst
 
 .. |lang| replace:: MATLAB
 .. |identifiers_link_instructions| replace:: \ 

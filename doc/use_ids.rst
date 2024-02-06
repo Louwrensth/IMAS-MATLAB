@@ -1,7 +1,7 @@
 
 .. highlight:: matlab
 
-.. include:: ../../doc_common/use_ids.rst
+.. include:: ./doc_common/use_ids.rst
 
 .. |lang| replace:: MATLAB
 

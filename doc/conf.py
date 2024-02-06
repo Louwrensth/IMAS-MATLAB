@@ -3,13 +3,9 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import sys
 import datetime
 import subprocess
 from pathlib import Path
-
-from sphinx.util.docutils import SphinxDirective
-import sphinx.locale
 
 
 # -- Project information -----------------------------------------------------
@@ -43,8 +39,9 @@ extensions = [
 
 # todo_include_todos = True
 
-templates_path = ["../../doc_common/templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+templates_path = ["./doc_common/templates"]
+# Note: exclude doc_common and plugins folders (which are symlinked by the CMake build)
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "doc_common", "plugins"]
 
 # -- RST snippets to include in every page -----------------------------------
 rst_epilog = """\
@@ -128,4 +125,4 @@ object_description_options = [
     (".*Param", dict(include_in_toc=False)),
 ]
 
-html_static_path = ["../../doc_common/static"]
+html_static_path = ["./doc_common/static"]
