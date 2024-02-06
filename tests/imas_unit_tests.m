@@ -48,6 +48,13 @@ classdef imas_unit_tests < matlab.unittest.TestCase
     end
   end
 
+  methods (TestClassTeardown)
+    function closeIMASDb(testCase,backend,useCache,homogeneousTime)
+      idx = testCase.TestData.idx
+      imas_close(idx)
+    end
+  end
+
   %% Test Method Parameters
   properties (TestParameter)
     IDSname = IDS_list.';
