@@ -63,7 +63,7 @@ cmake -B build "${CMAKE_ARGS[@]}"
 make -C build -j8 all
 
 # Test
-export ARGS="--output-on-failure --output-junit ctest.xml"
+export ARGS="--output-on-failure --output-junit ctest.xml -V"
 make -C build test
 
 # Test install
