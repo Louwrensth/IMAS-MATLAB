@@ -2,7 +2,7 @@ IDS API
 =======
 
 
-.. mat:currentmodule:: matlab
+.. mat:currentmodule:: .
 
 .. mat:autofunction:: ids_get()
 

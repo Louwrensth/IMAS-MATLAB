@@ -52,7 +52,7 @@ rst_epilog = """\
 # -- sphinxcontrib.matlab configuration --------------------------------------
 # https://github.com/sphinx-contrib/matlabdomain#configuration
 
-matlab_src_dir = str(Path(__file__).parent.parent)
+matlab_src_dir = str(Path(__file__).parent.parent / "matlab")
 matlab_short_links = True
 matlab_auto_link = "all"
 
