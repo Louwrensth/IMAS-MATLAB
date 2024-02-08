@@ -35,8 +35,6 @@ foreach( M_FILE ${M_FILES} )
   endif()
 
   set_al_example_properties( example-mex-${M_FILE} ${DISABLED} OFF "ids_path=${MDSPLUS_MODEL_DIR}" )
-  # Unset the fail regular expression
-  set_tests_properties( example-mex-${M_FILE} PROPERTIES FAIL_REGULAR_EXPRESSION "" )
 
   if( AL_PLUGINS )
     add_test( NAME example-mex-${M_FILE}-with-plugins
@@ -46,7 +44,5 @@ foreach( M_FILE ${M_FILES} )
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     set_al_example_properties( example-mex-${M_FILE}-with-plugins ${DISABLED} ON "ids_path=${MDSPLUS_MODEL_DIR}" )
-    # Unset the fail regular expression
-    set_tests_properties( example-mex-${M_FILE}-with-plugins PROPERTIES FAIL_REGULAR_EXPRESSION "" )
   endif()
 endforeach()
