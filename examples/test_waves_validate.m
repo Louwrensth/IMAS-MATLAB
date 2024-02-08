@@ -62,8 +62,7 @@ try
 catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:internal_error'
-            if not(contains(ME.message,'Wrong dimension 1 for coherent_wave(i1)/profiles_1d(itime)/power_density (4)') & ...
-                contains(ME.message,'grid/rho_tor_norm'))
+            if not(contains(ME.message,'grid/rho_tor_norm'))
                 rethrow(ME)
             else 
                 disp('Test passed...')

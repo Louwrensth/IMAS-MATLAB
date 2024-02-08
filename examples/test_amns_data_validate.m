@@ -55,10 +55,10 @@ catch ME
     switch ME.identifier
         case 'IMAS:ids_validate:internal_error'
             if not(contains(ME.message,'internal error of type HLI occured with message:') & ...
-                contains(ME.message,'Wrong dimension 1 for /table_1d (1).') & ...
-                contains(ME.message,'(coordinate_system(process(i1)/coordinate_index)/coordinate(1)/values)')) 
+                contains(ME.message,'dimension 1') & ...
+                contains(ME.message,'coordinate_system(process(1)/coordinate_index)/coordinate(1)/values')) 
                 rethrow(ME)
-            end 
+            end
         otherwise
             rethrow(ME)
     end
