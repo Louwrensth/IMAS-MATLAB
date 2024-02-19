@@ -5,7 +5,7 @@ cmake_minimum_required( VERSION 3.16 )
 ################################################################################
 option( AL_DOWNLOAD_DEPENDENCIES "Automatically download common assets from the AL git repository" ON )
 set( AL_COMMON_GIT_REPOSITORY "ssh://git@git.iter.org/imas/al-common.git" CACHE STRING "Git repository of AL-common" )
-set( AL_COMMON_VERSION "4b4a6ecb83366f377a3bf9a0a9132ad3e25d2e56" CACHE STRING "Git commit/tag/branch of AL-common" )
+set( AL_COMMON_VERSION "b3adf7edd53dbdf731c844779a0a370578b6da86" CACHE STRING "Git commit/tag/branch of AL-common" )
 
 include(FetchContent)
 
@@ -19,10 +19,15 @@ if( ${AL_DOWNLOAD_DEPENDENCIES} )
     GIT_TAG "${AL_COMMON_VERSION}"
   )
 else()
-  # Look in ../al-common for common files
+  # Look in $AL_COMMON_PATH or ../al-common for common files
+  if( DEFINED ENV{AL_COMMON_PATH} )
+    set( AL_COMMON_PATH $ENV{AL_COMMON_PATH} )
+  else()
+    set( AL_COMMON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../al-common" )
+  endif()
   FetchContent_Declare(
     al-common
-    SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/../al-common
+    SOURCE_DIR      "${AL_COMMON_PATH}"
   )
 endif()
 FetchContent_MakeAvailable( al-common )
@@ -32,6 +37,7 @@ FetchContent_MakeAvailable( al-common )
 ################################################################################
 
 # Set VERSION and FULL_VERSION from `git describe`:
+set( GIT_ARCHIVE_DESCRIBE [[$Format:%(describe)$]] )
 include( ALDetermineVersion )
 project( al-matlab
   VERSION ${VERSION}
@@ -85,7 +91,7 @@ set_target_properties( al-mex PROPERTIES
   # By default, the mex target created by matlab_add_mex hides all defined
   # symbols, unset the LINK_FLAGS property to expose the symbols required by the
   # other mex targets:
-  LINK_FLAGS ""
+  LINK_FLAGS " -Wl,--as-needed"
 )
 
 set( MEX_TARGETS )
