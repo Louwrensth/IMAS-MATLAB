@@ -691,7 +691,7 @@ end_repl_str:
     if (status.code &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_validate:invalid_homogeneous_time",
     "Unable to retrieve ids%%ids_properties%%homogeneous_time"); 
     
-    <xsl:if test="@type='dynamic'">
+    <xsl:if test="not(@type='constant')">
     if( idsTimeMode == IDS_TIME_MODE_UNKNOWN )
     {
     mexErrMsgIdAndTxt("IMAS:ids_validate:empty_ids", "ids%%ids_properties%%homogeneous_time is not defined.");
