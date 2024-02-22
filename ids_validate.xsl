@@ -690,6 +690,8 @@ end_repl_str:
     }
     if (status.code &lt; 0) mexErrMsgIdAndTxt("IMAS:ids_validate:invalid_homogeneous_time",
     "Unable to retrieve ids%%ids_properties%%homogeneous_time"); 
+    
+    <xsl:if test="not(@type='constant')">
     if( idsTimeMode == IDS_TIME_MODE_UNKNOWN )
     {
     mexErrMsgIdAndTxt("IMAS:ids_validate:empty_ids", "ids%%ids_properties%%homogeneous_time is not defined.");
@@ -708,7 +710,8 @@ end_repl_str:
       mexErrMsgIdAndTxt("IMAS:ids_validate:empty_time",
       "If time is homogeneous, ids%%time must have at least one element");
     }
-
+    </xsl:if>
+    
     if (status.code &gt;= 0) {
       alStatus = get_data_from_dataTree(NULL, (mxArray **) &amp;data);
       status.code = alStatus.code; strncpy(status.message, alStatus.message, MAX_ERR_MSG_LEN);
