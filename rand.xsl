@@ -83,11 +83,11 @@
 	</xsl:when>
 	
 	<xsl:when test="@path='ids_properties/version_put/access_layer'">
-	  data = mxCreateString("<xsl:value-of select="$AL_GIT_DESCRIBE"/>");
+	  data = mxCreateString(getALVersion());
 	</xsl:when>
 	
 	<xsl:when test="@path='ids_properties/version_put/access_layer_language'">
-	  data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
+	  data = mxCreateString("<xsl:value-of select="concat('matlab (mex) - ', $AL_GIT_DESCRIBE)"/>");
 	</xsl:when>
 
 	<xsl:when test = "@name='homogeneous_time' and (@data_type='int_type' or @data_type='INT_0D')">
