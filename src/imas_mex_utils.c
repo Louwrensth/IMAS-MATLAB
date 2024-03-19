@@ -682,9 +682,12 @@ void getFieldRelativePath(char* relativePath,
 int getIndexAfterFirstStructArrayAncestor(char* ancestors_data_types[], int ancestors_count) {
 	int structarrayAncestorIndex = 0;
 	int i;
+	char* aos_type = ancestors_data_types[ancestors_count - 1];
 	for (i=0; i < ancestors_count; i++) {
-		if (strcmp(ancestors_data_types[i], "struct_array") == 0)
-			structarrayAncestorIndex = i + 1;
+		if (strcmp(ancestors_data_types[i], "struct_array") == 0) {
+			if ( ! ( (i == ancestors_count - 1) && strcmp(aos_type, "struct_array") == 0 ) ) //excluding the current node itself if it's an AOS
+				structarrayAncestorIndex = i + 1;
+		}
 	}
 	return structarrayAncestorIndex;
 }
