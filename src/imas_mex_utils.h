@@ -33,6 +33,7 @@ extern const int IDS_TIME_MODE_INDEPENDENT;
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <time.h>
 
 #ifdef NO_MXISSCALAR
 #define mxIsScalar(a) (mxGetNumberOfElements(a)==1)
