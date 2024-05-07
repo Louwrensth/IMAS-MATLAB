@@ -48,7 +48,7 @@ mode             = 43;
 %             returns error otherwise.
 %           - 41: ``FORCE_OPEN_PULSE``.
 %             Opens access to the data, creates the Data Entry if it does not
-%             exists yet.
+%             exist yet.
 %           - 42: ``CREATE_PULSE``.
 %             Creates a new empty Data Entry (returns error if Data Entry
 %             already exists) and opens it at the same time.
