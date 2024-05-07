@@ -13,3 +13,4 @@ tests/IDS_list.h
 *~
 /html/
 /latex/
+CMakeUserPresets.json

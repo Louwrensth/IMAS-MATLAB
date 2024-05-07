@@ -41,7 +41,8 @@
 	<xsl:when test="ancestor::field[@data_type='struct_array']">
 	  <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
 	  <xsl:variable name="elementPath" select="@path"/>
-	  <xsl:text>strcpy(field.fieldPath,&quot;</xsl:text><xsl:value-of select="replace($elementPath,concat($AoSPath,'/'),'')"/>&quot;);
+	  <xsl:variable name="modifiedPath" select="substring-after($elementPath, concat($AoSPath,'/'))" />
+    <xsl:text>strcpy(field.fieldPath,&quot;</xsl:text><xsl:value-of select="$modifiedPath"/>&quot;);
 	</xsl:when>
 	<xsl:otherwise>
 	  <xsl:text>strcpy(field.fieldPath, &quot;</xsl:text><xsl:value-of select="@path"/>&quot;);
@@ -53,11 +54,12 @@
 	<xsl:when test="ancestor::field[@data_type='struct_array']">
 	  <xsl:variable name="AoSPath" select="ancestor::field[@data_type='struct_array'][1]/@path"/>
 	  <xsl:variable name="elementPath" select="@path"/>
+    <xsl:variable name="modifiedPath" select="substring-after($elementPath, concat($AoSPath,'/'))" />
 	  <xsl:text>if (taggedDataDictionaryVersion &amp;&amp; strcmp(change_nbc_description, "type_changed") != 0) {&#xA;</xsl:text> 
 	  <xsl:text>getFieldRelativePath(field.fieldPath, ancestors_count, ancestors_names, ancestors_change_nbc_versions, ancestors_change_nbc_previous_names, ancestors_data_types, dataDictionaryVersion);&#xA;</xsl:text>
 	  <xsl:text>&#032;}&#xA;</xsl:text>
       <xsl:text>else{&#xA;</xsl:text>
-	  <xsl:text>strcpy(field.fieldPath,&quot;</xsl:text><xsl:value-of select="replace($elementPath,concat($AoSPath,'/'),'')"/>&quot;);
+	  <xsl:text>strcpy(field.fieldPath,&quot;</xsl:text><xsl:value-of select="$modifiedPath"/>&quot;);
 	  <xsl:text>}&#xA;</xsl:text>
 	</xsl:when>
 	<xsl:otherwise>

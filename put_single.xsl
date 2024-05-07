@@ -111,11 +111,11 @@
 	status.code = 0;
       </xsl:when>
       <xsl:when test="@path='ids_properties/version_put/access_layer'">
-	data = mxCreateString("<xsl:value-of select="$AL_GIT_DESCRIBE"/>");
+	data = mxCreateString(getALVersion());
 	status.code = 0;
       </xsl:when>
       <xsl:when test="@path='ids_properties/version_put/access_layer_language'">
-	data = mxCreateString("<xsl:value-of select="'matlab (mex)'"/>");
+	data = mxCreateString("<xsl:value-of select="concat('matlab (mex) - ', $AL_GIT_DESCRIBE)"/>");
 	status.code = 0;
       </xsl:when>
       <xsl:otherwise>

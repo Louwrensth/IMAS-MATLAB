@@ -37,10 +37,10 @@
     <xsl:when test = "@data_type = 'struct_array'">
       <xsl:call-template name="setNBCVariables"/>
       <xsl:call-template name="generateNodePath">
-        <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+        <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
       </xsl:call-template>
       <xsl:call-template name="generateTimebasePath">
-        <xsl:with-param name="ignore_nbc_change">1</xsl:with-param>
+        <xsl:with-param name="ignore_nbc_change">0</xsl:with-param>
         <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
       </xsl:call-template>
       aosCtx = aosArraySize = 0; /* Initialize to avoid reusing old values in case of errors */
