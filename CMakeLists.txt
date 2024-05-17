@@ -206,6 +206,7 @@ set( TARGETS
   imas_open_env_backend
   imas_serialize
   imas_set_mex_params
+  imas_build_uri_from_legacy_parameters
 )
 foreach( TARGET ${TARGETS} )
   ADD_IMAS_MEX( ${TARGET} "src/${TARGET}.c" )
