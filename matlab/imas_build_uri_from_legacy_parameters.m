@@ -1,6 +1,6 @@
-% uri = imas_build_uri_from_legacy_parameters (backend_id, pulse, run, user, tokamak, version [, options])
+% uri = imas_build_uri_from_legacy_parameters (backend_id, pulse, run, user, database, version [, options])
 %
-% Open the Data Entry defined by the provided parameters.
+% Creates an URI string from legacy parameters
 %
 % Args:
 %   backend_id: ID of the backend to use. Available options:
@@ -13,7 +13,7 @@
 %   pulse:      Pulse number.
 %   run:        Run number.
 %   user:       User name
-%   tokamak:    Tokamak name, also known as Database name
+%   database:   Name of IMAS database
 %   version:    Major version of the data dictionary, e.g. "3"
 %   options:    Deprecated, available for backwards compatibility
 %

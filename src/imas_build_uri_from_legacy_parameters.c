@@ -5,13 +5,13 @@
 
 /**
    \file imas_build_uri_from_legacy_parameters.c
-   open IMAS database using an URI in MATLAB External Interfaces
+   creates an URI string from legacy parameters
    
    This is a MEX file for MATLAB.
 
    Usage:
    \code{.m} 
-   uri = imas_build_uri_from_legacy_parameters(backend_id, pulse, run, user, tokamak, version, options)
+   uri = imas_build_uri_from_legacy_parameters(backend_id, pulse, run, user, database, version, options)
    \endcode
 
    MATLAB help:
@@ -50,7 +50,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     /* make sure the 5th input argument is a string */
     if (!mxIsChar(prhs[4])) {
-        mexErrMsgIdAndTxt("IMAS:imas_build_uri_from_legacy_parameters:notChar", "Input tokamak must be a string.");
+        mexErrMsgIdAndTxt("IMAS:imas_build_uri_from_legacy_parameters:notChar", "Input database must be a string.");
     }
     /* make sure the 6th input argument is a string */
     if (!mxIsChar(prhs[5])) {
@@ -81,10 +81,10 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     if (params.verbosity >= 4)
         mexPrintf("The input user is:  %s\n", user);
 
-    /* Get the value of the tokamak */
-    char *tokamak = mxArrayToString(prhs[4]);
+    /* Get the value of the database */
+    char *database = mxArrayToString(prhs[4]);
     if (params.verbosity >= 4)
-        mexPrintf("The input tokamak is:  %s\n", tokamak);
+        mexPrintf("The input database is:  %s\n", database);
 
     /* Get the value of the version */
     char *version = mxArrayToString(prhs[5]);
@@ -105,12 +105,13 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     
     char* uri;
     al_status_t status;
-    status = al_build_uri_from_legacy_parameters(backend_id, pulse, run, user, tokamak, version, options, &uri);
+    status = al_build_uri_from_legacy_parameters(backend_id, pulse, run, user, database, version, options, &uri);
 
     if (status.code < 0)
       mexErrMsgIdAndTxt("IMAS:imas_build_uri_from_legacy_parameters:Failed",
-      "Error building uri from legacy parameters backend_id %d, pulse %d\n\trun %d, user %s, tokamak %s, version %s, options %s:\n\t%s",
-      backend_id, pulse, run, user, tokamak, version, options, status.message);
+      "Error building uri from legacy parameters backend_id %d, pulse %d\n\trun %d, user %s, database %s, version %s, options %s:\n\t%s",
+      backend_id, pulse, run, user, database, version, options, status.message);
     /* Prepare the return argument */
     plhs[0] = mxCreateString(uri);
+    free(uri);
 }
