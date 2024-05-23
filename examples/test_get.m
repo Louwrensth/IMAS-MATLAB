@@ -1,4 +1,5 @@
-ctx = imas_open_env('ids',12,1,getenv('USER'),'test','3');
+uri = 'imas:mdsplus?path=./test_db';
+ctx = imas_open(uri, 40);
 if ctx < 0
     error('Unable to open pulse');
 end

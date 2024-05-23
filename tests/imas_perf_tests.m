@@ -16,8 +16,9 @@ classdef imas_perf_tests < matlab.perftest.TestCase
   methods (TestClassSetup)
     function createIMASDb(testCase, useCache, ntime)
       run = imas_perf_tests.getRunNumber(ntime);
-      idxr = imas_open_env('ids',9999,run,0,0,getenv('USER'),'test','3');
-      idxw = imas_create_env('ids',9999,run+9900,getenv('USER'),'test','3');
+      uri = 'imas:mdsplus?path=./test_db_imas_perf_tests';
+      idxr = imas_open(uri, 40);
+      idxw = imas_open(uri, 43);
       testCase.addTeardown(@imas_close,idx);
       if useCache
         imas_enable_mem_cache(idx);
