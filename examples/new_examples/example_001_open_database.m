@@ -93,17 +93,20 @@ mode        = 43;
 %             Creates an empty Data Entry (overwrites if Data Entry already
 %             exists) and opens it at the same time.
 
-status = imas_open('imas:mdsplus?path=./testdb_mdsplus',mode);
+ctx = imas_open('imas:mdsplus?path=./testdb_mdsplus',mode);
+imas_close(ctx);
 % ls testdb_mdsplus
 % -> ids_001.characteristics  ids_001.datafile  ids_001.tree
 % Structure of this directory does not depends on entry content. All IDS data are stored in printed files
 
-status = imas_open('imas:hdf5?path=./testdb_hdf5',mode);
+ctx = imas_open('imas:hdf5?path=./testdb_hdf5',mode);
+imas_close(ctx);
 % ls ./testdb_hdf5 
 % -> master.h5
 % Structure of this directory depends on entry content. Every IDS with data will be stored in <ids_name>.h5 file
 
-status = imas_open('imas:ascii?path=./testdb_ascii',mode);
+ctx = imas_open('imas:ascii?path=./testdb_ascii',mode);
+imas_close(ctx);
 % ls ./testdb_ascii
 % -> {empty}
 % Structure of this directory depends on entry content. Every IDS with data will be stored in <ids_name>.ids file
