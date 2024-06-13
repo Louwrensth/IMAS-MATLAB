@@ -91,7 +91,6 @@ char* concat(const char *s1, const char *s2)
  */
 char* generate_tmp_file()
 {
-    const char fs_safe_characters[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
 	char * prefix;
 	const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
 	if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
@@ -103,25 +102,49 @@ char* generate_tmp_file()
 	{
 		prefix = SERIALIZE_TEMPORARY_DIRECTORY "al_serialize_";		
 	}
-    char* fname;
+	char* fname;
     FILE *fp;
-    
-    for( int i=0; i<MAX_TMP_FILES; i++)
-    {
-        srand(time(NULL));   // Initialization, should only be called once.
-        int random_number = rand();      // Returns a pseudo-random integer between 0 and RAND_MAX.
-        
-        char* random_number_string = itoa(random_number);
-        char suffix[RANDOM_NUMBER_LENGTH];
-        strncpy(suffix, random_number_string, RANDOM_NUMBER_LENGTH-1);
-        suffix[RANDOM_NUMBER_LENGTH-1] = '\0';
-        fname = concat(prefix, suffix);
-        fp = fopen(fname, "w");
-        fclose(fp);
-        int ret = remove(fname);
-        return fname;
-    }
-    fname = "";
+    int status_flag=1;
+    int retry_counter=0;
+	do {
+		srand(time(NULL));   // Initialization, should only be called once.
+        int rnd = rand();      // Returns a pseudo-random integer between 0 and RAND_MAX.
+        char* rndstr = itoa(rnd);
+        fname=(char *)malloc(strlen(source) + 1);
+        fname = concat(prefix, rndstr);
+
+        int pid = getpid();
+        char* pidstr = itoa(pid);
+        fname = concat(fname, pidstr);
+
+        int file_available_status = access(fname, F_OK); // Returns 0 if the file exists and is accessible as specified and returns -1 if not exists.
+        int file_w_status=0;
+        if (file_available_status == -1) { // check if file creation is possible
+            fp = fopen(fname, "w");
+            if(fp==NULL)
+            {
+                file_w_status=1; // file cannot be created sue to memory issue or any other issue
+            }
+            else{
+                fclose(fp); // file can be created and no issue with the name
+                int ret = remove(fname); // Remove the file 
+            }
+        }
+        if(file_available_status == 0 || file_w_status!=0)
+        {
+            // file is already available or can not be created. regenerating new name
+            free(fname);
+            fname = NULL;
+			// We have maximum tries if in some cases file system is not available
+            retry_counter=retry_counter+1;
+        }
+        else
+        {
+			// filename is available
+            status_flag=0;
+        }
+    } while (status_flag == 1 && retry_counter <= MAX_RETRIES);
+
     return fname;
 }
 
