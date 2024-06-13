@@ -125,6 +125,7 @@ char* generate_tmp_file()
             fp = fopen(fname, "w");
             if(fp==NULL)
             {
+				printf("FUNCTION:generate_tmp_file() Could not create temporary file: %s\n", strerror(errno));
                 // file cannot be created due to memory issue or any other issue
                 file_w_status=1;
             }
