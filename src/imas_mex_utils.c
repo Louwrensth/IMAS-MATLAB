@@ -109,12 +109,13 @@ char* generate_tmp_file()
 	do {
 		srand(time(NULL));   // Initialization, should only be called once.
         int rnd = rand();      // Returns a pseudo-random integer between 0 and RAND_MAX.
-        char* rndstr = itoa(rnd);
-        fname=(char *)malloc(strlen(source) + 1);
-        fname = concat(prefix, rndstr);
-
-        int pid = getpid();
+		int pid = getpid();    // Get process ID
+		
         char* pidstr = itoa(pid);
+        char* rndstr = itoa(rnd);
+
+        fname=(char *)malloc(strlen(pidstr) + strlen(rndstr) + 1);
+        fname = concat(prefix, rndstr);
         fname = concat(fname, pidstr);
 
         int file_available_status = access(fname, F_OK); // Returns 0 if the file exists and is accessible as specified and returns -1 if not exists.
