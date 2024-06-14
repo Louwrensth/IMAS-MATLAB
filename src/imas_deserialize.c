@@ -75,7 +75,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         fclose(fptr);
         int idx;
         char * options = concat(";filename=", tmpfilename);
-        char *uri = (char*) malloc(500);
+        char *uri;
         const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
         if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
         {
