@@ -24,20 +24,19 @@ extern const int IDS_TIME_MODE_HETEROGENEOUS;
 extern const int IDS_TIME_MODE_HOMOGENEOUS;
 extern const int IDS_TIME_MODE_INDEPENDENT;
 
-#include "al_lowlevel.h"
-#include "imas_mex_casts.h"
-#include "imas_mex_params.h"
-#include "imas_mex_structs.h"
 #include "mex.h"
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
+#include "al_lowlevel.h"
+#include "imas_mex_params.h"
+#include "imas_mex_casts.h"
+#include "imas_mex_structs.h"
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+#include <stdio.h>
+#include <ctype.h>
 #include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
-
+#include <errno.h>
 #ifdef NO_MXISSCALAR
 #define mxIsScalar(a) (mxGetNumberOfElements(a)==1)
 #endif
