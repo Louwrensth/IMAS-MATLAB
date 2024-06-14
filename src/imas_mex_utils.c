@@ -111,7 +111,7 @@ char* generate_tmp_file()
     unsigned long seedvalue= (unsigned long)(tv.tv_sec ^ tv.tv_usec ^ getpid()); 
 
     srand(seedvalue);   // initialization, should only be called once.
-	for( int retry_counter=0; retry_counter<100; retry_counter++) {
+	for( int retry_counter=0; retry_counter<MAX_RETRIES; retry_counter++) {
 
 		unsigned long rnd = rand() ^ getpid();      // XOR random value with process id
 
