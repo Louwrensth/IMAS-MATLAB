@@ -8,23 +8,90 @@ set -e -o pipefail
 echo "Loading modules..."
 
 # Set up environment such that module files can be loaded
+if test -f /etc/profile.d/modules.sh ;then
+. /etc/profile.d/modules.sh
+else
 . /usr/share/Modules/init/sh
+fi
 module purge
-# Load modules:
+
+# Check for TOOLCHAIN
+TOOLCHAIN=${TOOLCHAIN:-foss-2023b}
+# Load modules that correspond to toolchain
+case "$TOOLCHAIN" in
+  *-2020b)
+echo "... 2020b"
+MODULES=(
+    CMake/3.24.3-GCCcore-10.2.0
+    Boost/1.74.0-GCC-10.2.0  # AL-Core
+    Saxon-HE/10.3-Java-11  # DD
+    Python/3.8.6-GCCcore-10.2.0  # documentation
+    libxml2/2.9.10-GCCcore-10.2.0  # AL-Core
+    MDSplus/7.131.6-GCCcore-10.2.0  # backend
+    MDSplus-Java/7.131.6-GCCcore-10.2.0-Java-11  # backend
+    UDA/2.7.5-GCC-10.2.0  # backend
+    MATLAB/2020b-GCCcore-10.2.0-Java-11
+    MATLAB-Engine/2020b-GCCcore-10.2.0-Java-11
+)
+  ;;&
+  *foss-2020b)
+echo "... foss-2020b"
+MODULES=(${MODULES[@]}
+    HDF5/1.10.7-gompi-2020b  # backend
+)
+CMAKE_ARGS=(${CMAKE_ARGS[@]}
+    -DCMAKE_C_COMPILER=${CC:-gcc}
+    -DCMAKE_CXX_COMPILER=${CXX:-g++}
+)
+  ;;&
+  *intel-2020b)
+echo "... intel-2020b"
+MODULES=(${MODULES[@]}
+    HDF5/1.10.7-iimpi-2020b  # backend
+)
+CMAKE_ARGS=(${CMAKE_ARGS[@]}
+    -DCMAKE_C_COMPILER=${CC:-icc}
+    -DCMAKE_CXX_COMPILER=${CXX:-icpc}
+)
+  ;;
+  *-2023b)
+echo "... 2023b"
+module load "${MODULES[@]}"
 MODULES=(
     CMake/3.27.6-GCCcore-13.2.0
-    # Required for building the lowlevel and backends
-    Boost/1.83.0-GCC-13.2.0
-    HDF5/1.14.3-gompi-2023b
-    MDSplus/7.132.0-GCCcore-13.2.0
-    UDA/2.7.4-GCC-13.2.0
-    # Required for building MDSplus models
-    Saxon-HE/12.4-Java-21
-    # Python for documentation
+    Boost/1.83.0-GCC-13.2.0  # AL-Core
+    Saxon-HE/12.4-Java-21  # DD
     Python/3.11.5-GCCcore-13.2.0
-    # MATLAB
-    MATLAB/2023b-r5
+    libxml2/2.11.5-GCCcore-13.2.0  # AL-Core
+    MDSplus/7.132.0-GCCcore-13.2.0  # backend
+    UDA/2.7.5-GCC-13.2.0  # backend
+    Python/3.11.5-GCCcore-13.2.0  # documentation
+    MATLAB/2023b-r5-GCCcore-13.2.0
 )
+  ;;&
+  *foss-2023b)
+echo "... foss-2023b"
+MODULES=(${MODULES[@]}
+    HDF5/1.14.3-gompi-2023b  # backend
+)
+CMAKE_ARGS=(${CMAKE_ARGS[@]}
+    -DCMAKE_C_COMPILER=${CC:-gcc}
+    -DCMAKE_CXX_COMPILER=${CXX:-g++}
+)
+  ;;&
+  *intel-2023b)
+echo "... intel-2023b"
+MODULES=(${MODULES[@]}
+    HDF5/1.14.3-iimpi-2023b  # backend
+)
+CMAKE_ARGS=(${CMAKE_ARGS[@]}
+    -DCMAKE_C_COMPILER=${CC:-icx}
+    -DCMAKE_CXX_COMPILER=${CXX:-icpx}
+)
+  ;;
+esac
+echo "${MODULES[@]}" | tr " " "\n"
+
 module load "${MODULES[@]}"
 
 # Debuggging:
