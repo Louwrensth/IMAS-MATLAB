@@ -10,8 +10,7 @@ classdef imas_unit_tests < matlab.unittest.TestCase
     % useCache = struct('yes',true,'no',false); % Disabled for now ...
     useCache = struct('no',false);
     homogeneousTime = struct('yes',true,'no',false);
-    % backend = struct('MDSplus',12,'HDF5',13);  % disable HDF5 backend, HDF exit handlers take too long in CI...
-    backend = struct('MDSplus',12);
+    backend = struct('MDSplus',12,'HDF5',13);
   end
 
   %% Class-level setup
