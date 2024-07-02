@@ -30,11 +30,11 @@
     empty_core_profiles.global_quantities.ip = [1.0, 2.0, 3.0];
 
     % IDSs can be printed using frpintf() method.
-    fprintf("Dumping empty_core_profiles:\n");
-    fprintf("\tempty_core_profiles.ids_properties.homogeneous_time: %i\n", empty_core_profiles.ids_properties.homogeneous_time);
-    fprintf("\tempty_core_profiles.time:                            %i %i %i\n", empty_core_profiles.time);
-    fprintf("\tempty_core_profiles.global_quantities.ip:            %i %i %i\n", empty_core_profiles.global_quantities.ip);
-    fprintf("\n");
+    fprintf('Dumping empty_core_profiles:\n');
+    fprintf('\tempty_core_profiles.ids_properties.homogeneous_time: %i\n', empty_core_profiles.ids_properties.homogeneous_time);
+    fprintf('\tempty_core_profiles.time:                            %i %i %i\n', empty_core_profiles.time);
+    fprintf('\tempty_core_profiles.global_quantities.ip:            %i %i %i\n', empty_core_profiles.global_quantities.ip);
+    fprintf('\n');
 
     % some fields are automatically written by AL during 'put' procedure
     % AL adds some information behind your back. This is particularly important
@@ -76,29 +76,29 @@
     edge_profiles2.grid_ggd{1}.identifier.name = 'Third test struct';
 
     % once data are in place, we can merge two AoS objects
-    for struct_to_be_copied = edge_profiles2.grid_ggd
-        index = length(edge_profiles.grid_ggd) +1;
-        edge_profiles.grid_ggd{index} = struct_to_be_copied{1};
+    for idx = length(edge_profiles2.grid_ggd)
+        next_position = length(edge_profiles.grid_ggd) +1;
+        edge_profiles.grid_ggd{next_position} = edge_profiles2.grid_ggd{idx};
     end
 
     fprintf('edge_profiles/grid_ggd after merge:\n');
     for struct_to_display = edge_profiles.grid_ggd
-       fprintf("\tstruct_to_display{1}.identifier.name: %s\n", struct_to_display{1}.identifier.name);
+       fprintf('\tstruct_to_display{1}.identifier.name: %s\n', struct_to_display{1}.identifier.name);
     end
-    fprintf("\n");
+    fprintf('\n');
 
     % ids fields have default values different for every data type
     fprintf('Default value for "INT"          %i (edge_profiles/midplane/index) \n', edge_profiles.midplane.index);
     fprintf('Default value for "FLOAT"        %s (edge_profiles/vacuum_toroidal_field/vacuum_toroidal_field/r0) \n', edge_profiles.vacuum_toroidal_field.r0);
-    fprintf('Default value for 1+ dimensional %s \n', edge_profiles.vacuum_toroidal_field.b0);
-    fprintf("\n");
+    fprintf('Default value for 1+ dimensional [%s] \n', edge_profiles.vacuum_toroidal_field.b0);
+    fprintf('\n');
 
     % IDSs can be printed using fprintf() method.
-    fprintf("edge_profiles.ids_properties.homogeneous_time: %i\n", edge_profiles.ids_properties.homogeneous_time);
-    fprintf("\tedge_profiles.grid_ggd{1}.identifier.name:     %s\n", edge_profiles.grid_ggd{1}.identifier.name);
-    fprintf("\tedge_profiles.grid_ggd{2}.identifier.name:     %s\n", edge_profiles.grid_ggd{2}.identifier.name);
-    fprintf("\tedge_profiles.grid_ggd{3}.identifier.name:     %s\n", edge_profiles.grid_ggd{3}.identifier.name);
-    fprintf("\n");
+    fprintf('edge_profiles.ids_properties.homogeneous_time: %i\n', edge_profiles.ids_properties.homogeneous_time);
+    fprintf('\tedge_profiles.grid_ggd{1}.identifier.name:     %s\n', edge_profiles.grid_ggd{1}.identifier.name);
+    fprintf('\tedge_profiles.grid_ggd{2}.identifier.name:     %s\n', edge_profiles.grid_ggd{2}.identifier.name);
+    fprintf('\tedge_profiles.grid_ggd{3}.identifier.name:     %s\n', edge_profiles.grid_ggd{3}.identifier.name);
+    fprintf('\n');
 
     clear edge_profiles;
     clear edge_profiles2;
@@ -133,7 +133,6 @@
     gyrokinetics_local.non_linear.radial_wavevector_norm = [1.0, 2.0, 3.0];
     gyrokinetics_local.non_linear.time_norm              = [1.0, 2.0, 3.0];
 
-    % IDSs can be copied using copy package
     % gyrokinetics_local/linear.wavevector(i1)/eigenmode(i2)/fields.phi_potential_perturbed_norm has two dimensions and stores complex numbers
 
     gyrokinetics_local.linear.wavevector = ids_allocate('gyrokinetics_local', 'linear/wavevector', 1);
@@ -142,8 +141,6 @@
 
     % right way to copy IDS
     gyrokinetics_local_copy = gyrokinetics_local;
-    % WARNING: if copy.copy() is used instead of copy.deepcopy(), all references in IDS will be copied instead of creating copy of the structure.
-    % if shallow copy is done, changes to copied structure will be propagated to original object
 
     gyrokinetics_local_copy.linear.wavevector{1}.eigenmode{1}.fields.phi_potential_perturbed_norm = complex(ones(2,2),ones(2,2));
     fprintf('Original value:\n');
@@ -152,7 +149,7 @@
     disp(gyrokinetics_local_copy.linear.wavevector{1}.eigenmode{1}.fields.phi_potential_perturbed_norm);
 
     % IDSs can be printed using fprintf() and disp() methods.
-    fprintf('gyrokinetics_local.ids_properties.homogeneous_time =  %i\n', gyrokinetics_local.ids_properties.homogeneous_time);
+    fprintf('gyrokinetics_local.ids_properties.homogeneous_time:   %i\n', gyrokinetics_local.ids_properties.homogeneous_time);
     fprintf('gyrokinetics_local.non_linear.radial_wavevector_norm: %i %i %i\n', gyrokinetics_local.non_linear.radial_wavevector_norm);
     fprintf('gyrokinetics_local.non_linear.time_norm:              %i %i %i\n', gyrokinetics_local.non_linear.time_norm);
     fprintf('gyrokinetics_local/non_linear/fields_zonal_2d/phi_potential_perturbed_norm:\n');
