@@ -61,7 +61,7 @@
     edge_profiles.grid_ggd{1}.identifier.name = 'First test struct';
 
     % single element can be added to AoS the following way
-    % It must be appended manually
+    % in this example we will create copy of edge_profiles.grid_ggd{1} and modify it's values
     aos_element = edge_profiles.grid_ggd{1};
     aos_element.identifier.name = 'Second test struct';
 
@@ -72,7 +72,7 @@
     % edge_profiles2/grid_ggd will be merged with edge_profiles/grid_ggd
     % first, we have to create new AoS and fill it with data
     edge_profiles2 = ids_init('edge_profiles');
-    edge_profiles2.grid_ggd= ids_allocate('edge_profiles', 'grid_ggd', 1);
+    edge_profiles2.grid_ggd = ids_allocate('edge_profiles', 'grid_ggd', 1);
     edge_profiles2.grid_ggd{1}.identifier.name = 'Third test struct';
 
     % once data are in place, we can merge two AoS objects
@@ -90,7 +90,7 @@
     % ids fields have default values different for every data type
     fprintf('Default value for "INT"          %i (edge_profiles/midplane/index) \n', edge_profiles.midplane.index);
     fprintf('Default value for "FLOAT"        %s (edge_profiles/vacuum_toroidal_field/vacuum_toroidal_field/r0) \n', edge_profiles.vacuum_toroidal_field.r0);
-    fprintf('Default value for 1+ dimensional [%s] \n', edge_profiles.vacuum_toroidal_field.b0);
+    fprintf('Default value for 1+ dimensional [%s]  (Empty array)\n', edge_profiles.vacuum_toroidal_field.b0);
     fprintf('\n');
 
     % IDSs can be printed using fprintf() method.
