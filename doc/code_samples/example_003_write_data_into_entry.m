@@ -125,15 +125,13 @@
     equilibrium.time = [1.0, 2.0, 3.0];
 
     % fill fields with some data
-    equilibrium.vacuum_toroidal_field.r0 = 2.5;
-    equilibrium.vacuum_toroidal_field.b0 = [10, 20, 30];
+    equilibrium.ids_properties.comment = '1st comment';
 
     % put IDS into occurrence 1
     ids_put(ctx, 'equilibrium', 1, equilibrium);
 
     % modify data, so differences between occurrences can be spotted
-    equilibrium.vacuum_toroidal_field.r0 = 25.5;
-    equilibrium.vacuum_toroidal_field.b0 = [11, 22, 33];
+    equilibrium.ids_properties.comment = '2nd comment';
 
     % put IDS into occurrence 2
     ids_put(ctx, 'equilibrium', 2, equilibrium);
@@ -147,15 +145,15 @@
     equilibrium_check = ids_get(ctx, 'equilibrium', 1);
     fprintf('\tequilibrium.ids_properties.homogeneous_time: %i\n', equilibrium_check.ids_properties.homogeneous_time);
     fprintf('\tequilibrium.time:                            %i %i %i\n', equilibrium_check.time);
-    fprintf('\tequilibrium.vacuum_toroidal_field.r0:        %i\n', equilibrium_check.vacuum_toroidal_field.r0);
-    fprintf('\tequilibrium.vacuum_toroidal_field.b0:        %i %i %i\n', equilibrium_check.vacuum_toroidal_field.b0);
+    fprintf('\tequilibrium.ids_properties.comment:          %s\n', equilibrium_check.ids_properties.comment);
 
     % occurrences can be listed with imas_list_all_occurrences() function
     % imas_list_all_occurrences also returns content of IDS pointed by node_path argument
-    [occurrence_list, node_content_list] = imas_list_all_occurrences(ctx, 'equilibrium', 'vacuum_toroidal_field/r0');
+    % NOTE: imas_list_all_occurrences() works only with 1D CHAR_DATA 
+    [occurrence_list node_content_list] = imas_list_all_occurrences(ctx, 'equilibrium', 'ids_properties.comment');
     
-    fprintf('occurence list: [%i %i]\n ', occurrence_list);
-    fprintf('equilibrium/vacuum_toroidal_field/r0 in different occurrences: \n');
+    fprintf('occurence list: [%i %i]\n', occurrence_list);
+    fprintf('equilibrium/ids_properties/comment in different occurrences: \n');
     disp(node_content_list);
     clear equilibrium_check;
 
