@@ -71,7 +71,7 @@
 
     % this part of code presents PREVIOUS_SAMPLE. It is interpolation method that returns the previous time slice if the requested time does not exactly exist in the original IDS
     % if requested time is outside of time array, first, or last slice will be returned respectively
-    time_requested=1.75;
+    time_requested = 1.75;
     summary = ids_get_slice(ctx, 'summary', time_requested, 2);
     % previous time value for 1.75 is 1.0
     % summary/global_quantities/ip/value and time=1 is 10.0
@@ -80,7 +80,7 @@
 
     % this part of code presents CLOSEST_SAMPLE. It is interpolation method that returns the closest time slice in the original IDS
     % if requested time is equally spaced between two time slices, slice with higher index will be returned
-    time_requested=1.75;
+    time_requested = 1.75;
     summary = ids_get_slice(ctx, 'summary', time_requested, 1);
     % closest time value to 1.75 is 2.0
     % value for summary/global_quantities/ip/value and time=2 is 11.0
@@ -93,7 +93,7 @@
     % Otherwise DBEntry.get_slice() will interpolate all fields with a compatible size and leave others empty.
 
     % NOTE: If time requested is smaller than <ids>.time[0], first slice will be returned. If requested time exceeds highest time, last slice will be returned.
-    time_requested=1.75;
+    time_requested = 1.75;
     summary = ids_get_slice(ctx, 'summary', time_requested, 3);
     % interpolated value for summary/global_quantities/ip/value and time=1.75 is 10.75
     fprintf('summary/global_quantities/ip/value for time=1.75: %.2f (Should be 10.75)\n', summary.global_quantities.ip.value);
