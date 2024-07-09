@@ -71,16 +71,16 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         al_status_t status_begin,status_open, status_end, status_close;
         int _pulseCtx;
         char * tmpfile = generate_tmp_file();
-        char * tmpfilename = getFilenameFromPath(tmpfile);
-        if(strcmp(tmpfile, "")==0)
+        if(tmpfile == NULL)
         {
-            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error generating serialization filename %s", tmpfile);
+            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error generating serialization filename");
             return;
         }
+        char * tmpfilename = getFilenameFromPath(tmpfile);
 
         int idx;
         char * options = concat(";filename=", tmpfilename);
-        char *uri = (char*) malloc(500);
+        char *uri;
         const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
         if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
         {
