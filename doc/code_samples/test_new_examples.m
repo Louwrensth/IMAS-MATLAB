@@ -17,3 +17,6 @@ example_003_write_data_into_entry
     %put_into_non_default_occurrence
 
 % example004
+example_004_read_data_from_entry
+    %read_entire_ids
+    %read_slice
