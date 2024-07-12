@@ -34,7 +34,9 @@ extern const int IDS_TIME_MODE_INDEPENDENT;
 #include <stdio.h>
 #include <ctype.h>
 #include <time.h>
-
+#include <sys/time.h>
+#include <unistd.h>
+#include <errno.h>
 #ifdef NO_MXISSCALAR
 #define mxIsScalar(a) (mxGetNumberOfElements(a)==1)
 #endif
@@ -45,15 +47,15 @@ extern const int IDS_TIME_MODE_INDEPENDENT;
 #define HLI_ERR LOWLEVEL_ERR-1
 
 #define ANCESTORS_MAX_COUNT 30
-#define NBC_VERSIONS_MAX_COUNT 5
-#define ANCESTOR_NAME_MAX_LENGTH 50
+#define NBC_VERSIONS_MAX_COUNT 10
+#define ANCESTOR_NAME_MAX_LENGTH 250
 #define ANCESTOR_TYPE_MAX_LENGTH 20
-#define ANCESTOR_VERSION_MAX_LENGTH 20
+#define ANCESTOR_VERSION_MAX_LENGTH 50
 #define ANCESTORS_PREVIOUS_NAMES_MAX_LENGTH 250
 #define ANCESTORS_VERSIONS_MAX_LENGTH 50
 #define IMAS_PATH_MAX_LENGTH 500
 
-#define MAX_TMP_FILES 1000
+#define MAX_RETRIES 100
 // On any recent Linux (2.6 or later according to Wikipedia [1]) the /dev/shm folder exists for shared memory.
 // Since glibc assumes this to exist anyway [2], we will as well.
 // [1] https://en.wikipedia.org/wiki/Shared_memory

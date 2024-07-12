@@ -113,7 +113,7 @@
 <xsl:template name ="declareAndAllocateNBCVariables">
   <xsl:if test="ancestor::field[@change_nbc_version] or @change_nbc_version or count(descendant::field[@change_nbc_version]) > 0">
     <xsl:text>&#xA;</xsl:text> 
-    <xsl:text>char change_nbc_description[20];&#xA;</xsl:text>    
+    <xsl:text>char change_nbc_description[200];&#xA;</xsl:text>    
     <xsl:text>char *ancestors_names[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
     <xsl:text>char *ancestors_data_types[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
     <xsl:text>char *ancestors_change_nbc_versions[ANCESTORS_MAX_COUNT];&#xA;</xsl:text>
