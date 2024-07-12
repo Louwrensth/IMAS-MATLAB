@@ -91,7 +91,6 @@ char* concat(const char *s1, const char *s2)
  */
 char* generate_tmp_file()
 {
-    const char fs_safe_characters[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
 	char * prefix;
 	const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
 	if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
@@ -105,23 +104,48 @@ char* generate_tmp_file()
 	}
     char* fname;
     FILE *fp;
-    
-    for( int i=0; i<MAX_TMP_FILES; i++)
-    {
-        srand(time(NULL));   // Initialization, should only be called once.
-        int random_number = rand();      // Returns a pseudo-random integer between 0 and RAND_MAX.
-        
-        char* random_number_string = itoa(random_number);
-        char suffix[RANDOM_NUMBER_LENGTH];
-        strncpy(suffix, random_number_string, RANDOM_NUMBER_LENGTH-1);
-        suffix[RANDOM_NUMBER_LENGTH-1] = '\0';
-        fname = concat(prefix, suffix);
-        fp = fopen(fname, "w");
-        fclose(fp);
-        int ret = remove(fname);
-        return fname;
-    }
-    fname = "";
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+	// seedvalue with seconds, microseconds and process id 
+    unsigned long seedvalue= (unsigned long)(tv.tv_sec ^ tv.tv_usec ^ getpid()); 
+
+    srand(seedvalue);   // initialization, should only be called once.
+	for( int retry_counter=0; retry_counter<MAX_RETRIES; retry_counter++) {
+
+		unsigned long rnd = rand() ^ getpid();      // XOR random value with process id
+
+        char* rndstr = itoa(rnd);
+        fname=(char *)malloc( strlen(rndstr) + 1);
+        fname = concat(prefix, rndstr);
+
+        int file_available_status = access(fname, F_OK); // returns 0 if the file exists and accessible and returns -1 if not exist
+        int file_w_status=0;
+        if (file_available_status == -1) { // check if file creation is possible
+            fp = fopen(fname, "w");
+            if(fp==NULL)
+            {
+				printf("FUNCTION:generate_tmp_file() Could not create temporary file: %s\n", strerror(errno));
+                // file cannot be created due to memory issue or any other issue
+                file_w_status=1;
+            }
+            else{
+                fclose(fp);// file can be created and no issue with the name
+                int ret = remove(fname);// Remove the file
+            }
+        }
+        if(file_available_status == 0 || file_w_status!=0)
+        {
+            // file is already available or can not be created, regenerating new name
+            free(fname);
+            fname = NULL;
+        }
+        else
+        {
+            break;// filename is available
+        }
+    } 
+
     return fname;
 }
 
