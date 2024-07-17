@@ -14,20 +14,7 @@
     % all time-dependent fields values correspond to <ids>.time vector.
     equilibrium.time = [1.0, 2.0, 3.0];
 
-    % intentional error when entering data. equilibrium/vacuum_toroidal_field/b0 should have the same size as equilibrium/time
-    equilibrium.vacuum_toroidal_field.b0 = [1.0];
-
-    % NOTE: putting ids into entry will NOT trigger validate function.
-    % IDS fields types and dimensions must be checked by ids_validate function!
-    % The try-catch statement below will work
-    try
-        ids_validate('equilibrium', equilibrium);
-        ids_put(ctx, 'equilibrium', equilibrium);
-    catch ME
-        fprintf('Caught exception (raised intentionally)\n');
-    end
-
-    % fix wrong IDS field size
+    % equilibrium/vacuum_toroidal_field/b0 should have the same size as equilibrium/time
     equilibrium.vacuum_toroidal_field.b0 = [1.0, 2.0, 3.0];
     ids_put(ctx, 'equilibrium', equilibrium);
     clear equilibrium;
