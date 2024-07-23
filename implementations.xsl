@@ -63,6 +63,74 @@
     
 </xsl:template>
 
+
+<xsl:template name = "getSample_implementation">
+   
+    al_status_t status;
+    al_status_t status_end;
+    int getOpCtx = -1;
+    char* dataDictionaryVersion = NULL;
+	  bool taggedDataDictionaryVersion = false;
+    int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
+
+
+    if (tmax &lt; tmin) {
+    status.code = -1;
+    strcpy(status.message, "GET_SAMPLE: error, tmax should be greater or equals to tmin");
+  }
+
+  if ((interpmode != 0) &amp;&amp; (csize == 0)) {
+    status.code = -1;
+    strcpy(status.message, "GET_SAMPLE: error, interpolation mode should be 0 with no resampling (dtime size == 0)");
+  }
+
+  if ((interpmode == 0) &amp;&amp; (csize &gt;= 1)) {
+    status.code = -1;
+    strcpy(status.message, "GET_SAMPLE: error, interpolation mode should be specified (non zero) with resampling (dtime size &gt;= 1)");
+  }
+    
+    /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
+    int getCtx = -1;
+    status = al_begin_global_action(expIdx, idsFullName, "", READ_OP, &amp;getCtx);
+	  if (status.code >= 0) status = getDataDictionaryVersion(getCtx, &amp;dataDictionaryVersion, &amp;taggedDataDictionaryVersion);
+    if (status.code >= 0) status = getHomogeneousTimeCtx(getCtx, &amp;homogeneousTime);
+    if (getCtx > 0) {
+    status_end = al_end_action(getCtx);
+    if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
+    }
+
+    if(homogeneousTime &lt; 0) {
+      mexErrMsgIdAndTxt("IMAS:ids_getSample:error_timemode ", "error reading homogeneous time for <xsl:value-of select="@name"/>");
+      status.code = -1;
+    }
+
+    if (status.code >= 0) status = init_dataTree_read();
+    
+    /* Open get context */
+   if (status.code >= 0) status = al_begin_timerange_action(expIdx, idsFullName, READ_OP, tmin, tmax, dtime, &amp;csize, interpmode, &amp;getOpCtx);
+
+	  if(status.code &lt; 0) {
+        mexErrMsgIdAndTxt("GET_SAMPLE:"," error calling al_begin_global_action for <xsl:value-of select="@name"/> IDS.");
+    }
+    if (status.code >= 0) status = al_bind_readback_plugins(getOpCtx); //binding readback plugins just before the get() operation
+	  if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
+    if (getOpCtx > 0) {
+    if (status.code >= 0) status = al_unbind_readback_plugins(getOpCtx); //unbinding readback plugins just after the get() operation
+    status_end = al_end_action(getOpCtx);
+    if (status.code >= 0) status = status_end; /* Result of al_end_action is only relevant if there was no error before */
+    }
+    
+    if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);
+    /* Error handling */
+    if (status.code &lt; 0) {
+    addIdsPathInfoToErrMsg("\n ... in IDS <xsl:value-of select="@name"/>",1);
+    }
+    if (dataDictionaryVersion != NULL) free(dataDictionaryVersion);
+
+    return status;
+    
+</xsl:template>
+
 <xsl:template name = "get_slice_implementation">
     al_status_t status;
       al_status_t status_end;
