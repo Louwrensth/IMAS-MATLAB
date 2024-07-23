@@ -80,6 +80,11 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
         {
             uri = concat("imas:ascii?path=", IMAS_AL_SERIALIZER_TMP_DIR);
+            if(uri[strlen(uri)-1] != '/')
+            {
+                char slash = '/';
+                strncat(uri, &slash, 1);
+            }
         }
         else
         {

@@ -95,8 +95,20 @@ char* generate_tmp_file()
 	const char* IMAS_AL_SERIALIZER_TMP_DIR = getenv("IMAS_AL_SERIALIZER_TMP_DIR");
 	if(IMAS_AL_SERIALIZER_TMP_DIR != NULL)
 	{
-		prefix = malloc(strlen(IMAS_AL_SERIALIZER_TMP_DIR) + strlen("al_serialize_") + 1);
-        strcpy(prefix, IMAS_AL_SERIALIZER_TMP_DIR);
+		// Check if the path does not end with a '/', if not, add it
+		if(IMAS_AL_SERIALIZER_TMP_DIR[strlen(IMAS_AL_SERIALIZER_TMP_DIR)-1] != '/')
+		{
+			prefix = malloc(strlen(IMAS_AL_SERIALIZER_TMP_DIR) + strlen("/al_serialize_") + 2);
+			strcpy(prefix, IMAS_AL_SERIALIZER_TMP_DIR);
+			strcat(prefix, "/");
+			strcat(prefix, "al_serialize_");
+		}
+		else
+		{
+			prefix = malloc(strlen(IMAS_AL_SERIALIZER_TMP_DIR) + strlen("/al_serialize_") + 1);
+			strcpy(prefix, IMAS_AL_SERIALIZER_TMP_DIR);
+			strcat(prefix, "al_serialize_");
+		}
 	}
 	else
 	{
