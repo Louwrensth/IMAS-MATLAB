@@ -199,7 +199,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include "imas_mex_utils.h"
     <xsl:apply-templates select = "IDS" mode="LIST">
       <xsl:with-param name="prefix" select="'al_status_t ids_getSample_'"/>
-      <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, mxArray** ids);'"/>
+      <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, mxArray** ids, double tmin, double tmax, const double *dtime, int csize, int interpmode);'"/>
     </xsl:apply-templates>
   </xsl:result-document>
   <xsl:result-document href="src/ids/getSample_ids.c" standalone="yes" method="text">
