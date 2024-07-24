@@ -172,7 +172,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = strtok(IDSpathcopy, "/");
  
   /* Declare Function Pointer */
-  al_status_t(*ids_getSample)(int, char*, mxArray**) = NULL;
+  al_status_t(*ids_getSample)(int, char*, mxArray**, double, double, const double *, int, int) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
     <xsl:with-param name="function_name">ids_getSample</xsl:with-param>
