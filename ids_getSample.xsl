@@ -218,31 +218,5 @@ void mexFunction(int nlhs, mxArray *plhs[],
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GETSAMPLE_H">
   al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
 
-<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GETSAMPLE">
-  <xsl:param name="ids_type"/>
-  <xsl:call-template name="COMMENT_FIELD"/>
-  al_status_t getSample_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)
-  {
-  struct imas_mex_actionInfo action;
-  struct imas_mex_fieldInfo field;
-  mxArray* data=NULL;
-  al_status_t status = {0,""};
-  al_status_t status_end;
-  int aosArraySize = -1;
-  int aosCtx = -1;
-  action.context = ctx;
-  
-  <xsl:call-template name="declareAndAllocateNBCVariables"/>
-
-  <xsl:apply-templates select="field" mode="GET_SINGLE">
-    <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
-  </xsl:apply-templates>
-  
-  <xsl:call-template name="freeNBCVariables"/>
-
-  return status;
-  }
-</xsl:template>
-
 
 </xsl:stylesheet>
