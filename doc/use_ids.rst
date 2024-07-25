@@ -41,3 +41,5 @@
 
 .. |ids_validate| replace:: :mat:func:`ids_validate`
 .. |validate_error| replace:: throws an error
+
+.. |ids_getSample| replace:: :mat:func:`ids_getSample`

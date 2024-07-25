@@ -1,0 +1,21 @@
+% Open the database entry by providing an IMAS URI
+data_entry = imas_open( ...
+    'imas:mdsplus?user=public;shot=131024;run=41;database=ITER;version=3')
+
+% Create a empty time range
+dtime = [];
+
+% Define timerange upper and lower limits
+tmin = 0.3; 
+tmax = 0.8;
+
+% Load an ids timerange as example, here: the core_profiles IDS, occurrence 0
+cp = ids_getSample(data_entry, 'core_profiles', tmin, tmax, dtime, 0);
+
+
+% Create a constant time step for interpolation
+step = 0.025
+dtime = [step];
+
+% Load an ids timerange with interpolation (sampling) as example, here: the core_profiles IDS, occurrence 0
+cp = ids_getSample(data_entry, 'core_profiles', tmin, tmax, dtime, 1);
