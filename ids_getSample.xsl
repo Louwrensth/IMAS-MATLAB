@@ -38,7 +38,7 @@
 
    Usage:
    \code{.m} 
-   ids = ids_getSample(idx, IDSpath[, occ], tmin, tmax, dtime, csize, interpmode)
+   ids = ids_getSample(idx, IDSpath[, occ], tmin, tmax, dtime, interpmode)
    \endcode
 
    MATLAB help:
@@ -57,7 +57,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
   /* Check for two or three input arguments   */
-  if(nrhs != 7 &amp;&amp; nrhs != 8) {
+  if(nrhs != 6 &amp;&amp; nrhs != 7) {
     mexErrMsgIdAndTxt("IMAS:ids_getSample:nargin",
                       "Six or seven inputs required.");
   }
@@ -84,7 +84,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   mexPrintf("The input IDSpath is:  %s\n", IDSpath);
 
   int occ;
-  if(nrhs == 8) {
+  if(nrhs == 7) {
   size_t pathlen;
   /* make sure occ is scalar */
   if( !mxIsNumeric(prhs[2]) ||
@@ -107,47 +107,37 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
 
   /* Check for tmin */
-  if( !mxIsNumeric(prhs[nrhs-5]) ||
-      !mxIsScalar(prhs[nrhs-5]) ) {
+  if( !mxIsNumeric(prhs[nrhs-4]) ||
+      !mxIsScalar(prhs[nrhs-4]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
                         "Input tmin must be a scalar.");
   }
-  double tmin = mxGetScalar(prhs[nrhs-5]);
+  double tmin = mxGetScalar(prhs[nrhs-4]);
   if (params.verbosity >= 4)
   mexPrintf("The input tmin is:  %f\n", tmin);
 
   /* Check for tmax */
-  if( !mxIsNumeric(prhs[nrhs-4]) ||
-      !mxIsScalar(prhs[nrhs-4]) ) {
+  if( !mxIsNumeric(prhs[nrhs-3]) ||
+      !mxIsScalar(prhs[nrhs-3]) ) {
       mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
                         "Input tmax must be a scalar.");
   }
-  double tmax = mxGetScalar(prhs[nrhs-4]);
+  double tmax = mxGetScalar(prhs[nrhs-3]);
   if (params.verbosity >= 4)
   mexPrintf("The input tmax is:  %f\n", tmax);
 
-  mwSize rank = mxGetNumberOfDimensions(prhs[nrhs-3]);
+  mwSize rank = mxGetNumberOfDimensions(prhs[nrhs-2]);
+  if (params.verbosity >= 4)
   mexPrintf("The input rank of dtime is:  %d\n", (int)rank);
 
-  const mwSize * dimensions = mxGetDimensions(prhs[nrhs-3]);
-  mexPrintf("The input shape of dtime is:  %d\n", (int)dimensions[0]);
-  //csize = dimensions[0];
-  /* Check for dtime */
-  if(!mxIsScalar(prhs[nrhs-3]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
-                        "Input dtime must be a scalar.");
+  const mwSize * dimensions = mxGetDimensions(prhs[nrhs-2]);
+  if (params.verbosity >= 4) {
+  for (int i = 0; i&lt;(int)rank; i++)
+    mexPrintf("The input dim%d of dtime is:  %d\n", i, (int)dimensions[i]);
   }
-  const double *dtime = mxGetData(prhs[nrhs-3]);
+  const double *dtime = mxGetData(prhs[nrhs-2]);
 
-  
-
-  /* Check for csize */
-  if( !mxIsNumeric(prhs[nrhs-2]) ||
-      !mxIsScalar(prhs[nrhs-2]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
-                        "Input csize must be a scalar.");
-  }
-  int csize = (int) mxGetScalar(prhs[nrhs-2]);
+  int csize = dimensions[0];
   if (params.verbosity >= 4)
   mexPrintf("The input csize is:  %d\n", csize);
 
@@ -204,6 +194,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   </xsl:result-document>
   <xsl:result-document href="src/ids/getSample_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
+    #include "ids_get.h"
     <xsl:for-each select="IDS">
     <xsl:variable name="ids_type" select="@type"/>
     <xsl:apply-templates select="." mode="METHOD_GETSAMPLE_H"/>
@@ -211,12 +202,45 @@ void mexFunction(int nlhs, mxArray *plhs[],
     {
       <xsl:call-template name="getSample_implementation"/>
     }
+
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GETSAMPLE_H"/>
+
+    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GETSAMPLE">
+      <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+    </xsl:apply-templates>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
 <xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GETSAMPLE_H">
-  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);</xsl:template>
+  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);
+  </xsl:template>
 
+
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GETSAMPLE">
+  <xsl:param name="ids_type"/>
+  <xsl:call-template name="COMMENT_FIELD"/>
+  al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)
+  {
+  struct imas_mex_actionInfo action;
+  struct imas_mex_fieldInfo field;
+  mxArray* data=NULL;
+  al_status_t status = {0,""};
+  al_status_t status_end;
+  int aosArraySize = -1;
+  int aosCtx = -1;
+  action.context = ctx;
+  
+  <xsl:call-template name="declareAndAllocateNBCVariables"/>
+
+  <xsl:apply-templates select="field" mode="GET_SINGLE">
+    <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
+  </xsl:apply-templates>
+  
+  <xsl:call-template name="freeNBCVariables"/>
+
+  return status;
+  }
+</xsl:template>
 
 </xsl:stylesheet>

@@ -77,16 +77,19 @@
     if (tmax &lt; tmin) {
     status.code = -1;
     strcpy(status.message, "GET_SAMPLE: error, tmax should be greater or equals to tmin");
+    return status;
   }
 
   if ((interpmode != 0) &amp;&amp; (csize == 0)) {
     status.code = -1;
     strcpy(status.message, "GET_SAMPLE: error, interpolation mode should be 0 with no resampling (dtime size == 0)");
+    return status;
   }
 
   if ((interpmode == 0) &amp;&amp; (csize &gt;= 1)) {
     status.code = -1;
     strcpy(status.message, "GET_SAMPLE: error, interpolation mode should be specified (non zero) with resampling (dtime size &gt;= 1)");
+    return status;
   }
     
     /* Open separate context for reading DD version and homogeneous time (see IMAS-3077) */
@@ -100,8 +103,9 @@
     }
 
     if(homogeneousTime &lt; 0) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:error_timemode ", "error reading homogeneous time for <xsl:value-of select="@name"/>");
+      strcpy(status.message, "GET_SAMPLE: error reading homogeneous time for <xsl:value-of select="@name"/>");
       status.code = -1;
+      return status;
     }
 
     if (status.code >= 0) status = init_dataTree_read();
@@ -110,7 +114,9 @@
    if (status.code >= 0) status = al_begin_timerange_action(expIdx, idsFullName, READ_OP, tmin, tmax, dtime, &amp;csize, interpmode, &amp;getOpCtx);
 
 	  if(status.code &lt; 0) {
-        mexErrMsgIdAndTxt("GET_SAMPLE:"," error calling al_begin_global_action for <xsl:value-of select="@name"/> IDS.");
+      strcpy(status.message, "GET_SAMPLE: error calling al_begin_timerange_action for <xsl:value-of select="@name"/> IDS.");
+      status.code = -1;
+      return status;
     }
     if (status.code >= 0) status = al_bind_readback_plugins(getOpCtx); //binding readback plugins just before the get() operation
 	  if (status.code >= 0) status = get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(getOpCtx, homogeneousTime, dataDictionaryVersion, taggedDataDictionaryVersion);
