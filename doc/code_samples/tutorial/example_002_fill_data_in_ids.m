@@ -45,9 +45,10 @@
     % we have allocated in all previous steps.
     clear empty_core_profiles;
 
-%    ╔══════════════════════════════════════════════════════════════════════════════╗
+%    █══════════════════════════════════════════════════════════════════════════════█
 %    ║                            default_values_and_aos_operations                 ║
-%    ╚══════════════════════════════════════════════════════════════════════════════╝
+%    █══════════════════════════════════════════════════════════════════════════════█
+
 % This example focuses on handling arrays of structures and default values
 
     % create empty edge_profiles
@@ -103,9 +104,11 @@
     clear edge_profiles;
     clear edge_profiles2;
 
-%    ╔══════════════════════════════════════════════════════════════════════════════╗
-%    ║                            copying_and_validating_ids                        ║
-%    ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+%    ┌──────────────────────────────────────────────────────────────────────────────┐
+%    │                            copying_and_validating_ids                        │
+%    └──────────────────────────────────────────────────────────────────────────────┘    
 % This example focuses on creating multi-dimensional arrays, using copmlex type and copying IDS structures
 
     % create empty gyrokinetics_local
