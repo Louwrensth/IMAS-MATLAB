@@ -13,16 +13,16 @@ This code examples can be run using already prepared tests in
     cd al-matlab/doc/code_samples/tutorial
 
 
-2. To **compile** the code, run the following command:
+2. Tu start the MatlabIDE just simply execute this command
 
 .. code-block:: bash
 
-    g++ test_new_examples.m `pkg-config --libs --cflags al-matlab` -pthread -o cplusplus
+   matlab
 
 
 
-3. To **run** the code, use the following command:
+3. To **run** the code, execute the following command in ``Command Window``:
 
 .. code-block:: bash
 
-    ./cplusplus
+    test_new_examples
