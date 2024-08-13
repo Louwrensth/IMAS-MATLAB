@@ -59,7 +59,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     }
     else
     {
-        protocol = ASCII_SERIALIZER_PROTOCOL;
+        protocol = DEFAULT_SERIALIZER_PROTOCOL;
     }
 
     /* Check for one output argument */
@@ -149,6 +149,59 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
             my_exceptionGetReport(exception);
         }
     }
+#ifdef FLEXBUFFERS_SERIALIZER_PROTOCOL
+    else if (protocol == FLEXBUFFERS_SERIALIZER_PROTOCOL)
+    {
+        al_status_t status;
+        int idx;
+        status = al_begin_dataentry_action("imas:flexbuffers?path=/", CREATE_PULSE, &idx);
+        if (status.code != 0) {
+            al_end_action(idx);
+            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas pulse %s",  status.message);
+        }
+
+        // Call ids_put(idx, IDSName, prhs[0]);
+        mxArray *ids_put_rhs[2];
+        ids_put_rhs[0] = mxCreateDoubleScalar(idx);
+        ids_put_rhs[1] = mxCreateString(IDSName);
+        ids_put_rhs[2] = prhs[0];
+        mxArray * exception = NULL;
+
+        exception = mexCallMATLABWithTrap(0,NULL,3, ids_put_rhs, "ids_put");
+        if(exception != NULL) {
+            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error in ids_put");
+            my_exceptionGetReport(exception);
+        }
+
+        // Read buffer from the backend
+        char *data;
+        int size;
+        status = al_read_data(idx, "<buffer>", "", (void**)(&data), CHAR_DATA, 1, &size);
+
+        // Create output MEX string
+        // N.B. Flexbuffers data contains NULL bytes, so we can't use mxCreateString :(
+        mwSize mxsize[2] = {1, size};
+        // mxArray *mx_char_array = mxCreateCharArray(2, mxsize);
+        mxArray *mx_data = mxCreateNumericArray(2, mxsize, mxUINT8_CLASS, mxREAL);
+        if (mx_data == NULL) {
+            mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Failed to create MATLAB char array");
+        }
+        char *mx_data_ptr = mxGetData(mx_data);
+        memcpy(mx_data_ptr, data, size);
+        free(data);
+        plhs[0] = mx_data;
+
+        // cleanup
+        if (idx != -1) 
+        {
+            status = al_close_pulse(idx, CLOSE_PULSE);
+            if (status.code >= 0)
+                al_end_action(idx);
+            else
+                mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error closing pulse %s",  status.message);
+        }
+    }
+#endif // FLEXBUFFERS_SERIALIZER_PROTOCOL
     else
     {
         mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Unrecognized serialization protocol %d",  protocol);
