@@ -154,7 +154,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     {
         al_status_t status;
         int idx;
-        status = al_begin_dataentry_action("imas:serialize?path=/", CREATE_PULSE, &idx);
+        status = al_begin_dataentry_action("imas:flexbuffers?path=/", CREATE_PULSE, &idx);
         if (status.code != 0) {
             al_end_action(idx);
             mexErrMsgIdAndTxt("IMAS:imas_serialize:Failed", "Error creating imas pulse %s",  status.message);
