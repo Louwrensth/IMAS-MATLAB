@@ -10,7 +10,7 @@ tmin = 0.3;
 tmax = 0.8;
 
 % Load an ids timerange as example, here: the core_profiles IDS, occurrence 0
-cp = ids_getSample(data_entry, 'core_profiles', tmin, tmax, dtime, 0);
+cp = ids_get_sample(data_entry, 'core_profiles', tmin, tmax, dtime, 0);
 
 
 % Create a constant time step for interpolation
