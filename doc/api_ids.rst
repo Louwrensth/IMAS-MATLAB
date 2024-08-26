@@ -8,7 +8,7 @@ IDS API
 
 .. mat:autofunction:: ids_get_slice()
 
-.. mat:autofunction:: ids_getSample()
+.. mat:autofunction:: ids_get_sample()
 
 .. mat:autofunction:: ids_put()
 
