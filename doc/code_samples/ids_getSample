@@ -18,4 +18,4 @@ step = 0.025
 dtime = [step];
 
 % Load an ids timerange with interpolation (sampling) as example, here: the core_profiles IDS, occurrence 0
-cp = ids_getSample(data_entry, 'core_profiles', tmin, tmax, dtime, 1);
+cp = ids_get_sample(data_entry, 'core_profiles', tmin, tmax, dtime, 1);
