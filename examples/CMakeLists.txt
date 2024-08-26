@@ -17,7 +17,7 @@ set( M_FILES
     test_get
     test_isdefined
     test_put
-    test_getSample_magnetics
+    test_get_sample_magnetics
     test_serialize
     test_waves_validate
 )
