@@ -25,29 +25,29 @@
 <!--================================================-->
 
 <xsl:template match = "/IDSs">
-  <xsl:result-document href="src/ids/ids_getSample.c" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/ids_get_sample.c" standalone="yes" method="text">
 /** \addtogroup interface MEX-interface
  *  @{
  */
 
 /**
-   \file ids_getSample.c
+   \file ids_get_sample.c
    read IDS in MATLAB External Interfaces
    
    This is a MEX file for MATLAB.
 
    Usage:
    \code{.m} 
-   ids = ids_getSample(idx, IDSpath[, occ], tmin, tmax, dtime, interpmode)
+   ids = ids_get_sample(idx, IDSpath[, occ], tmin, tmax, dtime, interpmode)
    \endcode
 
    MATLAB help:
-   \include matlab/ids_getSample.m
+   \include matlab/ids_get_sample.m
  */
 
 /** @}*/
 
-#include "ids_getSample.h"
+#include "ids_get_sample.h"
 #include "imas_mex_utils.h"
 
 /**
@@ -58,14 +58,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
 {
   /* Check for two or three input arguments   */
   if(nrhs != 6 &amp;&amp; nrhs != 7) {
-    mexErrMsgIdAndTxt("IMAS:ids_getSample:nargin",
+    mexErrMsgIdAndTxt("IMAS:ids_get_sample:nargin",
                       "Six or seven inputs required.");
   }
 
   /* make sure idx is scalar */
   if( !mxIsNumeric(prhs[0]) ||
       !mxIsScalar(prhs[0]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_sample:notScalar",
                         "Input idx must be a scalar.");
   }
   /* Get the value of idx */
@@ -75,7 +75,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   /* make sure IDSpath is a string */
   if( !mxIsChar(prhs[1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notChar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_sample:notChar",
                         "Input IDSpath must be a string.");
   }
   /* Get the value of IDSpath */
@@ -89,7 +89,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* make sure occ is scalar */
   if( !mxIsNumeric(prhs[2]) ||
       !mxIsScalar(prhs[2]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_sample:notScalar",
                         "Input occurence must be a scalar.");
   }
   /* Get the value of occ */
@@ -109,7 +109,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Check for tmin */
   if( !mxIsNumeric(prhs[nrhs-4]) ||
       !mxIsScalar(prhs[nrhs-4]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_sample:notScalar",
                         "Input tmin must be a scalar.");
   }
   double tmin = mxGetScalar(prhs[nrhs-4]);
@@ -119,7 +119,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Check for tmax */
   if( !mxIsNumeric(prhs[nrhs-3]) ||
       !mxIsScalar(prhs[nrhs-3]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_sample:notScalar",
                         "Input tmax must be a scalar.");
   }
   double tmax = mxGetScalar(prhs[nrhs-3]);
@@ -144,7 +144,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Check for interpmode */
   if( !mxIsNumeric(prhs[nrhs-1]) ||
       !mxIsScalar(prhs[nrhs-1]) ) {
-      mexErrMsgIdAndTxt("IMAS:ids_getSample:notScalar",
+      mexErrMsgIdAndTxt("IMAS:ids_get_sample:notScalar",
                         "Input interpmode must be a scalar.");
   }
   int interpmode = (int) mxGetScalar(prhs[nrhs-1]);
@@ -153,7 +153,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   /* Check for one output argument */
   if(nlhs > 1) {
-    mexErrMsgIdAndTxt("IMAS:ids_getSample:nargout",
+    mexErrMsgIdAndTxt("IMAS:ids_get_sample:nargout",
                       "One output maximum required.");
   }
   
@@ -162,13 +162,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
   char* name = strtok(IDSpathcopy, "/");
  
   /* Declare Function Pointer */
-  al_status_t(*ids_getSample)(int, char*, mxArray**, double, double, const double *, int, int) = NULL;
+  al_status_t(*ids_get_sample)(int, char*, mxArray**, double, double, const double *, int, int) = NULL;
   /* Assign pointer based on IDS name */
   <xsl:apply-templates select = "IDS" mode="SWITCH">
-    <xsl:with-param name="function_name">ids_getSample</xsl:with-param>
+    <xsl:with-param name="function_name">ids_get_sample</xsl:with-param>
   </xsl:apply-templates>
   /* Error if there was no match */
-  mexErrMsgIdAndTxt("IMAS:ids_getSample:unknown_ids",
+  mexErrMsgIdAndTxt("IMAS:ids_get_sample:unknown_ids",
            "Unknown IDS name: %s", name);
 
   /* free now as name uses the same memory */
@@ -177,47 +177,47 @@ void mexFunction(int nlhs, mxArray *plhs[],
   /* Clean-up previous errors */
   resetErrMsgIdAndTxt();
   /* Call function */
-  al_status_t err = ids_getSample(idx, IDSpath, &amp;plhs[0], tmin, tmax, dtime, csize, interpmode);
+  al_status_t err = ids_get_sample(idx, IDSpath, &amp;plhs[0], tmin, tmax, dtime, csize, interpmode);
   if (err.code &lt; 0 )
-  my_mexErrMsgIdAndTxt(err, "IMAS:ids_getSample:");
+  my_mexErrMsgIdAndTxt(err, "IMAS:ids_get_sample:");
   return;
 
 }
   </xsl:result-document>
-  <xsl:result-document href="src/ids/ids_getSample.h" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/ids_get_sample.h" standalone="yes" method="text">
     #include "mex.h"
     #include "imas_mex_utils.h"
     <xsl:apply-templates select = "IDS" mode="LIST">
-      <xsl:with-param name="prefix" select="'al_status_t ids_getSample_'"/>
+      <xsl:with-param name="prefix" select="'al_status_t ids_get_sample_'"/>
       <xsl:with-param name="suffix" select="'(int expIdx, char* idsFullName, mxArray** ids, double tmin, double tmax, const double *dtime, int csize, int interpmode);'"/>
     </xsl:apply-templates>
   </xsl:result-document>
-  <xsl:result-document href="src/ids/getSample_ids.c" standalone="yes" method="text">
+  <xsl:result-document href="src/ids/get_sample_ids.c" standalone="yes" method="text">
     #include "imas_mex_utils.h"
     #include "ids_get.h"
     <xsl:for-each select="IDS">
     <xsl:variable name="ids_type" select="@type"/>
-    <xsl:apply-templates select="." mode="METHOD_GETSAMPLE_H"/>
-    al_status_t ids_getSample_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids, double tmin, double tmax, const double *dtime, int csize, int interpmode)
+    <xsl:apply-templates select="." mode="METHOD_get_sample_H"/>
+    al_status_t ids_get_sample_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids, double tmin, double tmax, const double *dtime, int csize, int interpmode)
     {
-      <xsl:call-template name="getSample_implementation"/>
+      <xsl:call-template name="get_sample_implementation"/>
     }
 
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GETSAMPLE_H"/>
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_get_sample_H"/>
 
-    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GETSAMPLE">
+    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_get_sample">
       <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
     </xsl:apply-templates>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
-<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GETSAMPLE_H">
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_get_sample_H">
   al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);
   </xsl:template>
 
 
-<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GETSAMPLE">
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_get_sample">
   <xsl:param name="ids_type"/>
   <xsl:call-template name="COMMENT_FIELD"/>
   al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)

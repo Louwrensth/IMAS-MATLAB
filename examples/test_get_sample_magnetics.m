@@ -23,7 +23,7 @@ ctx = imas_open(uri, 40);
 
 dtime = [];
 
-m = ids_getSample(ctx,'magnetics', tmin, tmax, dtime, 0);
+m = ids_get_sample(ctx,'magnetics', tmin, tmax, dtime, 0);
 
 disp("Check size of magnetics timerange.")
 if size(m.time,1) == (tmax-tmin)/0.1 +1
@@ -36,7 +36,7 @@ end
 step = 0.05;
 dtime = [step];
 
-m = ids_getSample(ctx,'magnetics', tmin, tmax, dtime, 1);
+m = ids_get_sample(ctx,'magnetics', tmin, tmax, dtime, 1);
 
 disp("Check size of magnetics timerange.")
 if size(m.time,1) == (tmax-tmin)/step + 1

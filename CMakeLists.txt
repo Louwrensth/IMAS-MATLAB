@@ -145,7 +145,7 @@ macro( ADD_IMAS_MEX NAME SOURCES )
 endmacro()
 
 # These XSLs generate files in triplets, which are then compiled into one mex target
-foreach( METHOD_NAME allocate delete gen get getSample get_slice init put put_slice rand validate )
+foreach( METHOD_NAME allocate delete gen get get_sample get_slice init put put_slice rand validate )
   FILES_FROM_METHOD_NAME( OUTPUT_FILES ${METHOD_NAME} )
   GENERATE( "ids_${METHOD_NAME}" 1 "${OUTPUT_FILES}" )
   ADD_IMAS_MEX( "ids_${METHOD_NAME}" "${OUTPUT_FILES}" )

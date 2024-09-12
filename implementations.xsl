@@ -64,7 +64,7 @@
 </xsl:template>
 
 
-<xsl:template name = "getSample_implementation">
+<xsl:template name = "get_sample_implementation">
    
     al_status_t status;
     al_status_t status_end;
