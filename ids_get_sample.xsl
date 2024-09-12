@@ -130,6 +130,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
   if (params.verbosity >= 4)
   mexPrintf("The input rank of dtime is:  %d\n", (int)rank);
 
+  if (rank > 2) {
+      mexErrMsgIdAndTxt("IMAS:ids_get_sample:rankerror",
+                        "The input rank of dtime must be 1.");
+  }
+
   const mwSize * dimensions = mxGetDimensions(prhs[nrhs-2]);
   if (params.verbosity >= 4) {
   for (int i = 0; i&lt;(int)rank; i++)
@@ -138,6 +143,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
   const double *dtime = mxGetData(prhs[nrhs-2]);
 
   int csize = dimensions[0];
+
+  /* Allow for 1D row vectors  */
+  if (dimensions[0] == 1) {
+    csize = dimensions[1];
+  }
+
   if (params.verbosity >= 4)
   mexPrintf("The input csize is:  %d\n", csize);
 

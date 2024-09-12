@@ -25,7 +25,7 @@ dtime = [];
 
 m = ids_get_sample(ctx,'magnetics', tmin, tmax, dtime, 0);
 
-disp("Check size of magnetics timerange.")
+disp("Check size of magnetics timerange. interp = 0 .")
 if size(m.time,1) == (tmax-tmin)/0.1 +1
     disp("...Passed.");
 else 
@@ -38,11 +38,25 @@ dtime = [step];
 
 m = ids_get_sample(ctx,'magnetics', tmin, tmax, dtime, 1);
 
-disp("Check size of magnetics timerange.")
+disp("Check size of magnetics timerange. interp = 1 .")
 if size(m.time,1) == (tmax-tmin)/step + 1
     disp("...Passed.");
 else 
     errmsg = ["...Error m.time size not verified.", int2str(size(m.time,1)), " / ", int2str((tmax-tmin)/step +1)];
+    disp(errmsg);
+end
+
+
+
+dtime = [0.32, 0.34, 0.37];
+
+m = ids_get_sample(ctx,'magnetics', 0., 1., dtime, 3);
+
+disp("Check size of magnetics timerange. interp = 3 .")
+if size(m.time,1) == size(dtime,2)
+    disp("...Passed.");
+else 
+    errmsg = ["...Error m.time size not verified.", size(m.time,1), " / ", size(dtime,1)];
     disp(errmsg);
 end
 
