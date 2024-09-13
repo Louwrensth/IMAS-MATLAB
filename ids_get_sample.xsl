@@ -208,27 +208,27 @@ void mexFunction(int nlhs, mxArray *plhs[],
     #include "ids_get.h"
     <xsl:for-each select="IDS">
     <xsl:variable name="ids_type" select="@type"/>
-    <xsl:apply-templates select="." mode="METHOD_get_sample_H"/>
+    <xsl:apply-templates select="." mode="METHOD_GET_SAMPLE_H"/>
     al_status_t ids_get_sample_<xsl:value-of select="@name"/>(int expIdx, char* idsFullName, mxArray** ids, double tmin, double tmax, const double *dtime, int csize, int interpmode)
     {
       <xsl:call-template name="get_sample_implementation"/>
     }
 
-    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_get_sample_H"/>
+    <xsl:apply-templates select=".//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SAMPLE_H"/>
 
-    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_get_sample">
+    <xsl:apply-templates select=". | .//field[@data_type='structure' or @data_type='struct_array']" mode="METHOD_GET_SAMPLE">
       <xsl:with-param name="ids_type"><xsl:value-of select="$ids_type"/></xsl:with-param>
     </xsl:apply-templates>
     </xsl:for-each>
   </xsl:result-document>
 </xsl:template>
 
-<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_get_sample_H">
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SAMPLE_H">
   al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion);
   </xsl:template>
 
 
-<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_get_sample">
+<xsl:template match="IDS | field[@data_type='struct_array' or @data_type='structure']" mode="METHOD_GET_SAMPLE">
   <xsl:param name="ids_type"/>
   <xsl:call-template name="COMMENT_FIELD"/>
   al_status_t get_<xsl:value-of select="concat(@name,'_',generate-id(.))"/>(int ctx, int homogeneousTime, char* dataDictionaryVersion, bool taggedDataDictionaryVersion)
