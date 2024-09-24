@@ -87,7 +87,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
         }
         else
         {
-            uri = concat("imas:ascii?path=", SERIALIZE_TEMPORARY_DIRECTORY);
+            uri = concat("imas:ascii?path=", IMAS_AL_SERIALIZER_TMP_DIR);
         }
         uri = concat(uri, options);
         status_begin = al_begin_dataentry_action(uri, CREATE_PULSE, &idx);
