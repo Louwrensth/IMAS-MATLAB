@@ -15,6 +15,8 @@ Data entry API
 
 .. mat:autofunction:: imas_list_all_occurrences()
 
+.. mat:autofunction:: imas_build_uri_from_legacy_parameters()
+
 Version constants
 -----------------
 
