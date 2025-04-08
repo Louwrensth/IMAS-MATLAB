@@ -3,7 +3,7 @@
 Using the Access Layer with your MATLAB program
 -----------------------------------------------
 
-The following example program will load the Fortran interface to the Access Layer
+The following example program will load the MATLAB interface to the Access Layer
 to print the version of the access layer and data dictionary.
 
 .. highlight:: matlab
