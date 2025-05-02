@@ -53,7 +53,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     plhs[0] = mxCreateStructMatrix(1, 1, nfields, fnames);
 
     mxArray *arr;
-    mxInt32 *version_data;
+    int *version_data;
     const mwSize dims[] = {3};
 
     arr = mxCreateString(getALVersion());
@@ -63,7 +63,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     mxSetField(plhs[0], 0, "hli_version", arr);
 
     arr = mxCreateNumericArray(1, dims, mxINT32_CLASS, mxREAL);
-    version_data = mxGetData(arr);
+    version_data = (int*) mxGetData(arr);
     version_data[0] = <xsl:value-of select="$HLI_MAJOR"/>;
     version_data[1] = <xsl:value-of select="$HLI_MINOR"/>;
     version_data[2] = <xsl:value-of select="$HLI_PATCH"/>;
@@ -73,7 +73,7 @@ void mexFunction(int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     mxSetField(plhs[0], 0, "dd_version", arr);
 
     arr = mxCreateNumericArray(1, dims, mxINT32_CLASS, mxREAL);
-    version_data = mxGetData(arr);
+    version_data = (int*) mxGetData(arr);
     version_data[0] = <xsl:value-of select="$DD_MAJOR"/>;
     version_data[1] = <xsl:value-of select="$DD_MINOR"/>;
     version_data[2] = <xsl:value-of select="$DD_PATCH"/>;

@@ -68,6 +68,7 @@ endif()
 # Dependencies
 ################################################################################
 
+find_package(Java REQUIRED)
 find_package( Matlab REQUIRED )
 find_package( SaxonHE )
 
@@ -115,7 +116,7 @@ macro( GENERATE GENERATOR IS_C_GENERATOR OUTPUT_FILES )
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${GENERATOR}_dummy.txt
     COMMAND
-      java -cp ${SaxonHE_CLASSPATH}
+      ${Java_JAVA_EXECUTABLE} -cp ${SaxonHE_CLASSPATH}
         net.sf.saxon.Transform -t -warnings:fatal
         "-xsl:${CMAKE_CURRENT_SOURCE_DIR}/${GENERATOR}.xsl"
         "-s:${IDSDEF}"
