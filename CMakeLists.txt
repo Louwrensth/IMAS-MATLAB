@@ -210,6 +210,7 @@ set( TARGETS
   imas_set_mex_params
   imas_build_uri_from_legacy_parameters
   imas_list_all_occurrences
+  imas_partial_get
 )
 foreach( TARGET ${TARGETS} )
   ADD_IMAS_MEX( ${TARGET} "src/${TARGET}.c" )
