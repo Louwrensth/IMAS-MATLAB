@@ -6,7 +6,7 @@
 
 %Returned data have paths included in a set of paths defined by the "includes" 
 % minus the paths explicitly removed by the "excludes" queries. 
-%A IDS field is returned only if its path matches at least one
+% An IDS field is returned only if its path matches at least one
 % include query and does not match any exclude query.
 %
 % Empty fields within the IDS in the Data Entry are returned with the
