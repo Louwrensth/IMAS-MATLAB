@@ -48,6 +48,9 @@ CMAKE_ARGS=(
     -D AL_CORE_GIT_REPOSITORY=${AL_CORE_GIT_REPOSITORY:-https://git.iter.org/scm/imas/al-core.git}
     -D AL_PLUGINS_GIT_REPOSITORY=${AL_PLUGINS_GIT_REPOSITORY:-https://git.iter.org/scm/imas/al-plugins.git}
     -D DD_GIT_REPOSITORY=${DD_GIT_REPOSITORY:-https://github.com/iterorganization/IMAS-Data-Dictionary.git}
+    -D AL_PLUGINS_VERSION=${AL_PLUGINS_VERSION:-main}
+    -D AL_CORE_VERSION=${AL_CORE_VERSION:-main}
+    -D DD_VERSION=${DD_VERSION:-main}
     # Build only documentation
     -D AL_HLI_DOCS=${AL_HLI_DOCS:-ON}
     -D AL_DOCS_ONLY=${AL_DOCS_ONLY:-ON}
