@@ -4,7 +4,7 @@
 %
 % This method fetches partially the IDS according to 'includes' and 'excludes' queries.
 
-%Returned data have paths included in a set of paths defined by the "includes" 
+% Returned data have paths included in a set of paths defined by the "includes" 
 % minus the paths explicitly removed by the "excludes" queries. 
 % An IDS field is returned only if its path matches at least one
 % include query and does not match any exclude query.
