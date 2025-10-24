@@ -147,6 +147,10 @@ al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void 
 al_status_t my_al_read_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, mxArray ** data);
 
 al_status_t my_al_write_data(struct imas_mex_actionInfo * action, struct imas_mex_fieldInfo * field, const mxArray * data, const char* idsName, const char* lifecycle_status);
+
+/* Check if ids validation should be performed on ids_put*/
+bool is_validation_required(void);
+
 /** \endcond */
 
 #endif

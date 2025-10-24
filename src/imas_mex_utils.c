@@ -944,3 +944,12 @@ al_status_t my_al_write_data(struct imas_mex_actionInfo * action, struct imas_me
 
 	return status;
 }
+
+/**
+   Returns boolean value to enable or disable ids validation on ids_put
+   @result true or false.
+ */
+bool is_validation_required() {
+    const char* disable_validation = getenv("IMAS_AL_DISABLE_VALIDATE");
+    return !(disable_validation && (*disable_validation == '1'));
+}
