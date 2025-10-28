@@ -54,6 +54,8 @@ endif()
 # Tests require MDSPLUS and HDF5
 if( NOT AL_BACKEND_MDSPLUS OR NOT AL_BACKEND_HDF5 )
   set_tests_properties( al-mex-test PROPERTIES DISABLED ON )
-  set_tests_properties( al-partial-get-test PROPERTIES DISABLED ON )
+  if( AL_PLUGINS )
+    set_tests_properties( al-partial-get-test PROPERTIES DISABLED ON )
+  endif()
 endif()
 
