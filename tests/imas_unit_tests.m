@@ -66,18 +66,18 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       idx = testCase.TestData.idx;
       ids = testCase.TestData.IDS.(IDSname);
       ids_slice = testCase.TestData.IDS_slice.(IDSname);
-      
+
       try
         ids_put(idx,IDSname,ids);
       catch ME
         if strcmp(ME.identifier, 'IMAS:ids_put:internal_error')
-          warning('Test skipped for %s due to validation error', IDSname);
+          warning('Test skipped in ids_put/validate for %s due to %s', IDSname, ME.message);
           return;
         else
           rethrow(ME);
         end
       end
-      
+
       % Test get
       sdi = ids_get(idx,IDSname);
       comparator(ids,sdi,IDSname);
@@ -97,7 +97,7 @@ classdef imas_unit_tests < matlab.unittest.TestCase
       idx = testCase.TestData.idx;
       ids = testCase.TestData.IDS.(IDSname);
       ids_slice = testCase.TestData.IDS_slice.(IDSname);
-      
+
       try
         ids_put(idx,IDSname,ids_slice{1});
         for itime=2:numel(ids_slice)
@@ -105,13 +105,13 @@ classdef imas_unit_tests < matlab.unittest.TestCase
         end
       catch ME
         if strcmp(ME.identifier, 'IMAS:ids_put:internal_error')
-          warning('Test skipped for %s due to validation error', IDSname);
+          warning('Test skipped in ids_put/validate for %s due to %s', IDSname, ME.message);
           return;
         else
           rethrow(ME);
         end
       end
-      
+
       % Test get
       sdi = ids_get(idx,IDSname);
       comparator(ids,sdi,IDSname);

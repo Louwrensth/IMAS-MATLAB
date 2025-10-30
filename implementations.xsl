@@ -180,8 +180,8 @@
 <xsl:template name = "put_implementation">
     int ifield;
     const mxArray* ptime=NULL;
-    al_status_t status;
-    al_status_t status_end;
+    al_status_t status = {0,""};
+    al_status_t status_end = {0,""};
     int putOpCtx = -1;
     int homogeneousTime = IDS_TIME_MODE_UNKNOWN;
     /* Validation check for input schema */
@@ -191,6 +191,8 @@
 	status_val = ids_validate_<xsl:value-of select="@name"/>(idsFullName,(mxArray *) ids);
     }
     status.code = status_val.code;
+    strncpy(status.message, status_val.message, MAX_ERR_MSG_LEN-1);
+    status.message[MAX_ERR_MSG_LEN-1]= '\0';
     if( status.code &lt; 0 ) {
 	mexWarnMsgIdAndTxt("IMAS:ids_validate:invalid_ids", "IDS <xsl:value-of select="@name"/> is found to be invalid . PUT quits with no action.");
 	return status;
