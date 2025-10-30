@@ -11,7 +11,7 @@ add_test( NAME al-mex-test
   COMMAND
     ${Matlab_MAIN_PROGRAM}
       -nodisplay
-      -batch "addpath ${LIB_FOLDER} ${M_FOLDER}; res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
+      -batch "res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
