@@ -32,7 +32,6 @@ MODULES=(
     UDA/2.7.5-GCC-10.2.0  # backend
     MATLAB/2020b-GCCcore-10.2.0-Java-11
     MATLAB-Engine/2020b-GCCcore-10.2.0-Java-11
-    IMAS-AL-Matlab
 )
   ;;&
   *foss-2020b)
@@ -67,7 +66,7 @@ MODULES=(
     MDSplus/7.132.0-GCCcore-13.2.0  # backend
     UDA/2.8.1-GCC-13.2.0  # backend
     Python/3.11.5-GCCcore-13.2.0  # documentation
-    IMAS-AL-Matlab
+    MATLAB/2023b-r5-GCCcore-13.2.0
 )
   ;;&
   *foss-2023b)
