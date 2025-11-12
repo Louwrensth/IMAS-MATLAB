@@ -11,11 +11,11 @@ add_test( NAME al-mex-test
   COMMAND
     ${Matlab_MAIN_PROGRAM}
       -nodisplay
-      -batch "res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
+      -batch "addpath ${LIB_FOLDER} ${M_FOLDER}; res = runtests('imas_unit_tests');exit(~all([res.Passed]))"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-set( MATLAB_ENV "IMAS_AL_DISABLE_OBSOLESCENT_WARNING=1;ids_path=${MDSPLUS_MODEL_DIR}" )
+set( MATLAB_ENV "IMAS_AL_DISABLE_VALIDATE=1;IMAS_AL_DISABLE_OBSOLESCENT_WARNING=1;ids_path=${MDSPLUS_MODEL_DIR}" )
 if( AL_BACKEND_HDF5 )
   # The HDF5 library built-in with matlab may conflict with the one that the AL
   # was built against. Preload the AL-linked library:
