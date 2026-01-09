@@ -1,10 +1,14 @@
 # CMake build configuration for the Access Layer C++ HLI
 cmake_minimum_required( VERSION 3.16 )
+if(WIN32)
+ set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+ set(CMAKE_FIND_PACKAGE_PREFER_CMAKE_PATH ON)
+endif()
 
 # Configuration options for common assets
 ################################################################################
 option( AL_DOWNLOAD_DEPENDENCIES "Automatically download assets from the AL git repository" ON )
-set( AL_CORE_GIT_REPOSITORY "ssh://git@git.iter.org/imas/al-core.git" CACHE STRING "Git repository of AL-core" )
+set( AL_CORE_GIT_REPOSITORY "https://github.com/iterorganization/IMAS-Core.git" CACHE STRING "Git repository of AL-core" )
 set( AL_CORE_VERSION "main" CACHE STRING "Git commit/tag/branch of AL-core" )
 
 include(FetchContent)
@@ -67,10 +71,15 @@ endif()
 
 # Dependencies
 ################################################################################
-
-find_package(Java REQUIRED)
-find_package( Matlab REQUIRED )
-find_package( SaxonHE )
+if(WIN32)
+ find_package(Java REQUIRED)
+ find_package(Matlab REQUIRED MODULE)
+ find_package(SaxonHE REQUIRED)
+else()
+ find_package(Java REQUIRED)
+ find_package( Matlab REQUIRED )
+ find_package( SaxonHE )
+endif()
 
 
 # Utility sources and target
