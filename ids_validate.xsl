@@ -135,8 +135,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     // a hardcoded strok_r. same function but by moving the save pointer
     char *my_strtok_r (char *srcString, char delim, char **save_ptr)
     {
-      uint openpar  = 0;
-      uint closepar = 0;
+      unsigned int openpar  = 0;
+      unsigned int closepar = 0;
       if(!srcString)
       {
           srcString = *save_ptr;

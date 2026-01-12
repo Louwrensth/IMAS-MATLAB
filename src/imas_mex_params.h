@@ -28,7 +28,7 @@ struct imas_mex_params {
 };
 
 /** \cond */
-extern struct imas_mex_params params;
+AL_MEX_EXPORT extern struct imas_mex_params params;
 
 int setDefaultParams(void);
 /** \endcond */

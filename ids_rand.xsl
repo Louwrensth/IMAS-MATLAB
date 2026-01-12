@@ -149,7 +149,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
      int i<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;
      int n<xsl:value-of select="concat(@name,'_',generate-id(.))"/>;</xsl:for-each>
      mxArray* data; 
-     srandom(0);
+     srand(0);
      status = init_dataTree_read();
      <xsl:apply-templates select="field" mode="RAND"/>
      if (status.code >= 0) status = get_data_from_dataTree(NULL, ids);

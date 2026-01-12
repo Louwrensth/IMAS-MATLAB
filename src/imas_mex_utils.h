@@ -13,18 +13,44 @@
 
 #define IMAS_MEX_UTILS_H
 
-/** \cond */
-
-extern const int EMPTY_INT;
-extern const double EMPTY_DOUBLE;
-extern const double EMPTY_COMPLEX[2];
-
-extern const int IDS_TIME_MODE_UNKNOWN;
-extern const int IDS_TIME_MODE_HETEROGENEOUS;
-extern const int IDS_TIME_MODE_HOMOGENEOUS;
-extern const int IDS_TIME_MODE_INDEPENDENT;
+// MUST be defined BEFORE including mex.h to use separate complex API
+// This forces MATLAB to use the old separate real/imaginary pointer API
+// instead of the new interleaved complex API (R2018a+)
+#define MX_HAS_INTERLEAVED_COMPLEX 0
 
 #include "mex.h"
+
+// Undef the deprecation macros to use the actual function names
+// In R2018a+ these are #defined to "IsDeprecated" versions that don't link
+#ifdef mxGetImagData
+#undef mxGetImagData
+#endif
+#ifdef mxSetImagData
+#undef mxSetImagData
+#endif
+
+// DLL export/import macro for Windows
+#ifdef _WIN32
+  #ifdef AL_MEX_BUILDING_DLL
+    #define AL_MEX_EXPORT __declspec(dllexport)
+  #else
+    #define AL_MEX_EXPORT __declspec(dllimport)
+  #endif
+#else
+  #define AL_MEX_EXPORT
+#endif
+
+/** \cond */
+
+AL_MEX_EXPORT extern const int EMPTY_INT;
+AL_MEX_EXPORT extern const double EMPTY_DOUBLE;
+AL_MEX_EXPORT extern const double EMPTY_COMPLEX[2];
+
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_UNKNOWN;
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_HETEROGENEOUS;
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_HOMOGENEOUS;
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_INDEPENDENT;
+
 #include "al_lowlevel.h"
 #include "imas_mex_params.h"
 #include "imas_mex_casts.h"
@@ -34,8 +60,17 @@ extern const int IDS_TIME_MODE_INDEPENDENT;
 #include <stdio.h>
 #include <ctype.h>
 #include <time.h>
-#include <sys/time.h>
-#include <unistd.h>
+
+#ifdef _WIN32
+  #include <windows.h>
+  #include <io.h>
+  // Windows doesn't have sys/time.h or unistd.h
+  // gettimeofday() is implemented in imas_mex_utils.c
+#else
+  #include <sys/time.h>
+  #include <unistd.h>
+#endif
+
 #include <errno.h>
 #ifdef NO_MXISSCALAR
 #define mxIsScalar(a) (mxGetNumberOfElements(a)==1)
@@ -97,9 +132,7 @@ extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
 extern int msglen;
 extern int msg_haspathinfo;
 
-char * itoa(int );
-
-int atoi(const char *);
+/* itoa and atoi are provided by Windows stdlib.h - no need to declare them */
 
 char* concat(const char *, const char *);
 

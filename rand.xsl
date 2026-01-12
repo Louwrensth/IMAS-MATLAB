@@ -32,10 +32,10 @@
 	  n<xsl:value-of select="$unique_name"/> = ntime;
 	</xsl:when>
 	<xsl:when test="@maxoccur='unbounded'">
-	  n<xsl:value-of select="$unique_name"/> = 1+random()%4;
+	  n<xsl:value-of select="$unique_name"/> = 1+rand()%4;
 	</xsl:when>
 	<xsl:otherwise>
-	  n<xsl:value-of select="$unique_name"/> = 1+random()%4;
+	  n<xsl:value-of select="$unique_name"/> = 1+rand()%4;
 	  n<xsl:value-of select="$unique_name"/> = n<xsl:value-of select="$unique_name"/> &lt; <xsl:value-of select="@maxoccur"/> ? n<xsl:value-of select="$unique_name"/> : <xsl:value-of select="@maxoccur"/>;
 	</xsl:otherwise>
       </xsl:choose>
