@@ -194,7 +194,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
       const mxArray* pfield; 
       char *relative_path;
       char *pathcopy = strdup(path);
-      mwIndex index;
+      mwIndex index = 0;
     
       if (!data) {
         free(pathcopy);
@@ -657,7 +657,7 @@ end_repl_str:
 
     al_validation_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, bool is_time_coordinate, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
       const mxArray *root = data;
-      int *indices_values;
+      int *indices_values = NULL;
       char *indices_names[] = {};
       const char *initialpath = path;
 

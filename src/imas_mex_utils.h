@@ -13,10 +13,6 @@
 
 #define IMAS_MEX_UTILS_H
 
-// MUST be defined BEFORE including mex.h to use separate complex API
-// This forces MATLAB to use the old separate real/imaginary pointer API
-// instead of the new interleaved complex API (R2018a+)
-#define MX_HAS_INTERLEAVED_COMPLEX 0
 
 #include "mex.h"
 
@@ -127,10 +123,10 @@ struct imas_mex_fieldInfo {
 };
 
 /** \cond */
-extern const char * mex_errmsgid;
-extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
-extern int msglen;
-extern int msg_haspathinfo;
+AL_MEX_EXPORT extern const char * mex_errmsgid;
+AL_MEX_EXPORT extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
+AL_MEX_EXPORT extern int msglen;
+AL_MEX_EXPORT extern int msg_haspathinfo;
 
 /* itoa and atoi are provided by Windows stdlib.h - no need to declare them */
 

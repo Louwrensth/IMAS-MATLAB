@@ -391,18 +391,20 @@ al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArr
 				/* integer and double data map directly to MATLAB types */
 				memcpy(mxGetData(*data), array, numel * dsize);
 			else {
-// #if MX_HAS_INTERLEAVED_COMPLEX
-// #error IMAS_MEX builds with interleaved complex API is not supported yet
-// 				memcpy(mxGetData(*data), array, numel * dsize * 2);
-// #else
+#if MX_HAS_INTERLEAVED_COMPLEX
+				memcpy(mxGetData(*data), array, numel * dsize * 2);
+#else
 				/* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
 				pr = mxGetData(*data);
-				pi = mxGetImagData(*data);
-				for (i = 0; i < numel; i++) {
+				pi = mxGetImagData(*data);			
+				if (!pr || !pi) {
+				mexErrMsgIdAndTxt("imas:mex", "Failed to allocate complex array data (pr=%p, pi=%p)", pr, pi);
+				return;
+			}				for (i = 0; i < numel; i++) {
 					pr[i] = ((double *) array)[2*i];
 					pi[i] = ((double *) array)[2*i+1];
 				}
-// #endif
+#endif
 			}
 		} else {
 			/*           **** CHAR DATA **** */
@@ -473,19 +475,24 @@ al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void 
 			/* integer and double data map directly to MATLAB types */
 			*array = mxGetData(data);
 		else {
-// #if MX_HAS_INTERLEAVED_COMPLEX
-// #error IMAS_MEX builds with interleaved complex API is not supported yet
-// 			*array = mxGetData(data);
-// #else
+#if MX_HAS_INTERLEAVED_COMPLEX
+			*array = mxGetData(data);
+#else
 			/* MATLAB complex data has two separate pointers for real and imaginary data (separate API) */
 			*array = malloc(numel*2*sizeof(double));
 			pr = mxGetData(data);
 			pi = mxGetImagData(data);
+			if (!pr || !pi) {
+				free(*array);
+				*array = NULL;
+				mexErrMsgIdAndTxt("imas:mex", "Input array is not properly complex (pr=%p, pi=%p)", pr, pi);
+				return;
+			}
 			for (i = 0; i < numel; i++) {
 				((double *) *array)[2*i] = pr[i];
 				((double *) *array)[2*i+1] = pi[i];
 			}
-// #endif
+#endif
 		}
 	} else {
 		/*           **** CHAR DATA **** */
