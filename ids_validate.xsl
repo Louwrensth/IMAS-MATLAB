@@ -135,8 +135,13 @@ void mexFunction(int nlhs, mxArray *plhs[],
     // a hardcoded strok_r. same function but by moving the save pointer
     char *my_strtok_r (char *srcString, char delim, char **save_ptr)
     {
-      unsigned int openpar  = 0;
-      unsigned int closepar = 0;
+      #ifdef _WIN32
+        unsigned int openpar  = 0;
+        unsigned int closepar = 0;
+      #else
+        uint openpar  = 0;
+        uint closepar = 0;
+      #endif
       if(!srcString)
       {
           srcString = *save_ptr;
@@ -194,7 +199,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
       const mxArray* pfield; 
       char *relative_path;
       char *pathcopy = strdup(path);
-      mwIndex index = 0;
+      #ifdef _WIN32
+        mwIndex index = 0;
+      #else
+        mwIndex index;
+      #endif
     
       if (!data) {
         free(pathcopy);
@@ -657,7 +666,11 @@ end_repl_str:
 
     al_validation_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, bool is_time_coordinate, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
       const mxArray *root = data;
-      int *indices_values = NULL;
+      #ifdef _WIN32
+        int *indices_values = NULL;
+      #else
+        int *indices_values;
+      #endif
       char *indices_names[] = {};
       const char *initialpath = path;
 

@@ -12,38 +12,6 @@
 
 #include "imas_mex_utils.h"
 
-#ifdef _WIN32
-#include <process.h>  // For _getpid()
-
-// Windows implementation of gettimeofday
-int gettimeofday(struct timeval *tv, void *tz) {
-    FILETIME ft;
-    unsigned __int64 tmpres = 0;
-    
-    GetSystemTimeAsFileTime(&ft);
-    
-    tmpres |= ft.dwHighDateTime;
-    tmpres <<= 32;
-    tmpres |= ft.dwLowDateTime;
-    
-    // Convert file time to unix epoch
-    tmpres /= 10;  // convert to microseconds
-    tmpres -= 11644473600000000ULL;  // Windows to UNIX epoch offset
-    
-    tv->tv_sec = (long)(tmpres / 1000000UL);
-    tv->tv_usec = (long)(tmpres % 1000000UL);
-    
-    return 0;
-}
-
-// Windows implementation of getpid
-#define getpid _getpid
-
-// Windows implementation of access
-#define access _access
-#define F_OK 0
-#endif
-
 const int EMPTY_INT = -999999999;                   /*!< default value for integer scalars */
 const double EMPTY_DOUBLE = -9.0E40;                /*!< default value for double scalars */
 const double EMPTY_COMPLEX[2] = {-9.0E40, -9.0E40}; /*!< default value for complex scalars */
@@ -58,7 +26,86 @@ char mex_errmsgtxt[MAXERRMSGTXTSIZE];               /*!< Error message */
 int msglen = 0;                                     /*!< Length of the mex_errmsgtxt string */
 int msg_haspathinfo = 0;
 
-/* Note: itoa() and atoi() are provided by Windows stdlib.h, no need to redefine them */
+
+#ifdef _WIN32
+	#include <process.h>  // For _getpid()
+
+	// Windows implementation of gettimeofday
+	int gettimeofday(struct timeval *tv, void *tz) {
+		FILETIME ft;
+		unsigned __int64 tmpres = 0;
+		
+		GetSystemTimeAsFileTime(&ft);
+		
+		tmpres |= ft.dwHighDateTime;
+		tmpres <<= 32;
+		tmpres |= ft.dwLowDateTime;
+		
+		// Convert file time to unix epoch
+		tmpres /= 10;  // convert to microseconds
+		tmpres -= 11644473600000000ULL;  // Windows to UNIX epoch offset
+		
+		tv->tv_sec = (long)(tmpres / 1000000UL);
+		tv->tv_usec = (long)(tmpres % 1000000UL);
+		
+		return 0;
+	}
+
+	// Windows implementation of getpid
+	#define getpid _getpid
+
+	// Windows implementation of access
+	#define access _access
+	#define F_OK 0
+#else
+	/**
+	Convert integer to string
+	*/
+	char * itoa(int num)
+	{
+		int i, rem, len = 0, n;
+		
+		n = num;
+		while (n != 0)
+		{
+			len++;
+			n /= 10;
+		}
+		char * str = (char*)malloc(len);
+		for (i = 0; i < len; i++)
+		{
+			rem = num % 10;
+			num = num / 10;
+			str[len - (i + 1)] = rem + '0';
+		}
+		str[len] = '\0';
+		return str;
+	}
+
+	/**
+	Convert integer to string
+	*/
+	int atoi(const char *s1)
+	{
+		int sign = 1, number = 0, index = 0;
+		if(*s1 == '-'){
+			sign = -1;
+			index = 1;
+		}
+		
+		while(*s1 != '\0'){
+			if(*s1 >= '0' &&  *s1 <= '9'){
+				number = number*10 + *s1 - '0';
+			} else {
+				break;
+			}
+			*s1++;
+		}
+	
+		number = number * sign;
+		return number;
+	}
+#endif
 
 /**
    Concatenate two strings
@@ -295,8 +342,7 @@ int get_fallback_backend()
  */
 int is_field_valid(int datatype, int dim, const mxArray * data)
 {
-
-	int result = (data != NULL && !mxIsEmpty(data) &&
+	return (data != NULL && !mxIsEmpty(data) &&
 			(dim != 0 ||
 					(mxIsScalar(data) &&
 							(
@@ -307,7 +353,6 @@ int is_field_valid(int datatype, int dim, const mxArray * data)
 					)
 			)
 	);
-	return result;
 }
 
 /**
@@ -398,9 +443,10 @@ al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArr
 				pr = mxGetData(*data);
 				pi = mxGetImagData(*data);			
 				if (!pr || !pi) {
-				mexErrMsgIdAndTxt("imas:mex", "Failed to allocate complex array data (pr=%p, pi=%p)", pr, pi);
-				return;
-			}				for (i = 0; i < numel; i++) {
+					mexErrMsgIdAndTxt("imas:mex", "Failed to allocate complex array data (pr=%p, pi=%p)", pr, pi);
+					return;
+				}				
+			    for (i = 0; i < numel; i++) {
 					pr[i] = ((double *) array)[2*i];
 					pi[i] = ((double *) array)[2*i+1];
 				}
@@ -620,8 +666,12 @@ void getNodePath(char* path,
 		char* dataDictionaryVersion,
 		int k) {
 
+#ifdef _WIN32
 	/* Allocate pathTokens dynamically - MSVC doesn't support VLAs */
 	char** pathTokens = (char**)malloc(ancestors_count * sizeof(char*));
+#else
+	char* pathTokens[ancestors_count];
+#endif
 	char* nbc_versions[NBC_VERSIONS_MAX_COUNT];
 	char* nbc_previous_names[NBC_VERSIONS_MAX_COUNT];
 	char* pathToken =  malloc(ANCESTOR_NAME_MAX_LENGTH);
@@ -677,7 +727,7 @@ void getNodePath(char* path,
 		}
 		free(pathTokens[i]);
 	}
-	free(pathTokens); /* Free the dynamically allocated array */
+	free(pathTokens);
 }
 
 /**
@@ -811,8 +861,12 @@ al_status_t my_al_read_data(struct imas_mex_actionInfo * action, struct imas_mex
 		else if (field->datatype == DOUBLE_DATA)
 			array = malloc(sizeof(double));
 		else if (field->datatype == COMPLEX_DATA)
+#ifdef _WIN32
 			/* Complex = real + imaginary parts, MSVC doesn't support _Complex keyword */
 			array = malloc(2 * sizeof(double));
+#else
+			array = malloc(sizeof(double _Complex));
+#endif
 	}
 
 	status = al_read_data(action->context, field->fieldPath, field->timebasePath, &array, field->datatype, field->dim, &dims[0]);

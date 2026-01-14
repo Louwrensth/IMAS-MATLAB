@@ -1,12 +1,20 @@
 # CMake build configuration for the Access Layer C++ HLI
 cmake_minimum_required( VERSION 3.16 )
 if(WIN32)
- set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
- set(CMAKE_FIND_PACKAGE_PREFER_CMAKE_PATH ON)
- # Ensure CMAKE_PREFIX_PATH includes vcpkg for subdirectories
- if(DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
-   list(APPEND CMAKE_PREFIX_PATH "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
- endif()
+ if(DEFINED CMAKE_TOOLCHAIN_FILE AND
+     CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+    message(STATUS "vcpkg in use")
+    set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+    set(CMAKE_FIND_PACKAGE_PREFER_CMAKE_PATH ON)
+
+    if(DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
+      list(APPEND CMAKE_PREFIX_PATH
+        "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
+    endif()
+
+  else()
+    message(STATUS "vcpkg not in use")
+  endif()
 endif()
 
 # Configuration options for common assets
@@ -22,38 +30,54 @@ if( DEFINED ENV{AL_COMMON_PATH} )
   set( AL_COMMON_PATH $ENV{AL_COMMON_PATH} )
 else()
   if( ${AL_DOWNLOAD_DEPENDENCIES} )
-    # Download common assets from the ITER git using direct git commands:
-    set( al-core_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/al-core-src" )
-    if( NOT EXISTS "${al-core_SOURCE_DIR}/.git" )
-      message( STATUS "Cloning al-core from ${AL_CORE_GIT_REPOSITORY}" )
-      execute_process(
-        COMMAND git clone "${AL_CORE_GIT_REPOSITORY}" "${al-core_SOURCE_DIR}"
-        RESULT_VARIABLE _GIT_CLONE_RESULT
-        ERROR_VARIABLE _GIT_CLONE_ERROR
-      )
-      if( _GIT_CLONE_RESULT )
-        message( FATAL_ERROR "Failed to clone al-core: ${_GIT_CLONE_ERROR}" )
+    if(WIN32)
+      # FetchContent_Declare causing reursive call wrapped by vcpkg to _find_package
+      # So manually clone al-core here. Need fix in later release
+      set( al-core_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/al-core-src" )
+      if( NOT EXISTS "${al-core_SOURCE_DIR}/.git" )
+        message( STATUS "Cloning al-core from ${AL_CORE_GIT_REPOSITORY}" )
+        execute_process(
+          COMMAND git clone "${AL_CORE_GIT_REPOSITORY}" "${al-core_SOURCE_DIR}"
+          RESULT_VARIABLE _GIT_CLONE_RESULT
+          ERROR_VARIABLE _GIT_CLONE_ERROR
+        )
+        if( _GIT_CLONE_RESULT )
+          message( FATAL_ERROR "Failed to clone al-core: ${_GIT_CLONE_ERROR}" )
+        endif()
       endif()
-    endif()
-    # Checkout the specified version
-    execute_process(
-      COMMAND git fetch origin
-      WORKING_DIRECTORY "${al-core_SOURCE_DIR}"
-      RESULT_VARIABLE _GIT_FETCH_RESULT
-    )
-    execute_process(
-      COMMAND git checkout "${AL_CORE_VERSION}"
-      WORKING_DIRECTORY "${al-core_SOURCE_DIR}"
-      RESULT_VARIABLE _GIT_CHECKOUT_RESULT
-      ERROR_VARIABLE _GIT_CHECKOUT_ERROR
-    )
-    if( _GIT_CHECKOUT_RESULT )
-      message( FATAL_ERROR "Failed to checkout ${AL_CORE_VERSION}: ${_GIT_CHECKOUT_ERROR}" )
-    endif()
+      # Checkout the specified version
+      execute_process(
+        COMMAND git fetch origin
+        WORKING_DIRECTORY "${al-core_SOURCE_DIR}"
+        RESULT_VARIABLE _GIT_FETCH_RESULT
+      )
+      execute_process(
+        COMMAND git checkout "${AL_CORE_VERSION}"
+        WORKING_DIRECTORY "${al-core_SOURCE_DIR}"
+        RESULT_VARIABLE _GIT_CHECKOUT_RESULT
+        ERROR_VARIABLE _GIT_CHECKOUT_ERROR
+      )
+      if( _GIT_CHECKOUT_RESULT )
+        message( FATAL_ERROR "Failed to checkout ${AL_CORE_VERSION}: ${_GIT_CHECKOUT_ERROR}" )
+      endif()
+    else()
+      # Download common assets from the ITER git:
+      FetchContent_Declare(
+        al-core
+        GIT_REPOSITORY "${AL_CORE_GIT_REPOSITORY}"
+        GIT_TAG "${AL_CORE_VERSION}"
+      endif()
   else()
-    set( al-core_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../al-core" )
-    if( NOT IS_DIRECTORY "${al-core_SOURCE_DIR}" )
-      message( FATAL_ERROR "${al-core_SOURCE_DIR} does not exist. Set AL_DOWNLOAD_DEPENDENCIES=ON to download." )
+    if(WIN32)
+      set( al-core_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../al-core" )
+      if( NOT IS_DIRECTORY "${al-core_SOURCE_DIR}" )
+        message( FATAL_ERROR "${al-core_SOURCE_DIR} does not exist. Set AL_DOWNLOAD_DEPENDENCIES=ON to download." )
+      endif()
+    else()
+        FetchContent_Declare(
+        al-core
+        SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/../al-core"
+      )
     endif()
   endif()
   set( AL_COMMON_PATH "${al-core_SOURCE_DIR}/common" )
@@ -115,29 +139,30 @@ set( MEX_UTIL_SOURCES
   src/imas_mex_structs.c
   src/imas_mex_utils.c
 )
-
-# This should be built as a shared library (not a MEX file) with name libal-mex.so/.dll
-# It's a utility library that MEX files link to, so use add_library instead of matlab_add_mex
-add_library( al-mex SHARED ${MEX_UTIL_SOURCES} )
-target_link_libraries( al-mex PUBLIC al Matlab::mex Matlab::mx )
-target_include_directories( al-mex PRIVATE src )
-target_include_directories( al-mex PUBLIC ${Matlab_INCLUDE_DIRS} )
-
-# Use separate (non-interleaved) complex API for compatibility
-target_compile_definitions( al-mex PUBLIC)
-
-# Define AL_MEX_BUILDING_DLL when building the al-mex library
-target_compile_definitions( al-mex PRIVATE AL_MEX_BUILDING_DLL )
-
-# Compile as C (al-core exports C symbols via extern "C")
-set_source_files_properties(${MEX_UTIL_SOURCES} PROPERTIES LANGUAGE C)
 if(WIN32)
+  # This should be built as a shared library (not a MEX file) with name libal-mex.so/.dll
+  # It's a utility library that MEX files link to, so use add_library instead of matlab_add_mex
+  add_library( al-mex SHARED ${MEX_UTIL_SOURCES} )
+  target_link_libraries( al-mex PUBLIC al Matlab::mex Matlab::mx )
+  target_include_directories( al-mex PRIVATE src )
+  target_include_directories( al-mex PUBLIC ${Matlab_INCLUDE_DIRS} )
+
+  # Use separate (non-interleaved) complex API for compatibility
+  target_compile_definitions( al-mex PUBLIC)
+
+  # Define AL_MEX_BUILDING_DLL when building the al-mex library
+  target_compile_definitions( al-mex PRIVATE AL_MEX_BUILDING_DLL )
+
+  # Compile as C (al-core exports C symbols via extern "C")
+  set_source_files_properties(${MEX_UTIL_SOURCES} PROPERTIES LANGUAGE C)
   # Force C compilation on Windows
   target_compile_options(al-mex PRIVATE /TC)
   # Link as C library (al exports C symbols)
   set_target_properties(al-mex PROPERTIES LINKER_LANGUAGE C)
 else()
-  set_target_properties(al-mex PROPERTIES LINKER_LANGUAGE C)
+  # This should be built as a shared library with name libal-mex.so
+  matlab_add_mex( NAME al-mex SRC ${MEX_UTIL_SOURCES} SHARED LINK_TO al )
+  set_target_properties(al-mex PRIVATE src )
 endif()
 
 set_target_properties( al-mex PROPERTIES
@@ -199,23 +224,27 @@ macro( FILES_FROM_METHOD_NAME FILES METHOD_NAME )
 endmacro()
 
 # Macro to add a mex target
-
+if(WIN32)
   macro( ADD_IMAS_MEX NAME SOURCES )
-  if(WIN32)
     # Let matlab_add_mex handle the suffix automatically
     # Or explicitly set .mexw64 if needed:
     matlab_add_mex( NAME "mex-${NAME}" SRC ${SOURCES} LINK_TO al al-mex OUTPUT_NAME "${NAME}" )
     if(MATLAB_VERSION VERSION_GREATER_EQUAL "9.4")  # R2018a+
       set_target_properties("mex-${NAME}" PROPERTIES SUFFIX ".mexw64")
     endif()
-  else()
-    matlab_add_mex( NAME "mex-${NAME}" SRC ${SOURCES} LINK_TO al al-mex OUTPUT_NAME "${NAME}" )
-  endif()
     target_include_directories( "mex-${NAME}" PRIVATE src )
     # Use separate (non-interleaved) complex API for compatibility
     target_compile_definitions( "mex-${NAME}" PUBLIC)
     list( APPEND MEX_TARGETS "mex-${NAME}" )
   endmacro()
+else()
+  # Macro to add a mex target
+  macro( ADD_IMAS_MEX NAME SOURCES )
+    matlab_add_mex( NAME "mex-${NAME}" SRC ${SOURCES} LINK_TO al al-mex OUTPUT_NAME "${NAME}" )
+    target_include_directories( "mex-${NAME}" PRIVATE src )
+    list( APPEND MEX_TARGETS "mex-${NAME}" )
+  endmacro()
+endif()
 
 
 # These XSLs generate files in triplets, which are then compiled into one mex target

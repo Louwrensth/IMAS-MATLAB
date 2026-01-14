@@ -16,15 +16,6 @@
 
 #include "mex.h"
 
-// Undef the deprecation macros to use the actual function names
-// In R2018a+ these are #defined to "IsDeprecated" versions that don't link
-#ifdef mxGetImagData
-#undef mxGetImagData
-#endif
-#ifdef mxSetImagData
-#undef mxSetImagData
-#endif
-
 // DLL export/import macro for Windows
 #ifdef _WIN32
   #ifdef AL_MEX_BUILDING_DLL
@@ -36,16 +27,28 @@
   #define AL_MEX_EXPORT
 #endif
 
-/** \cond */
+#ifdef _WIN32
+  // Undef the deprecation macros to use the actual function names
+  // In R2018a+ these are #defined to "IsDeprecated" versions that don't link
+  #ifdef mxGetImagData
+    #undef mxGetImagData
+  #endif
+  #ifdef mxSetImagData
+    #undef mxSetImagData
+  #endif
 
-AL_MEX_EXPORT extern const int EMPTY_INT;
-AL_MEX_EXPORT extern const double EMPTY_DOUBLE;
-AL_MEX_EXPORT extern const double EMPTY_COMPLEX[2];
+  /** \cond */
 
-AL_MEX_EXPORT extern const int IDS_TIME_MODE_UNKNOWN;
-AL_MEX_EXPORT extern const int IDS_TIME_MODE_HETEROGENEOUS;
-AL_MEX_EXPORT extern const int IDS_TIME_MODE_HOMOGENEOUS;
-AL_MEX_EXPORT extern const int IDS_TIME_MODE_INDEPENDENT;
+  AL_MEX_EXPORT extern const int EMPTY_INT;
+  AL_MEX_EXPORT extern const double EMPTY_DOUBLE;
+  AL_MEX_EXPORT extern const double EMPTY_COMPLEX[2];
+
+  AL_MEX_EXPORT extern const int IDS_TIME_MODE_UNKNOWN;
+  AL_MEX_EXPORT extern const int IDS_TIME_MODE_HETEROGENEOUS;
+  AL_MEX_EXPORT extern const int IDS_TIME_MODE_HOMOGENEOUS;
+  AL_MEX_EXPORT extern const int IDS_TIME_MODE_INDEPENDENT;
+
+#endif
 
 #include "al_lowlevel.h"
 #include "imas_mex_params.h"
@@ -122,13 +125,25 @@ struct imas_mex_fieldInfo {
   int dim;             /*!< Rank of the current field. */
 };
 
-/** \cond */
-AL_MEX_EXPORT extern const char * mex_errmsgid;
-AL_MEX_EXPORT extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
-AL_MEX_EXPORT extern int msglen;
-AL_MEX_EXPORT extern int msg_haspathinfo;
+#ifdef _WIN32
+  /** \cond */
+  AL_MEX_EXPORT extern const char * mex_errmsgid;
+  AL_MEX_EXPORT extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
+  AL_MEX_EXPORT extern int msglen;
+  AL_MEX_EXPORT extern int msg_haspathinfo;
+#else
+  /** \cond */
+  extern const char * mex_errmsgid;
+  extern char mex_errmsgtxt[MAXERRMSGTXTSIZE];
+  extern int msglen;
+  extern int msg_haspathinfo;
+#endif
 
-/* itoa and atoi are provided by Windows stdlib.h - no need to declare them */
+#ifndef _WIN32
+  char * itoa(int );
+
+  int atoi(const char *);
+#endif
 
 char* concat(const char *, const char *);
 
