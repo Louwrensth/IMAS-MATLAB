@@ -297,14 +297,6 @@ add_dependencies( al-matlab al-mex-sources al-mex ${MEX_TARGETS} )
 # Install libal-mex to lib folder
 if(WIN32)
   install( TARGETS al-mex DESTINATION bin RUNTIME DESTINATION bin LIBRARY DESTINATION lib )
-  # On Windows, also copy DLL to mex folder so MEX files can find it at runtime
-  install( TARGETS al-mex DESTINATION mex RUNTIME DESTINATION mex )
-  # Install vcpkg HDF5 and other runtime DLLs to mex folder to override MATLAB's versions
-  if(EXISTS "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/bin")
-    install(DIRECTORY "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/bin/" 
-            DESTINATION mex
-            FILES_MATCHING PATTERN "*.dll")
-  endif()
 else()
   install( TARGETS al-mex DESTINATION lib )
 endif()
