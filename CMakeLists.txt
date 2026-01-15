@@ -66,6 +66,7 @@ else()
         al-core
         GIT_REPOSITORY "${AL_CORE_GIT_REPOSITORY}"
         GIT_TAG "${AL_CORE_VERSION}"
+      )
       endif()
   else()
     if(WIN32)
