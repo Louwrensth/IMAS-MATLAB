@@ -36,19 +36,20 @@
   #ifdef mxSetImagData
     #undef mxSetImagData
   #endif
-
-  /** \cond */
-
-  AL_MEX_EXPORT extern const int EMPTY_INT;
-  AL_MEX_EXPORT extern const double EMPTY_DOUBLE;
-  AL_MEX_EXPORT extern const double EMPTY_COMPLEX[2];
-
-  AL_MEX_EXPORT extern const int IDS_TIME_MODE_UNKNOWN;
-  AL_MEX_EXPORT extern const int IDS_TIME_MODE_HETEROGENEOUS;
-  AL_MEX_EXPORT extern const int IDS_TIME_MODE_HOMOGENEOUS;
-  AL_MEX_EXPORT extern const int IDS_TIME_MODE_INDEPENDENT;
-
 #endif
+
+/** \cond */
+
+AL_MEX_EXPORT extern const int EMPTY_INT;
+AL_MEX_EXPORT extern const double EMPTY_DOUBLE;
+AL_MEX_EXPORT extern const double EMPTY_COMPLEX[2];
+
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_UNKNOWN;
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_HETEROGENEOUS;
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_HOMOGENEOUS;
+AL_MEX_EXPORT extern const int IDS_TIME_MODE_INDEPENDENT;
+
+/** \endcond */
 
 #include "al_lowlevel.h"
 #include "imas_mex_params.h"

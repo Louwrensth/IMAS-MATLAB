@@ -1,5 +1,8 @@
 # CMake build configuration for the Access Layer C++ HLI
 cmake_minimum_required( VERSION 3.16 )
+if(POLICY CMP0144)
+  cmake_policy(SET CMP0144 NEW)
+endif()
 if(WIN32)
  if(DEFINED CMAKE_TOOLCHAIN_FILE AND
      CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
@@ -22,15 +25,15 @@ endif()
 option( AL_DOWNLOAD_DEPENDENCIES "Automatically download assets from the AL git repository" ON )
 set( AL_CORE_GIT_REPOSITORY "https://github.com/iterorganization/IMAS-Core.git" CACHE STRING "Git repository of AL-core" )
 set( AL_CORE_VERSION "main" CACHE STRING "Git commit/tag/branch of AL-core" )
-
+include(FetchContent)
 # Load common assets
 ################################################################################
 if( DEFINED ENV{AL_COMMON_PATH} )
   # Take common assets from the path in this environment variable instead of al-core
   set( AL_COMMON_PATH $ENV{AL_COMMON_PATH} )
 else()
-  if( ${AL_DOWNLOAD_DEPENDENCIES} )
-    if(WIN32)
+  if(WIN32)
+    if( ${AL_DOWNLOAD_DEPENDENCIES} )
       # FetchContent_Declare causing reursive call wrapped by vcpkg to _find_package
       # So manually clone al-core here. Need fix in later release
       set( al-core_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/al-core-src" )
@@ -61,26 +64,29 @@ else()
         message( FATAL_ERROR "Failed to checkout ${AL_CORE_VERSION}: ${_GIT_CHECKOUT_ERROR}" )
       endif()
     else()
+      set( al-core_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../al-core" )
+      if( NOT IS_DIRECTORY "${al-core_SOURCE_DIR}" )
+        message( FATAL_ERROR "${al-core_SOURCE_DIR} does not exist. Set AL_DOWNLOAD_DEPENDENCIES=ON to download." )
+      endif()
+    endif()
+    set( AL_COMMON_PATH "${al-core_SOURCE_DIR}/common" )
+  else()
+    if( ${AL_DOWNLOAD_DEPENDENCIES} )
       # Download common assets from the ITER git:
       FetchContent_Declare(
         al-core
         GIT_REPOSITORY "${AL_CORE_GIT_REPOSITORY}"
         GIT_TAG "${AL_CORE_VERSION}"
-      endif()
-  else()
-    if(WIN32)
-      set( al-core_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../al-core" )
-      if( NOT IS_DIRECTORY "${al-core_SOURCE_DIR}" )
-        message( FATAL_ERROR "${al-core_SOURCE_DIR} does not exist. Set AL_DOWNLOAD_DEPENDENCIES=ON to download." )
-      endif()
+      )
     else()
-        FetchContent_Declare(
+      FetchContent_Declare(
         al-core
         SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/../al-core"
       )
     endif()
-  endif()
-  set( AL_COMMON_PATH "${al-core_SOURCE_DIR}/common" )
+    FetchContent_MakeAvailable( al-core )
+    set( AL_COMMON_PATH "${al-core_SOURCE_DIR}/common" )
+ endif()
 endif()
 add_subdirectory( ${AL_COMMON_PATH} _common )
 
@@ -162,7 +168,7 @@ if(WIN32)
 else()
   # This should be built as a shared library with name libal-mex.so
   matlab_add_mex( NAME al-mex SRC ${MEX_UTIL_SOURCES} SHARED LINK_TO al )
-  set_target_properties(al-mex PRIVATE src )
+  target_include_directories( al-mex PRIVATE src )
 endif()
 
 set_target_properties( al-mex PROPERTIES
