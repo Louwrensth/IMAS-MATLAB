@@ -159,9 +159,15 @@ char* generate_tmp_file()
 
 		unsigned long rnd = rand() ^ getpid();      // XOR random value with process id
 
-        /* Convert random number to string using sprintf instead of itoa */
-        char rndstr[32];  /* Enough for unsigned long */
-        sprintf(rndstr, "%lu", rnd);
+		#ifdef _WIN32
+			/* Convert random number to string using sprintf instead of itoa */
+			char rndstr[32];  /* Enough for unsigned long */
+			sprintf(rndstr, "%lu", rnd);
+		#else
+			char* rndstr = itoa(rnd);
+			fname=(char *)malloc( strlen(rndstr) + 1);
+		#endif
+
         fname = concat(prefix, rndstr);
 
         int file_available_status = access(fname, F_OK); // returns 0 if the file exists and accessible and returns -1 if not exist

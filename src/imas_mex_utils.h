@@ -23,11 +23,6 @@
   #else
     #define AL_MEX_EXPORT __declspec(dllimport)
   #endif
-#else
-  #define AL_MEX_EXPORT
-#endif
-
-#ifdef _WIN32
   // Undef the deprecation macros to use the actual function names
   // In R2018a+ these are #defined to "IsDeprecated" versions that don't link
   #ifdef mxGetImagData
@@ -47,7 +42,17 @@
   AL_MEX_EXPORT extern const int IDS_TIME_MODE_HETEROGENEOUS;
   AL_MEX_EXPORT extern const int IDS_TIME_MODE_HOMOGENEOUS;
   AL_MEX_EXPORT extern const int IDS_TIME_MODE_INDEPENDENT;
+#else
+  /** \cond */
 
+  extern const int EMPTY_INT;
+  extern const double EMPTY_DOUBLE;
+  extern const double EMPTY_COMPLEX[2];
+
+  extern const int IDS_TIME_MODE_UNKNOWN;
+  extern const int IDS_TIME_MODE_HETEROGENEOUS;
+  extern const int IDS_TIME_MODE_HOMOGENEOUS;
+  extern const int IDS_TIME_MODE_INDEPENDENT;
 #endif
 
 #include "al_lowlevel.h"

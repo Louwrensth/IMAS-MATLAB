@@ -662,6 +662,9 @@ end_repl_str:
       return status;
 
     }
+      // Default return if no other path was taken
+      free(pathcopy);
+      return status;
     }
 
     al_validation_status_t validateCoordinateFromPath(const mxArray *data, int idsTimeMode, int timeSize, bool is_time_coordinate, const char *crootpath, const char *path, int rank, int cfield_dim,const char *ctargetfield[], int nb_ctargets, int *target_ranks, int ctargetfielddim, int spec_dim) {
