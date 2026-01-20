@@ -124,14 +124,11 @@ endif()
 
 # Dependencies
 ################################################################################
+find_package( Python3 REQUIRED COMPONENTS Interpreter )
 if(WIN32)
- find_package(Java REQUIRED)
  find_package(Matlab REQUIRED MODULE)
- find_package(SaxonHE REQUIRED)
 else()
- find_package(Java REQUIRED)
  find_package( Matlab REQUIRED )
- find_package( SaxonHE )
 endif()
 
 
@@ -193,7 +190,41 @@ set( MEX_TARGETS )
 
 add_custom_target( al-mex-sources ALL )
 
-# Macro for source generation with Saxon
+# Setup Python venv for saxonche (used for XSLT transformations)
+if(WIN32)
+  set(_SAXONCHE_VENV_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/saxonche_env/Scripts/python.exe")
+  set(_SAXONCHE_VENV_PIP "${CMAKE_CURRENT_BINARY_DIR}/saxonche_env/Scripts/pip.exe")
+else()
+  set(_SAXONCHE_VENV_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/saxonche_env/bin/python")
+  set(_SAXONCHE_VENV_PIP "${CMAKE_CURRENT_BINARY_DIR}/saxonche_env/bin/pip")
+endif()
+
+# Create Python venv and install saxonche if not already done
+if(NOT EXISTS "${_SAXONCHE_VENV_PYTHON}")
+  message(STATUS "Creating Python virtual environment for saxonche...")
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} -m venv saxonche_env
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    RESULT_VARIABLE _VENV_EXITCODE
+  )
+  
+  if(_VENV_EXITCODE)
+    message(FATAL_ERROR "Failed to create Python venv for saxonche")
+  endif()
+  
+  message(STATUS "Installing saxonche in virtual environment...")
+  execute_process(
+    COMMAND ${_SAXONCHE_VENV_PIP} install saxonche
+    RESULT_VARIABLE _PIP_EXITCODE
+  )
+  
+  if(_PIP_EXITCODE)
+    message(FATAL_ERROR "Failed to install saxonche")
+  endif()
+  message(STATUS "saxonche installed successfully")
+endif()
+
+# Macro for source generation with saxonche (Python)
 macro( GENERATE GENERATOR IS_C_GENERATOR OUTPUT_FILES )
   if( ${IS_C_GENERATOR} )
     set( WORK_DIR "${CMAKE_CURRENT_BINARY_DIR}" )
@@ -206,10 +237,10 @@ macro( GENERATE GENERATOR IS_C_GENERATOR OUTPUT_FILES )
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${GENERATOR}_dummy.txt
     COMMAND
-      ${Java_JAVA_EXECUTABLE} -cp ${SaxonHE_CLASSPATH}
-        net.sf.saxon.Transform -t -warnings:fatal
-        "-xsl:${CMAKE_CURRENT_SOURCE_DIR}/${GENERATOR}.xsl"
-        "-s:${IDSDEF}"
+      ${_SAXONCHE_VENV_PYTHON} "${CMAKE_CURRENT_BINARY_DIR}/_deps/al-core-src/xsltproc.py"
+        -xsl ${CMAKE_CURRENT_SOURCE_DIR}/${GENERATOR}.xsl
+        -s ${IDSDEF}
+        -o ${CMAKE_CURRENT_BINARY_DIR}/${GENERATOR}_output.xml
         DD_GIT_DESCRIBE=${DD_VERSION}
         AL_GIT_DESCRIBE=${FULL_VERSION}
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/${GENERATOR}_dummy.txt

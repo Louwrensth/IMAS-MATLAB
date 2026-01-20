@@ -31,6 +31,9 @@
   #ifdef mxSetImagData
     #undef mxSetImagData
   #endif
+#else
+  // On non-Windows platforms, AL_MEX_EXPORT is empty
+  #define AL_MEX_EXPORT
 #endif
 
 /** \cond */
