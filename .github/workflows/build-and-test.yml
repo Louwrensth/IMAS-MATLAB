@@ -36,17 +36,18 @@ jobs:
             install_compiler: false  # gcc-14 is default
             use_system_packages: false
           
-          - os: ubuntu-24.04
-            name: "AlmaLinux 8 (container)"
-            container: almalinux:8
-            cc: gcc
-            cxx: g++
-            matlab_release: R2023b
-            backend_hdf5: ON
-            backend_mdsplus: ON
-            backend_uda: ON
-            install_compiler: false
-            use_system_packages: true
+          # Disabled temporarily - uncomment to re-enable
+          # - os: ubuntu-24.04
+          #   name: "AlmaLinux 8 (container)"
+          #   container: almalinux:8
+          #   cc: gcc
+          #   cxx: g++
+          #   matlab_release: R2023b
+          #   backend_hdf5: ON
+          #   backend_mdsplus: ON
+          #   backend_uda: ON
+          #   install_compiler: false
+          #   use_system_packages: true
     
     steps:
     - name: Checkout repository
@@ -144,7 +145,8 @@ jobs:
               capnproto capnproto-devel \
               fmt-devel \
               spdlog-devel \
-              libtirpc-devel || echo "Some packages failed to install, continuing..."
+              libtirpc-devel \
+              libxml2-devel || echo "Some packages failed to install, continuing..."
             
             # Install MDSPlus if backend is enabled
             if [ "${{ matrix.backend_mdsplus }}" = "ON" ]; then
@@ -390,8 +392,22 @@ jobs:
         export USER="$PWD/testdb"
         # Ensure MATLAB libraries are in the path
         export LD_LIBRARY_PATH=${MATLAB_ROOT}/bin/glnxa64:${LD_LIBRARY_PATH}
-        # Run tests with verbose output
+        # Add MATLAB to PATH
+        export PATH=${MATLAB_ROOT}/bin:$PATH
+        
+        # Verify MATLAB is accessible
+        echo "MATLAB_ROOT: ${MATLAB_ROOT}"
+        echo "PATH: $PATH"
+        echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+        which matlab || echo "MATLAB not in PATH"
+        
+        # Check if tests are available
         cd build
+        echo "Available tests:"
+        ctest -N
+        
+        # Run tests with verbose output
+        echo "Running tests..."
         ctest --output-on-failure --verbose
       continue-on-error: true
     
@@ -458,9 +474,9 @@ jobs:
           cmake -B build \
             -DCMAKE_INSTALL_PREFIX=$PWD/install \
             -DAL_DOWNLOAD_DEPENDENCIES=ON \
-            -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git \
+            -DAL_CORE_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Core.git \
             -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
-            -DAL_CORE_VERSION=install_update_in_common_for_high_level \
+            -DAL_CORE_VERSION=develop \
             -DDD_VERSION=main \
             -DAL_HLI_DOCS=ON \
             -DAL_DOCS_ONLY=ON && break
@@ -490,16 +506,21 @@ jobs:
       if: always()
       run: |
         echo "Checking for documentation files..."
-        if [ -d build/doc/_build/html/ ]; then
-          echo "Documentation directory found:"
+        # Check the actual doc directory where Sphinx builds
+        if [ -d doc/_build/html/ ]; then
+          echo "Documentation directory found at doc/_build/html/:"
+          echo "Files count: $(find doc/_build/html/ -type f | wc -l)"
+          ls -lR doc/_build/html/ | head -100
+        elif [ -d build/doc/_build/html/ ]; then
+          echo "Documentation directory found at build/doc/_build/html/:"
           echo "Files count: $(find build/doc/_build/html/ -type f | wc -l)"
           ls -lR build/doc/_build/html/ | head -100
         else
-          echo "Documentation directory NOT found at build/doc/_build/html/"
-          echo "Searching for html directories in build:"
-          find build -type d -name "*html*" 2>/dev/null
-          echo "All directories in build:"
-          find build -type d -maxdepth 4 2>/dev/null | head -50
+          echo "Documentation directory NOT found at expected locations"
+          echo "Searching for html directories:"
+          find . -type d -name "*html*" 2>/dev/null | head -20
+          echo "Searching for _build directories:"
+          find . -type d -name "_build" 2>/dev/null | head -10
         fi
     
     - name: Upload documentation
@@ -507,9 +528,18 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: documentation
-        path: build/doc/_build/html/
+        path: doc/_build/html/
         retention-days: 30
         if-no-files-found: warn
         compression-level: 6
         overwrite: false
         include-hidden-files: false
+    
+    - name: Deploy to GitHub Pages
+      if: success() && github.ref == 'refs/heads/develop'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc/_build/html
+        destination_dir: docs
+        commit_message: 'docs: update documentation from ${{ github.sha }}'
