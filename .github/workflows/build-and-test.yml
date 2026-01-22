@@ -110,6 +110,11 @@ jobs:
         elif command -v dnf &> /dev/null; then
           # AlmaLinux/RHEL 8+ with full backend support
           dnf update -y
+          
+          # Install EPEL first (needed for ninja-build and some other packages)
+          dnf install -y epel-release
+          
+          # Install base build tools
           dnf install -y \
             gcc gcc-c++ \
             cmake \
@@ -117,15 +122,17 @@ jobs:
             wget \
             make \
             openssl-devel \
-            ninja-build \
             git \
             curl \
             tar \
             gzip
           
-          # Install EPEL and MDSPlus repos if using system packages
+          # Install EPEL packages
+          dnf install -y ninja-build || echo "ninja-build not available, continuing..."
+          
+          # Install backend-specific packages if using system packages
           if [ "${{ matrix.use_system_packages }}" = "true" ]; then
-            dnf install -y epel-release
+            # Install MDSPlus repo
             dnf install -y https://www.mdsplus.org/dist/rhel8/stable/RPMS/noarch/mdsplus-repo-7.142-81.el8.noarch.rpm || true
             
             # Install system packages for backends
@@ -160,7 +167,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install sphinx sphinx-rtd-theme myst-parser sphinx-design
+        pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
     
     - name: Build and install UDA
       if: matrix.backend_uda == 'ON' && matrix.use_system_packages == true
@@ -298,15 +305,13 @@ jobs:
           -DAL_BACKEND_UDA=${{ matrix.backend_uda }} \
           -DAL_BUILD_MDSPLUS_MODELS=OFF \
           -DAL_DOWNLOAD_DEPENDENCIES=ON \
-          -DAL_CORE_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Core.git \
-          -DAL_PLUGINS_GIT_REPOSITORY=https://github.com/iterorganization/al-plugins.git \
+          -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git\
           -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
-          -DAL_CORE_VERSION=main \
-          -DAL_PLUGINS_VERSION=main \
+          -DAL_CORE_VERSION=install_update_in_common_for_high_level \
           -DDD_VERSION=main \
           -DAL_EXAMPLES=ON \
           -DAL_TESTS=ON \
-          -DAL_PLUGINS=ON \
+          -DAL_PLUGINS=OFF \
           -DAL_HLI_DOCS=ON \
           $BOOST_OPTS \
           $HDF5_OPTS
@@ -380,18 +385,16 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install sphinx sphinx-rtd-theme myst-parser sphinx-design
+        pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
     
     - name: Configure CMake for docs only
       run: |
         cmake -B build \
           -DCMAKE_INSTALL_PREFIX=$PWD/install \
           -DAL_DOWNLOAD_DEPENDENCIES=ON \
-          -DAL_CORE_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Core.git \
-          -DAL_PLUGINS_GIT_REPOSITORY=https://github.com/iterorganization/al-plugins.git \
+          -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git \
           -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
-          -DAL_CORE_VERSION=main \
-          -DAL_PLUGINS_VERSION=main \
+          -DAL_CORE_VERSION=install_update_in_common_for_high_level \
           -DDD_VERSION=main \
           -DAL_HLI_DOCS=ON \
           -DAL_DOCS_ONLY=ON
