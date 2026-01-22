@@ -12,11 +12,14 @@ env:
   BOOST_VERSION: '1.83.0'
   HDF5_VERSION: '1.14.3'
   PYTHON_VERSION: '3.11'
+  UDA_VERSION: '2.7.6'
+  FMT_VERSION: '9.1.0'
 
 jobs:
   build-linux:
     name: Build on ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container || null }}
     
     strategy:
       fail-fast: false
@@ -31,6 +34,19 @@ jobs:
             backend_mdsplus: OFF
             backend_uda: OFF
             install_compiler: false  # gcc-14 is default
+            use_system_packages: false
+          
+          - os: ubuntu-24.04
+            name: "AlmaLinux 8 (container)"
+            container: almalinux:8
+            cc: gcc
+            cxx: g++
+            matlab_release: R2023b
+            backend_hdf5: ON
+            backend_mdsplus: ON
+            backend_uda: ON
+            install_compiler: false
+            use_system_packages: true
     
     steps:
     - name: Checkout repository
@@ -71,7 +87,7 @@ jobs:
     
     - name: Install system dependencies
       run: |
-        # Detect package manager and install dependencies (similar to IMAS-Core pattern)
+        # Detect package manager and install dependencies
         if command -v apt-get &> /dev/null; then
           sudo apt-get update
           sudo apt-get install -y \
@@ -85,24 +101,50 @@ jobs:
             sudo apt-get install -y ${{ matrix.cxx }} ${{ matrix.cc }}
           fi
         elif command -v dnf &> /dev/null; then
-          # AlmaLinux/RHEL 8+ (similar to manylinux_2_28 used in IMAS-Core)
-          sudo dnf update -y
-          sudo dnf install -y \
+          # AlmaLinux/RHEL 8+ with full backend support
+          dnf update -y
+          dnf install -y \
             gcc gcc-c++ \
             cmake \
             pkgconfig \
             wget \
             make \
             openssl-devel \
-            ninja-build
+            ninja-build \
+            git \
+            curl \
+            tar \
+            gzip
+          
+          # Install EPEL and MDSPlus repos if using system packages
+          if [ "${{ matrix.use_system_packages }}" = "true" ]; then
+            dnf install -y epel-release
+            dnf install -y https://www.mdsplus.org/dist/rhel8/stable/RPMS/noarch/mdsplus-repo-7.142-81.el8.noarch.rpm || true
+            
+            # Install system packages for backends
+            dnf install -y \
+              boost1.78-devel \
+              hdf5-devel \
+              capnproto capnproto-devel \
+              fmt fmt-devel \
+              spdlog spdlog-devel \
+              libtirpc-devel
+            
+            # Install MDSPlus if backend is enabled
+            if [ "${{ matrix.backend_mdsplus }}" = "ON" ]; then
+              dnf install -y mdsplus mdsplus-java mdsplus-java_bin mdsplus-devel || echo "MDSPlus installation failed, continuing..."
+            fi
+          fi
         elif command -v yum &> /dev/null; then
           # CentOS/RHEL 7
-          sudo yum install -y \
+          yum install -y \
             gcc gcc-c++ \
             cmake \
             pkgconfig \
             wget \
-            make
+            make \
+            git \
+            curl
         else
           echo "Unsupported package manager"
           exit 1
@@ -113,22 +155,54 @@ jobs:
         python -m pip install --upgrade pip
         pip install sphinx sphinx-rtd-theme myst-parser sphinx-design
     
+    - name: Build and install UDA
+      if: matrix.backend_uda == 'ON' && matrix.use_system_packages == true
+      run: |
+        cd $HOME
+        echo "Downloading UDA ${UDA_VERSION}..."
+        curl -LO https://github.com/ukaea/UDA/archive/refs/tags/${UDA_VERSION}.tar.gz
+        tar zxf ${UDA_VERSION}.tar.gz
+        cd UDA-${UDA_VERSION}
+        
+        echo "Configuring UDA..."
+        cmake -B build . \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=ON \
+          -DSSLAUTHENTICATION=ON \
+          -DCLIENT_ONLY=ON \
+          -DENABLE_CAPNP=ON
+        
+        echo "Building UDA..."
+        cmake --build build -j$(nproc)
+        
+        echo "Installing UDA..."
+        cmake --install build
+        
+        echo "UDA installation complete"
+    
     - name: Download and install Boost
+      if: matrix.use_system_packages == false
       run: |
         if [ ! -d "$HOME/boost" ]; then
           cd $HOME
           BOOST_VERSION_UNDERSCORE=$(echo $BOOST_VERSION | tr '.' '_')
-          BOOST_URL="https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz"
           
           echo "Downloading Boost ${BOOST_VERSION}..."
-          # Try primary URL with retries
+          # Try SourceForge as primary (JFrog Artifactory has been deactivated)
+          BOOST_URL_SF="https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz/download"
           if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                    -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL"; then
-            # Fallback to SourceForge mirror
-            echo "Primary download failed, trying SourceForge mirror..."
-            BOOST_URL_SF="https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz/download"
-            wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                 -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_SF"
+                    -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_SF"; then
+            # Fallback to archives.boost.io
+            echo "SourceForge download failed, trying archives.boost.io..."
+            BOOST_URL_ARCHIVE="https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz"
+            if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                      -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_ARCHIVE"; then
+              # Last resort: try GitHub mirror
+              echo "archives.boost.io failed, trying GitHub mirror..."
+              BOOST_URL_GH="https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.gz"
+              wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                   -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_GH"
+            fi
           fi
           
           echo "Extracting Boost..."
@@ -147,6 +221,7 @@ jobs:
         echo "$HOME/boost/lib" >> $GITHUB_PATH
     
     - name: Download and install HDF5
+      if: matrix.use_system_packages == false
       run: |
         if [ ! -d "$HOME/hdf5" ]; then
           cd $HOME
@@ -185,6 +260,15 @@ jobs:
     
     - name: Configure CMake
       run: |
+        # Set Boost and HDF5 paths based on installation method
+        if [ "${{ matrix.use_system_packages }}" = "true" ]; then
+          BOOST_OPTS=""
+          HDF5_OPTS=""
+        else
+          BOOST_OPTS="-DBoost_NO_BOOST_CMAKE=ON"
+          HDF5_OPTS=""
+        fi
+        
         cmake -B build \
           -DCMAKE_INSTALL_PREFIX=$PWD/install \
           -DCMAKE_C_COMPILER=${{ matrix.cc }} \
@@ -207,7 +291,8 @@ jobs:
           -DAL_TESTS=ON \
           -DAL_PLUGINS=ON \
           -DAL_HLI_DOCS=ON \
-          -DBoost_NO_BOOST_CMAKE=ON
+          $BOOST_OPTS \
+          $HDF5_OPTS
     
     - name: Build
       run: |
