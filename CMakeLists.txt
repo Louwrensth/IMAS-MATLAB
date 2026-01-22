@@ -149,6 +149,7 @@ if(WIN32)
   target_link_libraries( al-mex PUBLIC al Matlab::mex Matlab::mx )
   target_include_directories( al-mex PRIVATE src )
   target_include_directories( al-mex PUBLIC ${Matlab_INCLUDE_DIRS} )
+  target_include_directories( al-mex PUBLIC ${AL_COMMON_PATH}/../include )
 
   # Use separate (non-interleaved) complex API for compatibility
   target_compile_definitions( al-mex PUBLIC)
@@ -237,7 +238,7 @@ macro( GENERATE GENERATOR IS_C_GENERATOR OUTPUT_FILES )
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${GENERATOR}_dummy.txt
     COMMAND
-      ${_SAXONCHE_VENV_PYTHON} "${CMAKE_CURRENT_BINARY_DIR}/_deps/al-core-src/xsltproc.py"
+      ${_SAXONCHE_VENV_PYTHON} "${AL_COMMON_PATH}/xsltproc.py"
         -xsl ${CMAKE_CURRENT_SOURCE_DIR}/${GENERATOR}.xsl
         -s ${IDSDEF}
         -o ${CMAKE_CURRENT_BINARY_DIR}/${GENERATOR}_output.xml
