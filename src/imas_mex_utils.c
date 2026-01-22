@@ -450,7 +450,7 @@ al_status_t data_to_mxArray(int datatype, int dim, void *array, int *size, mxArr
 				pi = mxGetImagData(*data);			
 				if (!pr || !pi) {
 					mexErrMsgIdAndTxt("imas:mex", "Failed to allocate complex array data (pr=%p, pi=%p)", pr, pi);
-					return;
+					return (al_status_t) {-1, "Failed to allocate complex array data"};
 				}				
 			    for (i = 0; i < numel; i++) {
 					pr[i] = ((double *) array)[2*i];
@@ -538,7 +538,7 @@ al_status_t data_from_mxArray(int datatype, int dim, const mxArray * data, void 
 				free(*array);
 				*array = NULL;
 				mexErrMsgIdAndTxt("imas:mex", "Input array is not properly complex (pr=%p, pi=%p)", pr, pi);
-				return;
+				return (al_status_t) {-1, "Input array is not properly complex"};
 			}
 			for (i = 0; i < numel; i++) {
 				((double *) *array)[2*i] = pr[i];

@@ -78,19 +78,14 @@ jobs:
       run: |
         echo "MATLAB_ROOT=/usr/local/MATLAB/R2023b" >> $GITHUB_ENV
     
-    - name: Cache dependencies
+    - name: Cache pip packages
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.cache/pip
-          ~/boost
-          ~/hdf5
-          ~/.matlab
-        key: ${{ runner.os }}-${{ matrix.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-${{ matrix.matlab_release }}-${{ hashFiles('**/CMakeLists.txt') }}
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-${{ matrix.matlab_release }}-
-          ${{ runner.os }}-${{ matrix.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-
-          ${{ runner.os }}-${{ matrix.os }}-deps-
+          ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-
+          ${{ runner.os }}-pip-
     
     - name: Install system dependencies
       run: |
@@ -111,8 +106,9 @@ jobs:
           # AlmaLinux/RHEL 8+ with full backend support
           dnf update -y
           
-          # Install EPEL first (needed for ninja-build and some other packages)
+          # Install EPEL and PowerTools first (needed for some devel packages)
           dnf install -y epel-release
+          dnf config-manager --set-enabled powertools || dnf config-manager --set-enabled PowerTools || true
           
           # Install base build tools
           dnf install -y \
@@ -125,28 +121,29 @@ jobs:
             git \
             curl \
             tar \
-            gzip
+            gzip \
+            ca-certificates
           
-          # Install EPEL packages
-          dnf install -y ninja-build || echo "ninja-build not available, continuing..."
+          # Update CA certificates for SSL issues
+          update-ca-trust
           
           # Install backend-specific packages if using system packages
           if [ "${{ matrix.use_system_packages }}" = "true" ]; then
-            # Install MDSPlus repo
-            dnf install -y https://www.mdsplus.org/dist/rhel8/stable/RPMS/noarch/mdsplus-repo-7.142-81.el8.noarch.rpm || true
+            # Install MDSPlus repo (with --nogpgcheck for SSL issues)
+            rpm -ivh --nogpgcheck https://www.mdsplus.org/dist/rhel8/stable/RPMS/noarch/mdsplus-repo-7.142-81.el8.noarch.rpm || true
             
             # Install system packages for backends
             dnf install -y \
-              boost1.78-devel \
+              boost-devel \
               hdf5-devel \
               capnproto capnproto-devel \
-              fmt fmt-devel \
-              spdlog spdlog-devel \
-              libtirpc-devel
+              fmt-devel \
+              spdlog-devel \
+              libtirpc-devel || echo "Some packages failed to install, continuing..."
             
             # Install MDSPlus if backend is enabled
             if [ "${{ matrix.backend_mdsplus }}" = "ON" ]; then
-              dnf install -y mdsplus mdsplus-java mdsplus-java_bin mdsplus-devel || echo "MDSPlus installation failed, continuing..."
+              dnf install -y --nogpgcheck mdsplus mdsplus-devel || echo "MDSPlus installation failed, continuing..."
             fi
           fi
         elif command -v yum &> /dev/null; then
@@ -194,80 +191,96 @@ jobs:
         
         echo "UDA installation complete"
     
+    - name: Cache Boost installation
+      if: matrix.use_system_packages == false
+      id: cache-boost
+      uses: actions/cache@v4
+      with:
+        path: ~/boost
+        key: boost-${{ env.BOOST_VERSION }}-${{ runner.os }}-${{ matrix.os }}
+    
     - name: Download and install Boost
+      if: matrix.use_system_packages == false && steps.cache-boost.outputs.cache-hit != 'true'
+      run: |
+        cd $HOME
+        BOOST_VERSION_UNDERSCORE=$(echo $BOOST_VERSION | tr '.' '_')
+        
+        echo "Downloading Boost ${BOOST_VERSION}..."
+        # Try SourceForge as primary (JFrog Artifactory has been deactivated)
+        BOOST_URL_SF="https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz/download"
+        if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                  -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_SF"; then
+          # Fallback to archives.boost.io
+          echo "SourceForge download failed, trying archives.boost.io..."
+          BOOST_URL_ARCHIVE="https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz"
+          if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                    -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_ARCHIVE"; then
+            # Last resort: try GitHub mirror
+            echo "archives.boost.io failed, trying GitHub mirror..."
+            BOOST_URL_GH="https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.gz"
+            wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                 -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_GH"
+          fi
+        fi
+        
+        echo "Extracting Boost..."
+        tar xzf boost_${BOOST_VERSION_UNDERSCORE}.tar.gz
+        cd boost_${BOOST_VERSION_UNDERSCORE}
+        
+        echo "Building Boost libraries..."
+        ./bootstrap.sh --prefix=$HOME/boost --with-libraries=system,filesystem,log,thread
+        ./b2 install -j$(nproc) > /dev/null
+        
+        echo "Boost installation complete"
+    
+    - name: Set Boost environment variables
       if: matrix.use_system_packages == false
       run: |
-        if [ ! -d "$HOME/boost" ]; then
-          cd $HOME
-          BOOST_VERSION_UNDERSCORE=$(echo $BOOST_VERSION | tr '.' '_')
-          
-          echo "Downloading Boost ${BOOST_VERSION}..."
-          # Try SourceForge as primary (JFrog Artifactory has been deactivated)
-          BOOST_URL_SF="https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz/download"
-          if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                    -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_SF"; then
-            # Fallback to archives.boost.io
-            echo "SourceForge download failed, trying archives.boost.io..."
-            BOOST_URL_ARCHIVE="https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz"
-            if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                      -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_ARCHIVE"; then
-              # Last resort: try GitHub mirror
-              echo "archives.boost.io failed, trying GitHub mirror..."
-              BOOST_URL_GH="https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.gz"
-              wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                   -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_GH"
-            fi
-          fi
-          
-          echo "Extracting Boost..."
-          tar xzf boost_${BOOST_VERSION_UNDERSCORE}.tar.gz
-          cd boost_${BOOST_VERSION_UNDERSCORE}
-          
-          echo "Building Boost libraries..."
-          ./bootstrap.sh --prefix=$HOME/boost --with-libraries=system,filesystem,log,thread
-          ./b2 install -j$(nproc) > /dev/null
-          
-          echo "Boost installation complete"
-        else
-          echo "Using cached Boost installation"
-        fi
         echo "BOOST_ROOT=$HOME/boost" >> $GITHUB_ENV
         echo "$HOME/boost/lib" >> $GITHUB_PATH
     
+    - name: Cache HDF5 installation
+      if: matrix.use_system_packages == false
+      id: cache-hdf5
+      uses: actions/cache@v4
+      with:
+        path: ~/hdf5
+        key: hdf5-${{ env.HDF5_VERSION }}-${{ runner.os }}-${{ matrix.os }}
+    
     - name: Download and install HDF5
+      if: matrix.use_system_packages == false && steps.cache-hdf5.outputs.cache-hit != 'true'
+      run: |
+        cd $HOME
+        HDF5_VERSION_SHORT=$(echo $HDF5_VERSION | cut -d. -f1,2)
+        HDF5_URL="https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz"
+        
+        echo "Downloading HDF5 ${HDF5_VERSION}..."
+        # Try with retries
+        if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                  -O hdf5-${HDF5_VERSION}.tar.gz "$HDF5_URL"; then
+          # Try alternative mirror
+          echo "Primary download failed, trying alternative URL..."
+          HDF5_URL_ALT="https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}.tar.gz"
+          wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+               -O hdf5-${HDF5_VERSION}.tar.gz "$HDF5_URL_ALT"
+        fi
+        
+        echo "Extracting HDF5..."
+        tar xzf hdf5-${HDF5_VERSION}.tar.gz
+        cd hdf5-${HDF5_VERSION}
+        
+        echo "Configuring HDF5..."
+        ./configure --prefix=$HOME/hdf5 --enable-cxx > /dev/null
+        
+        echo "Building HDF5..."
+        make -j$(nproc) > /dev/null
+        make install > /dev/null
+        
+        echo "HDF5 installation complete"
+    
+    - name: Set HDF5 environment variables
       if: matrix.use_system_packages == false
       run: |
-        if [ ! -d "$HOME/hdf5" ]; then
-          cd $HOME
-          HDF5_VERSION_SHORT=$(echo $HDF5_VERSION | cut -d. -f1,2)
-          HDF5_URL="https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz"
-          
-          echo "Downloading HDF5 ${HDF5_VERSION}..."
-          # Try with retries
-          if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                    -O hdf5-${HDF5_VERSION}.tar.gz "$HDF5_URL"; then
-            # Try alternative mirror
-            echo "Primary download failed, trying alternative URL..."
-            HDF5_URL_ALT="https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}.tar.gz"
-            wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                 -O hdf5-${HDF5_VERSION}.tar.gz "$HDF5_URL_ALT"
-          fi
-          
-          echo "Extracting HDF5..."
-          tar xzf hdf5-${HDF5_VERSION}.tar.gz
-          cd hdf5-${HDF5_VERSION}
-          
-          echo "Configuring HDF5..."
-          ./configure --prefix=$HOME/hdf5 --enable-cxx > /dev/null
-          
-          echo "Building HDF5..."
-          make -j$(nproc) > /dev/null
-          make install > /dev/null
-          
-          echo "HDF5 installation complete"
-        else
-          echo "Using cached HDF5 installation"
-        fi
         echo "HDF5_ROOT=$HOME/hdf5" >> $GITHUB_ENV
         echo "$HOME/hdf5/bin" >> $GITHUB_PATH
         echo "LD_LIBRARY_PATH=$HOME/hdf5/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
@@ -401,7 +414,7 @@ jobs:
     
     - name: Build documentation
       run: |
-        make -C build doc
+        make -C build al-matlab-docs
       continue-on-error: true
     
     - name: Check for documentation warnings

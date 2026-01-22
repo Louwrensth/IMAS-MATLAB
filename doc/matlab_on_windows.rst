@@ -2,8 +2,8 @@
 Windows Installation Guide
 ==========================================
 
-Prerequisites
-=============
+Windows Prerequisites
+=====================
 
 1. **Visual Studio 2022** with:
    - Desktop Development with C++
@@ -36,6 +36,13 @@ Run these commands in PowerShell before building:
     $env:PATH += ";C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\"
     $env:PATH += ";C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\bin\HostX86\x86"
     $env:PATH += ";<VCPKG_INSTALLATION_PATH>"
+
+if using already built IMAS-Core:
+
+.. code-block:: powershell
+
+    $env:AL_COMMON_PATH = "<IMAS_CORE_INSTALL_DIR>\share\common"
+
 Build Configuration
 ===================
 
@@ -43,14 +50,19 @@ Build Configuration
 
 .. code-block:: bash
 
+    # with   -DAL_DOWNLOAD_DEPENDENCIES=ON
     cmake -Bbuild -S . -DVCPKG=ON -DAL_PYTHON_BINDINGS=ON -DCMAKE_INSTALL_PREFIX="<INSTALL_PATH>" -DCMAKE_TOOLCHAIN_FILE="<VCPKG_PATH>/scripts/buildsystems/vcpkg.cmake" -DAL_DOWNLOAD_DEPENDENCIES=ON -DAL_EXAMPLES=OFF -DAL_TESTS=OFF -DAL_PLUGINS=OFF -DAL_HLI_DOCS=OFF -DAL_DOCS_ONLY=OFF -DDD_VERSION="3.39.0" -DAL_BACKEND_UDA=OFF -DAL_BACKEND_UDAFAT=OFF -DAL_BACKEND_MDSPLUS=OFF
+    # with   -DAL_DOWNLOAD_DEPENDENCIES=OFF
+    cmake -Bbuild -S . -DVCPKG=ON -DAL_PYTHON_BINDINGS=ON -DCMAKE_INSTALL_PREFIX="<INSTALL_PATH>" -DCMAKE_TOOLCHAIN_FILE="<VCPKG_PATH>/scripts/buildsystems/vcpkg.cmake" -DAL_DOWNLOAD_DEPENDENCIES=OFF -DAL_EXAMPLES=OFF -DAL_TESTS=OFF -DAL_PLUGINS=OFF -DAL_HLI_DOCS=OFF -DAL_DOCS_ONLY=OFF -DDD_VERSION="3.39.0" -DAL_BACKEND_UDA=OFF -DAL_BACKEND_UDAFAT=OFF -DAL_BACKEND_MDSPLUS=OFF -DCMAKE_PREFIX_PATH="<IMAS_CORE_INSTALL_DIR>"
 
 **Release Build:**
 
 .. code-block:: bash
 
+    # with   -DAL_DOWNLOAD_DEPENDENCIES=ON
     cmake -Bbuild -S . -DCMAKE_BUILD_TYPE=Release -DVCPKG=ON -DAL_PYTHON_BINDINGS=ON -DCMAKE_INSTALL_PREFIX="<INSTALL_PATH>" -DCMAKE_TOOLCHAIN_FILE="<VCPKG_PATH>/scripts/buildsystems/vcpkg.cmake" -DAL_DOWNLOAD_DEPENDENCIES=ON -DAL_EXAMPLES=OFF -DAL_TESTS=OFF -DAL_PLUGINS=OFF -DAL_HLI_DOCS=OFF -DAL_DOCS_ONLY=OFF -DDD_VERSION="3.39.0" -DAL_BACKEND_UDA=OFF -DAL_BACKEND_UDAFAT=OFF -DAL_BACKEND_MDSPLUS=OFF
-
+    # with   -DAL_DOWNLOAD_DEPENDENCIES=OFF
+    cmake -Bbuild -S . -DCMAKE_BUILD_TYPE=Release -DVCPKG=ON -DAL_PYTHON_BINDINGS=ON -DCMAKE_INSTALL_PREFIX="<INSTALL_PATH>" -DCMAKE_TOOLCHAIN_FILE="<VCPKG_PATH>/scripts/buildsystems/vcpkg.cmake" -DAL_DOWNLOAD_DEPENDENCIES=OFF -DAL_EXAMPLES=OFF -DAL_TESTS=OFF -DAL_PLUGINS=OFF -DAL_HLI_DOCS=OFF -DAL_DOCS_ONLY=OFF -DDD_VERSION="3.39.0" -DAL_BACKEND_UDA=OFF -DAL_BACKEND_UDAFAT=OFF -DAL_BACKEND_MDSPLUS=OFF -DCMAKE_PREFIX_PATH="<IMAS_CORE_INSTALL_DIR>"
 
 Build and Install
 =================
@@ -107,8 +119,8 @@ Run MATLAB Tests
     matlab -batch "test_code"
 
 
-Troubleshooting
-===============
+Windows Troubleshooting
+=======================
 
 - Ensure all PowerShell environment variables are set before running CMake
 - Verify Visual Studio C++ build tools are installed
