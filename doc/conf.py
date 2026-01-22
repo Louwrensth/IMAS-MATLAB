@@ -15,9 +15,21 @@ project = "MATLAB Access Layer"
 copyright = f"{datetime.datetime.now().year}, ITER Organization"
 author = "ITER Organization"
 
-version = subprocess.check_output(["git", "describe"]).decode().strip()
-last_tag = subprocess.check_output(["git", "describe", "--abbrev=0"]).decode().strip()
-is_develop = version != last_tag
+# Get version from git describe, with fallback if no tags exist
+try:
+    version = subprocess.check_output(["git", "describe"], stderr=subprocess.DEVNULL).decode().strip()
+except subprocess.CalledProcessError:
+    # If git describe fails (no tags), use a default version
+    version = "development"
+
+# Get last tag for develop check, with fallback
+try:
+    last_tag = subprocess.check_output(["git", "describe", "--abbrev=0"], stderr=subprocess.DEVNULL).decode().strip()
+except subprocess.CalledProcessError:
+    # If no tags exist, we're in development
+    last_tag = None
+
+is_develop = last_tag is None or version != last_tag
 
 html_context = {
     "is_develop": is_develop

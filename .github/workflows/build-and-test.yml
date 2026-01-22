@@ -55,6 +55,7 @@ jobs:
         fetch-depth: 0
     
     - name: Set up Python
+      if: matrix.container == null
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
@@ -163,8 +164,14 @@ jobs:
     
     - name: Install Python dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
+        # For containers, use system Python3; otherwise use python from setup-python
+        if [ -n "${{ matrix.container }}" ]; then
+          python3 -m pip install --upgrade pip
+          python3 -m pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
+        else
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
+        fi
     
     - name: Build and install UDA
       if: matrix.backend_uda == 'ON' && matrix.use_system_packages == true
@@ -305,29 +312,44 @@ jobs:
           MATLAB_OPTS="-DMatlab_ROOT_DIR=${MATLAB_ROOT}"
         fi
         
-        cmake -B build \
-          -DCMAKE_INSTALL_PREFIX=$PWD/install \
-          -DCMAKE_C_COMPILER=${{ matrix.cc }} \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
-          -DCMAKE_CXX_STANDARD=17 \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-          $PREFIX_PATH \
-          $MATLAB_OPTS \
-          -DAL_BACKEND_HDF5=${{ matrix.backend_hdf5 }} \
-          -DAL_BACKEND_MDSPLUS=${{ matrix.backend_mdsplus }} \
-          -DAL_BACKEND_UDA=${{ matrix.backend_uda }} \
-          -DAL_BUILD_MDSPLUS_MODELS=OFF \
-          -DAL_DOWNLOAD_DEPENDENCIES=ON \
-          -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git\
-          -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
-          -DAL_CORE_VERSION=install_update_in_common_for_high_level \
-          -DDD_VERSION=main \
-          -DAL_EXAMPLES=ON \
-          -DAL_TESTS=ON \
-          -DAL_PLUGINS=OFF \
-          -DAL_HLI_DOCS=ON \
-          $BOOST_OPTS \
-          $HDF5_OPTS
+        # Configure CMake with retry logic for git operations
+        # Set git retry parameters to handle transient server errors
+        export GIT_CURL_VERBOSE=1
+        for attempt in 1 2 3; do
+          echo "CMake configuration attempt $attempt..."
+          cmake -B build \
+            -DCMAKE_INSTALL_PREFIX=$PWD/install \
+            -DCMAKE_C_COMPILER=${{ matrix.cc }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DCMAKE_CXX_STANDARD=17 \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            $PREFIX_PATH \
+            $MATLAB_OPTS \
+            -DAL_BACKEND_HDF5=${{ matrix.backend_hdf5 }} \
+            -DAL_BACKEND_MDSPLUS=${{ matrix.backend_mdsplus }} \
+            -DAL_BACKEND_UDA=${{ matrix.backend_uda }} \
+            -DAL_BUILD_MDSPLUS_MODELS=OFF \
+            -DAL_DOWNLOAD_DEPENDENCIES=ON \
+            -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git \
+            -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
+            -DAL_CORE_VERSION=install_update_in_common_for_high_level \
+            -DDD_VERSION=main \
+            -DAL_EXAMPLES=ON \
+            -DAL_TESTS=ON \
+            -DAL_PLUGINS=OFF \
+            -DAL_HLI_DOCS=ON \
+            $BOOST_OPTS \
+            $HDF5_OPTS && break
+          
+          if [ $attempt -lt 3 ]; then
+            echo "CMake configuration failed, retrying in 10 seconds..."
+            rm -rf build
+            sleep 10
+          else
+            echo "CMake configuration failed after 3 attempts"
+            exit 1
+          fi
+        done
     
     - name: Build
       run: |
@@ -402,15 +424,29 @@ jobs:
     
     - name: Configure CMake for docs only
       run: |
-        cmake -B build \
-          -DCMAKE_INSTALL_PREFIX=$PWD/install \
-          -DAL_DOWNLOAD_DEPENDENCIES=ON \
-          -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git \
-          -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
-          -DAL_CORE_VERSION=install_update_in_common_for_high_level \
-          -DDD_VERSION=main \
-          -DAL_HLI_DOCS=ON \
-          -DAL_DOCS_ONLY=ON
+        # Configure CMake with retry logic for git operations
+        export GIT_CURL_VERBOSE=1
+        for attempt in 1 2 3; do
+          echo "CMake docs configuration attempt $attempt..."
+          cmake -B build \
+            -DCMAKE_INSTALL_PREFIX=$PWD/install \
+            -DAL_DOWNLOAD_DEPENDENCIES=ON \
+            -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git \
+            -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
+            -DAL_CORE_VERSION=install_update_in_common_for_high_level \
+            -DDD_VERSION=main \
+            -DAL_HLI_DOCS=ON \
+            -DAL_DOCS_ONLY=ON && break
+          
+          if [ $attempt -lt 3 ]; then
+            echo "CMake configuration failed, retrying in 10 seconds..."
+            rm -rf build
+            sleep 10
+          else
+            echo "CMake configuration failed after 3 attempts"
+            exit 1
+          fi
+        done
     
     - name: Build documentation
       run: |
