@@ -126,7 +126,8 @@ jobs:
             gzip \
             ca-certificates \
             python3 \
-            python3-pip
+            python3-pip \
+            java-latest-openjdk
           
           # Update CA certificates for SSL issues
           update-ca-trust
@@ -169,11 +170,16 @@ jobs:
       run: |
         # For containers, use system Python3; otherwise use python from setup-python
         if [ "${{ matrix.container }}" != "" ]; then
-          python3 -m pip install --upgrade pip
-          python3 -m pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
+          # In containers, disable pip cache to avoid permission issues
+          python3 -m pip install --no-cache-dir --upgrade pip
+          python3 -m pip install --no-cache-dir sphinx sphinx-rtd-theme myst-parser sphinx-design
+          # Try to install saxonche, but continue if it fails (not available for all Python versions)
+          python3 -m pip install --no-cache-dir saxonche 2>/dev/null || echo "saxonche not available, continuing without it"
         else
           python -m pip install --upgrade pip
-          pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
+          pip install sphinx sphinx-rtd-theme myst-parser sphinx-design
+          # Try to install saxonche, but continue if it fails (not available for all Python versions)
+          pip install saxonche 2>/dev/null || echo "saxonche not available, continuing without it"
         fi
     
     - name: Build and install UDA
@@ -217,6 +223,12 @@ jobs:
       run: |
         cd $HOME
         BOOST_VERSION_UNDERSCORE=$(echo $BOOST_VERSION | tr '.' '_')
+        
+        # Double-check if boost is already properly installed
+        if [ -d "$HOME/boost/lib" ] && [ "$(find $HOME/boost/lib -name 'libboost_system*' 2>/dev/null | wc -l)" -gt 0 ]; then
+          echo "Boost already found and verified in cache, skipping download and build"
+          exit 0
+        fi
         
         echo "Downloading Boost ${BOOST_VERSION}..."
         # Try SourceForge as primary (JFrog Artifactory has been deactivated)
@@ -269,6 +281,12 @@ jobs:
         cd $HOME
         HDF5_VERSION_SHORT=$(echo $HDF5_VERSION | cut -d. -f1,2)
         HDF5_URL="https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz"
+        
+        # Double-check if HDF5 is already properly installed
+        if [ -d "$HOME/hdf5/lib" ] && [ "$(find $HOME/hdf5/lib -name 'libhdf5*' 2>/dev/null | wc -l)" -gt 0 ]; then
+          echo "HDF5 already found and verified in cache, skipping download and build"
+          exit 0
+        fi
         
         echo "Downloading HDF5 ${HDF5_VERSION}..."
         # Try with retries
@@ -339,9 +357,9 @@ jobs:
             -DAL_BACKEND_UDA=${{ matrix.backend_uda }} \
             -DAL_BUILD_MDSPLUS_MODELS=OFF \
             -DAL_DOWNLOAD_DEPENDENCIES=ON \
-            -DAL_CORE_GIT_REPOSITORY=https://github.com/prasad-sawantdesai/IMAS-Core2.git \
+            -DAL_CORE_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Core.git \
             -DDD_GIT_REPOSITORY=https://github.com/iterorganization/IMAS-Data-Dictionary.git \
-            -DAL_CORE_VERSION=install_update_in_common_for_high_level \
+            -DAL_CORE_VERSION=develop \
             -DDD_VERSION=main \
             -DAL_EXAMPLES=ON \
             -DAL_TESTS=ON \
