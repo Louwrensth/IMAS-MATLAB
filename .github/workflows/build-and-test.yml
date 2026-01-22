@@ -31,7 +31,7 @@ jobs:
             cxx: g++-14
             matlab_release: R2023b
             backend_hdf5: ON
-            backend_mdsplus: OFF
+            backend_mdsplus: OFF  # Tests will run with HDF5 backend only
             backend_uda: OFF
             install_compiler: false  # gcc-14 is default
             use_system_packages: false
@@ -406,9 +406,14 @@ jobs:
         echo "Available tests:"
         ctest -N
         
-        # Run tests with verbose output
-        echo "Running tests..."
-        ctest --output-on-failure --verbose
+        # Check if at least one backend is enabled
+        if [ "${{ matrix.backend_hdf5 }}" = "ON" ] || [ "${{ matrix.backend_mdsplus }}" = "ON" ]; then
+          echo "Running tests with available backend(s)..."
+          echo "HDF5: ${{ matrix.backend_hdf5 }}, MDSplus: ${{ matrix.backend_mdsplus }}"
+          ctest --output-on-failure --verbose
+        else
+          echo "No backends enabled, skipping tests"
+        fi
       continue-on-error: true
     
     - name: Install
