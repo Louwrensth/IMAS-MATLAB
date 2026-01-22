@@ -59,6 +59,7 @@ programming language.
     :caption: AL Developer documentation
 
     building_installing
+    matlab_on_windows
     dev_guide
 
 Indices and tables

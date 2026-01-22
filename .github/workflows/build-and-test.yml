@@ -83,8 +83,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements.txt') }}-${{ github.sha }}
         restore-keys: |
+          ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements.txt') }}-
           ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-
           ${{ runner.os }}-pip-
     
@@ -123,7 +124,9 @@ jobs:
             curl \
             tar \
             gzip \
-            ca-certificates
+            ca-certificates \
+            python3 \
+            python3-pip
           
           # Update CA certificates for SSL issues
           update-ca-trust
@@ -165,7 +168,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         # For containers, use system Python3; otherwise use python from setup-python
-        if [ -n "${{ matrix.container }}" ]; then
+        if [ "${{ matrix.container }}" != "" ]; then
           python3 -m pip install --upgrade pip
           python3 -m pip install sphinx sphinx-rtd-theme myst-parser sphinx-design saxonche
         else
@@ -204,7 +207,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/boost
-        key: boost-${{ env.BOOST_VERSION }}-${{ runner.os }}-${{ matrix.os }}
+        key: boost-${{ env.BOOST_VERSION }}-${{ runner.os }}-${{ matrix.name }}-${{ github.sha }}
+        restore-keys: |
+          boost-${{ env.BOOST_VERSION }}-${{ runner.os }}-${{ matrix.name }}-
+          boost-${{ env.BOOST_VERSION }}-${{ runner.os }}-
     
     - name: Download and install Boost
       if: matrix.use_system_packages == false && steps.cache-boost.outputs.cache-hit != 'true'
@@ -252,7 +258,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/hdf5
-        key: hdf5-${{ env.HDF5_VERSION }}-${{ runner.os }}-${{ matrix.os }}
+        key: hdf5-${{ env.HDF5_VERSION }}-${{ runner.os }}-${{ matrix.name }}-${{ github.sha }}
+        restore-keys: |
+          hdf5-${{ env.HDF5_VERSION }}-${{ runner.os }}-${{ matrix.name }}-
+          hdf5-${{ env.HDF5_VERSION }}-${{ runner.os }}-
     
     - name: Download and install HDF5
       if: matrix.use_system_packages == false && steps.cache-hdf5.outputs.cache-hit != 'true'
@@ -450,8 +459,7 @@ jobs:
     
     - name: Build documentation
       run: |
-        make -C build al-matlab-docs
-      continue-on-error: true
+        make -C build al-matlab-docs || true
     
     - name: Check for documentation warnings
       run: |
@@ -460,11 +468,30 @@ jobs:
           cat build/doc_warnings.log
         fi
     
+    - name: Debug - Check documentation build output
+      if: always()
+      run: |
+        echo "Checking for documentation files..."
+        if [ -d build/doc/_build/html/ ]; then
+          echo "Documentation directory found:"
+          echo "Files count: $(find build/doc/_build/html/ -type f | wc -l)"
+          ls -lR build/doc/_build/html/ | head -100
+        else
+          echo "Documentation directory NOT found at build/doc/_build/html/"
+          echo "Searching for html directories in build:"
+          find build -type d -name "*html*" 2>/dev/null
+          echo "All directories in build:"
+          find build -type d -maxdepth 4 2>/dev/null | head -50
+        fi
+    
     - name: Upload documentation
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: documentation
-        path: |
-          build/doc/_build/html/
+        path: build/doc/_build/html/
         retention-days: 30
+        if-no-files-found: warn
+        compression-level: 6
+        overwrite: false
+        include-hidden-files: false
