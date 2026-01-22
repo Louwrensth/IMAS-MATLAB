@@ -15,32 +15,22 @@ env:
 
 jobs:
   build-linux:
-    name: Build on Linux (GCC)
+    name: Build on ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-20.04]
         include:
-          - os: ubuntu-22.04
-            name: "GCC 13 (Ubuntu 22.04)"
-            cc: gcc-13
-            cxx: g++-13
-            backend_mdsplus: OFF
-            backend_uda: OFF
           - os: ubuntu-24.04
-            name: "GCC 13 (Ubuntu 24.04)"
-            cc: gcc-13
-            cxx: g++-13
+            name: "Ubuntu 24.04"
+            cc: gcc-14
+            cxx: g++-14
+            matlab_release: R2023b
+            backend_hdf5: ON
             backend_mdsplus: OFF
             backend_uda: OFF
-          - os: ubuntu-20.04
-            name: "GCC 11 (Ubuntu 20.04)"
-            cc: gcc-11
-            cxx: g++-11
-            backend_mdsplus: OFF
-            backend_uda: OFF
+            install_compiler: false  # gcc-14 is default
     
     steps:
     - name: Checkout repository
@@ -52,11 +42,12 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
     
     - name: Set up MATLAB
       uses: matlab-actions/setup-matlab@v2
       with:
-        release: R2023b
+        release: ${{ matrix.matlab_release }}
         products: MATLAB
     
     - name: Verify MATLAB installation
@@ -72,47 +63,45 @@ jobs:
           ~/.cache/pip
           ~/boost
           ~/hdf5
-          ~/saxon
           ~/.matlab
-        key: ${{ runner.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-matlab-R2023b-${{ hashFiles('**/CMakeLists.txt') }}
+        key: ${{ runner.os }}-${{ matrix.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-${{ matrix.matlab_release }}-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
-          ${{ runner.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-matlab-R2023b-
-          ${{ runner.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-
-          ${{ runner.os }}-deps-
+          ${{ runner.os }}-${{ matrix.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-${{ matrix.matlab_release }}-
+          ${{ runner.os }}-${{ matrix.os }}-deps-${{ env.BOOST_VERSION }}-${{ env.HDF5_VERSION }}-
+          ${{ runner.os }}-${{ matrix.os }}-deps-
     
     - name: Install system dependencies
       run: |
-        # Detect package manager and install dependencies
+        # Detect package manager and install dependencies (similar to IMAS-Core pattern)
         if command -v apt-get &> /dev/null; then
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
             cmake \
             pkg-config \
-            libxml2-dev \
-            xsltproc \
-            default-jdk \
-            wget \
-            ${{ matrix.cxx }} \
-            ${{ matrix.cc }}
+            wget
+          
+          # Install specific compiler version if needed
+          if [ "${{ matrix.install_compiler }}" = "true" ]; then
+            sudo apt-get install -y ${{ matrix.cxx }} ${{ matrix.cc }}
+          fi
         elif command -v dnf &> /dev/null; then
+          # AlmaLinux/RHEL 8+ (similar to manylinux_2_28 used in IMAS-Core)
+          sudo dnf update -y
           sudo dnf install -y \
             gcc gcc-c++ \
             cmake \
             pkgconfig \
-            libxml2-devel \
-            libxslt \
-            java-latest-openjdk \
             wget \
-            make
+            make \
+            openssl-devel \
+            ninja-build
         elif command -v yum &> /dev/null; then
+          # CentOS/RHEL 7
           sudo yum install -y \
             gcc gcc-c++ \
             cmake \
             pkgconfig \
-            libxml2-devel \
-            libxslt \
-            java-latest-openjdk \
             wget \
             make
         else
@@ -130,11 +119,30 @@ jobs:
         if [ ! -d "$HOME/boost" ]; then
           cd $HOME
           BOOST_VERSION_UNDERSCORE=$(echo $BOOST_VERSION | tr '.' '_')
-          wget -q https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz
+          BOOST_URL="https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz"
+          
+          echo "Downloading Boost ${BOOST_VERSION}..."
+          # Try primary URL with retries
+          if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                    -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL"; then
+            # Fallback to SourceForge mirror
+            echo "Primary download failed, trying SourceForge mirror..."
+            BOOST_URL_SF="https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION_UNDERSCORE}.tar.gz/download"
+            wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                 -O boost_${BOOST_VERSION_UNDERSCORE}.tar.gz "$BOOST_URL_SF"
+          fi
+          
+          echo "Extracting Boost..."
           tar xzf boost_${BOOST_VERSION_UNDERSCORE}.tar.gz
           cd boost_${BOOST_VERSION_UNDERSCORE}
+          
+          echo "Building Boost libraries..."
           ./bootstrap.sh --prefix=$HOME/boost --with-libraries=system,filesystem,log,thread
           ./b2 install -j$(nproc) > /dev/null
+          
+          echo "Boost installation complete"
+        else
+          echo "Using cached Boost installation"
         fi
         echo "BOOST_ROOT=$HOME/boost" >> $GITHUB_ENV
         echo "$HOME/boost/lib" >> $GITHUB_PATH
@@ -144,26 +152,37 @@ jobs:
         if [ ! -d "$HOME/hdf5" ]; then
           cd $HOME
           HDF5_VERSION_SHORT=$(echo $HDF5_VERSION | cut -d. -f1,2)
-          wget -q https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz
+          HDF5_URL="https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz"
+          
+          echo "Downloading HDF5 ${HDF5_VERSION}..."
+          # Try with retries
+          if ! wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                    -O hdf5-${HDF5_VERSION}.tar.gz "$HDF5_URL"; then
+            # Try alternative mirror
+            echo "Primary download failed, trying alternative URL..."
+            HDF5_URL_ALT="https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_${HDF5_VERSION_SHORT}/hdf5-${HDF5_VERSION}.tar.gz"
+            wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+                 -O hdf5-${HDF5_VERSION}.tar.gz "$HDF5_URL_ALT"
+          fi
+          
+          echo "Extracting HDF5..."
           tar xzf hdf5-${HDF5_VERSION}.tar.gz
           cd hdf5-${HDF5_VERSION}
+          
+          echo "Configuring HDF5..."
           ./configure --prefix=$HOME/hdf5 --enable-cxx > /dev/null
+          
+          echo "Building HDF5..."
           make -j$(nproc) > /dev/null
           make install > /dev/null
+          
+          echo "HDF5 installation complete"
+        else
+          echo "Using cached HDF5 installation"
         fi
         echo "HDF5_ROOT=$HOME/hdf5" >> $GITHUB_ENV
         echo "$HOME/hdf5/bin" >> $GITHUB_PATH
         echo "LD_LIBRARY_PATH=$HOME/hdf5/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
-    
-    - name: Download and install Saxon-HE
-      run: |
-        if [ ! -d "$HOME/saxon" ]; then
-          mkdir -p $HOME/saxon
-          cd $HOME/saxon
-          wget -q https://github.com/Saxonica/Saxon-HE/releases/download/SaxonHE12-4/SaxonHE12-4J.zip
-          unzip -q SaxonHE12-4J.zip
-        fi
-        echo "SAXON_JAR=$HOME/saxon/saxon-he-12.4.jar" >> $GITHUB_ENV
     
     - name: Configure CMake
       run: |
@@ -174,7 +193,7 @@ jobs:
           -DCMAKE_CXX_STANDARD=17 \
           -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DMatlab_ROOT_DIR=${MATLAB_ROOT} \
-          -DAL_BACKEND_HDF5=ON \
+          -DAL_BACKEND_HDF5=${{ matrix.backend_hdf5 }} \
           -DAL_BACKEND_MDSPLUS=${{ matrix.backend_mdsplus }} \
           -DAL_BACKEND_UDA=${{ matrix.backend_uda }} \
           -DAL_BUILD_MDSPLUS_MODELS=OFF \
@@ -219,7 +238,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts-${{ matrix.os }}-${{ matrix.name }}
+        name: build-artifacts-${{ matrix.name }}
         path: |
           build/CMakeCache.txt
           build/CMakeFiles/CMakeError.log
@@ -231,7 +250,7 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: installation-${{ matrix.os }}-${{ matrix.name }}
+        name: installation-${{ matrix.name }}
         path: install/
         retention-days: 7
 
@@ -254,21 +273,12 @@ jobs:
         sudo apt-get install -y \
           cmake \
           pkg-config \
-          default-jdk \
           wget
     
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install sphinx sphinx-rtd-theme myst-parser sphinx-design
-    
-    - name: Download Saxon-HE
-      run: |
-        mkdir -p $HOME/saxon
-        cd $HOME/saxon
-        wget -q https://github.com/Saxonica/Saxon-HE/releases/download/SaxonHE12-4/SaxonHE12-4J.zip
-        unzip -q SaxonHE12-4J.zip
-        echo "SAXON_JAR=$HOME/saxon/saxon-he-12.4.jar" >> $GITHUB_ENV
     
     - name: Configure CMake for docs only
       run: |
