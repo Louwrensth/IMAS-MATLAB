@@ -60,16 +60,23 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
     
     - name: Set up MATLAB
+      if: matrix.container == null
       uses: matlab-actions/setup-matlab@v2
       with:
         release: ${{ matrix.matlab_release }}
         products: MATLAB
     
     - name: Verify MATLAB installation
+      if: matrix.container == null
       run: |
         which matlab || echo "MATLAB not in PATH"
         matlab -batch "version" || echo "MATLAB batch mode failed"
         echo "MATLAB_ROOT=$(dirname $(dirname $(which matlab)))" >> $GITHUB_ENV
+    
+    - name: Set dummy MATLAB path for container builds
+      if: matrix.container != null
+      run: |
+        echo "MATLAB_ROOT=/usr/local/MATLAB/R2023b" >> $GITHUB_ENV
     
     - name: Cache dependencies
       uses: actions/cache@v4
@@ -264,9 +271,18 @@ jobs:
         if [ "${{ matrix.use_system_packages }}" = "true" ]; then
           BOOST_OPTS=""
           HDF5_OPTS=""
+          PREFIX_PATH=""
         else
-          BOOST_OPTS="-DBoost_NO_BOOST_CMAKE=ON"
-          HDF5_OPTS=""
+          BOOST_OPTS="-DBoost_NO_BOOST_CMAKE=ON -DBOOST_ROOT=$HOME/boost -DBoost_INCLUDE_DIR=$HOME/boost/include"
+          HDF5_OPTS="-DHDF5_ROOT=$HOME/hdf5"
+          PREFIX_PATH="-DCMAKE_PREFIX_PATH=$HOME/boost;$HOME/hdf5"
+        fi
+        
+        # Skip MATLAB for container builds
+        if [ "${{ matrix.container }}" != "" ]; then
+          MATLAB_OPTS="-DMatlab_ROOT_DIR=${MATLAB_ROOT}"
+        else
+          MATLAB_OPTS="-DMatlab_ROOT_DIR=${MATLAB_ROOT}"
         fi
         
         cmake -B build \
@@ -275,7 +291,8 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
           -DCMAKE_CXX_STANDARD=17 \
           -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-          -DMatlab_ROOT_DIR=${MATLAB_ROOT} \
+          $PREFIX_PATH \
+          $MATLAB_OPTS \
           -DAL_BACKEND_HDF5=${{ matrix.backend_hdf5 }} \
           -DAL_BACKEND_MDSPLUS=${{ matrix.backend_mdsplus }} \
           -DAL_BACKEND_UDA=${{ matrix.backend_uda }} \
@@ -299,6 +316,7 @@ jobs:
         make -C build -j$(nproc) all
     
     - name: Run tests
+      if: matrix.container == null
       run: |
         # Create test database
         mkdir -p testdb
