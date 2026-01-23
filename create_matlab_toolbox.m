@@ -11,8 +11,19 @@ if nargin < 4
     error('Usage: create_matlab_toolbox(installDir, outputDir, version, ddVersion)');
 end
 
+% Detect platform
+if ispc
+    platform = 'win64';
+elseif ismac
+    platform = 'macos';
+elseif isunix
+    platform = 'linux64';
+else
+    platform = 'unknown';
+end
+
 % Create full version string
-fullVersionName = sprintf('IMAS-MATLAB/%s-DD-%s', version, ddVersion);
+fullVersionName = sprintf('IMAS-MATLAB/%s-DD-%s-%s', version, ddVersion, platform);
 
 fprintf('Creating %s...\n', fullVersionName);
 
@@ -36,11 +47,11 @@ try
     
     % Create startup script
     fprintf('  Creating startup script...\n');
-    create_startup_script(packDir, version, ddVersion);
+    create_startup_script(packDir, version, ddVersion, platform);
     
     % Create README
     fprintf('  Creating README...\n');
-    create_readme(packDir, version, ddVersion);
+    create_readme(packDir, version, ddVersion, platform);
     
     % Configure toolbox metadata
     fprintf('  Configuring toolbox metadata...\n');
@@ -54,15 +65,15 @@ try
     opts.Summary = sprintf('MATLAB interface for IMAS Access Layer - %s', fullVersionName);
     opts.Description = sprintf(['High Level Interface for accessing IMAS fusion simulation data from MATLAB. ', ...
                         '%s includes all MEX files, MATLAB functions, and required ', ...
-                        'dependencies for Data Dictionary %s.'], ...
-                        fullVersionName, ddVersion);
+                        'dependencies for Data Dictionary %s. Built for %s.'], ...
+                        fullVersionName, ddVersion, platform);
     
     % Add all files from package directory
     opts.ToolboxFiles = {packDir};
     opts.ToolboxMatlabPath = {packDir};
     
-    % Set output file with full version name
-    outputFileName = sprintf('IMAS-MATLAB_%s-DD-%s.mltbx', version, ddVersion);
+    % Set output file with full version name including platform
+    outputFileName = sprintf('IMAS-MATLAB_%s-DD-%s-%s.mltbx', version, ddVersion, platform);
     outputFile = fullfile(outputDir, outputFileName);
     opts.OutputFile = outputFile;
     
@@ -99,10 +110,10 @@ end
 
 end
 
-function create_startup_script(packDir, version, ddVersion)
+function create_startup_script(packDir, version, ddVersion, platform)
 % Create the toolbox startup script
 
-fullVersionName = sprintf('IMAS-MATLAB/%s-DD-%s', version, ddVersion);
+fullVersionName = sprintf('IMAS-MATLAB/%s-DD-%s-%s', version, ddVersion, platform);
 startupFile = fullfile(packDir, 'imas_toolbox_startup.m');
 fid = fopen(startupFile, 'w');
 
@@ -135,15 +146,16 @@ fprintf(fid, 'end\n');
 fclose(fid);
 end
 
-function create_readme(packDir, version, ddVersion)
+function create_readme(packDir, version, ddVersion, platform)
 % Create README file
 
-fullVersionName = sprintf('IMAS-MATLAB/%s-DD-%s', version, ddVersion);
+fullVersionName = sprintf('IMAS-MATLAB/%s-DD-%s-%s', version, ddVersion, platform);
 readmeFile = fullfile(packDir, 'README.md');
 fid = fopen(readmeFile, 'w');
 
 fprintf(fid, '# %s\n\n', fullVersionName);
 fprintf(fid, 'MATLAB High Level Interface to the IMAS Access Layer.\n\n');
+fprintf(fid, '**Platform:** %s\n\n', platform);
 fprintf(fid, '## Installation\n\n');
 fprintf(fid, 'This toolbox is installed via MATLAB Add-On Manager.\n\n');
 fprintf(fid, '## Getting Started\n\n');
