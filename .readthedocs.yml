@@ -14,19 +14,18 @@ build:
     post_checkout:
       # Clone IMAS-Core (only if not already present)
       - |
-        if [ ! -d "$READTHEDOCS_BUILD/IMAS-Core" ]; then
+        if [ ! -d "IMAS-Core" ]; then
           git clone --depth 1 --branch develop \
             https://github.com/iterorganization/IMAS-Core.git \
-            "$READTHEDOCS_BUILD/IMAS-Core"
+            IMAS-Core
         fi
-      # Create symlink from IMAS-Core/common/doc_common to doc/doc_common
-      - mkdir -p "$READTHEDOCS_BUILD/doc"
-      - ln -sfn "$READTHEDOCS_BUILD/IMAS-Core/common/doc_common" "$READTHEDOCS_BUILD/doc/doc_common"
+      - ls -la
+      - ln -sfn ../IMAS-Core/common/doc_common doc/doc_common
       - echo "Created symlink doc/doc_common -> IMAS-Core/common/doc_common"
 
     post_install:
       # Make AL_COMMON_PATH available to the doc build
-      - echo "AL_COMMON_PATH=$READTHEDOCS_BUILD/IMAS-Core/common" >> $READTHEDOCS_ENVIRONMENT
+      - echo "AL_COMMON_PATH=$PWD/IMAS-Core/common" >> $READTHEDOCS_ENV_PATH
       - echo "AL_COMMON_PATH exported"
 
 # Build documentation in the "doc" directory with Sphinx
