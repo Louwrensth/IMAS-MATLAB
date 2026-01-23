@@ -372,6 +372,109 @@ install( TARGETS ${MEX_TARGETS} DESTINATION mex )
 # Install static and generated '.m' files to the mex folder
 install( DIRECTORY matlab/ DESTINATION mex )
 
+# Create MATLAB toolbox folder structure with all necessary files
+if(WIN32)
+  # Install al-mex DLL to toolbox folder
+  install( TARGETS al-mex DESTINATION toolbox RUNTIME DESTINATION toolbox )
+else()
+  # Install al-mex shared library to toolbox folder
+  install( TARGETS al-mex DESTINATION toolbox )
+endif()
+# Install MEX files to toolbox folder
+install( TARGETS ${MEX_TARGETS} DESTINATION toolbox )
+# Install M-files to toolbox folder
+install( DIRECTORY matlab/ DESTINATION toolbox 
+  FILES_MATCHING PATTERN "*.m" )
+
+# Install AL shared library to toolbox folder (if not an alias)
+# The al library comes from al-core and may already be installed
+# Copy runtime dependencies to toolbox during install
+if(WIN32)
+  # On Windows, install runtime DLLs that MEX files depend on
+  install(CODE "
+    file(GLOB AL_RUNTIME_LIBS 
+      \"\${CMAKE_INSTALL_PREFIX}/bin/*.dll\"
+    )
+    foreach(lib IN LISTS AL_RUNTIME_LIBS)
+      file(COPY \"\${lib}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/toolbox\")
+    endforeach()
+    message(STATUS \"Copied runtime libraries to toolbox folder\")
+  ")
+else()
+  # On Linux, install shared libraries that MEX files depend on
+  install(CODE "
+    file(GLOB AL_RUNTIME_LIBS 
+      \"\${CMAKE_INSTALL_PREFIX}/lib/*.so*\"
+    )
+    foreach(lib IN LISTS AL_RUNTIME_LIBS)
+      file(COPY \"\${lib}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/toolbox\")
+    endforeach()
+    message(STATUS \"Copied runtime libraries to toolbox folder\")
+  ")
+endif()
+
+# Copy toolbox packaging script
+install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/create_matlab_toolbox.m
+  DESTINATION . )
+
+# Option to create MATLAB toolbox package during installation
+option(AL_CREATE_TOOLBOX "Automatically create MATLAB toolbox package during installation" ON)
+
+# Get MATLAB executable path
+if(DEFINED Matlab_MAIN_PROGRAM)
+  set(MATLAB_EXECUTABLE "${Matlab_MAIN_PROGRAM}")
+elseif(DEFINED Matlab_ROOT_DIR)
+  if(WIN32)
+    set(MATLAB_EXECUTABLE "${Matlab_ROOT_DIR}/bin/matlab.exe")
+  else()
+    set(MATLAB_EXECUTABLE "${Matlab_ROOT_DIR}/bin/matlab")
+  endif()
+else()
+  # Try to find matlab in PATH
+  find_program(MATLAB_EXECUTABLE matlab)
+endif()
+
+if(MATLAB_EXECUTABLE)
+  message(STATUS "MATLAB executable: ${MATLAB_EXECUTABLE}")
+  
+  # Add custom target to create MATLAB toolbox package
+  # NOTE: This target requires that 'cmake --install' has been run first to create the toolbox folder
+  add_custom_target( matlab-toolbox
+    COMMAND ${CMAKE_COMMAND} -E echo "NOTE: Ensure 'cmake --install' has been run before creating the toolbox package"
+    COMMAND ${CMAKE_COMMAND} -E echo "Looking for toolbox in: ${CMAKE_INSTALL_PREFIX}/toolbox"
+    COMMAND "${MATLAB_EXECUTABLE}" 
+      -batch "create_matlab_toolbox('${CMAKE_INSTALL_PREFIX}', '${CMAKE_BINARY_DIR}', '${PROJECT_VERSION}', '${DD_VERSION}')"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Creating MATLAB toolbox package: IMAS-MATLAB/${PROJECT_VERSION}-DD-${DD_VERSION}"
+    VERBATIM
+  )
+
+  # Optionally run toolbox packaging as part of installation
+  if(AL_CREATE_TOOLBOX)
+    install(CODE "
+      message(STATUS \"Creating MATLAB toolbox package: IMAS-MATLAB/${PROJECT_VERSION}-DD-${DD_VERSION}\")
+      execute_process(
+        COMMAND \"${MATLAB_EXECUTABLE}\"
+          -batch \"create_matlab_toolbox('\${CMAKE_INSTALL_PREFIX}', '${CMAKE_BINARY_DIR}', '${PROJECT_VERSION}', '${DD_VERSION}')\"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE _TOOLBOX_RESULT
+        OUTPUT_VARIABLE _TOOLBOX_OUTPUT
+        ERROR_VARIABLE _TOOLBOX_ERROR
+      )
+      if(_TOOLBOX_RESULT)
+        message(WARNING \"Failed to create MATLAB toolbox package: \${_TOOLBOX_ERROR}\")
+        message(WARNING \"You can create it manually by running: cmake --build . --target matlab-toolbox\")
+      else()
+        message(STATUS \"MATLAB toolbox package created successfully\")
+        message(STATUS \"\${_TOOLBOX_OUTPUT}\")
+      endif()
+    ")
+  endif()
+else()
+  message(WARNING "MATLAB executable not found. Toolbox packaging target will not be available.")
+  message(WARNING "You can manually package the toolbox by running create_matlab_toolbox.m from MATLAB.")
+endif()
+
 # Tests
 ################################################################################
 
