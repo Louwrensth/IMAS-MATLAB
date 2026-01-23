@@ -3,6 +3,8 @@ name: Build and Test
 on:
   push:
     branches: [ main, develop, feature/** ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
@@ -19,7 +21,6 @@ jobs:
   build-linux:
     name: Build on ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container || null }}
     
     strategy:
       fail-fast: false
@@ -35,19 +36,6 @@ jobs:
             backend_uda: OFF
             install_compiler: false  # gcc-14 is default
             use_system_packages: false
-          
-          # Disabled temporarily - uncomment to re-enable
-          # - os: ubuntu-24.04
-          #   name: "AlmaLinux 8 (container)"
-          #   container: almalinux:8
-          #   cc: gcc
-          #   cxx: g++
-          #   matlab_release: R2023b
-          #   backend_hdf5: ON
-          #   backend_mdsplus: ON
-          #   backend_uda: ON
-          #   install_compiler: false
-          #   use_system_packages: true
     
     steps:
     - name: Checkout repository
@@ -56,29 +44,21 @@ jobs:
         fetch-depth: 0
     
     - name: Set up Python
-      if: matrix.container == null
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
     
     - name: Set up MATLAB
-      if: matrix.container == null
       uses: matlab-actions/setup-matlab@v2
       with:
         release: ${{ matrix.matlab_release }}
         products: MATLAB
     
     - name: Verify MATLAB installation
-      if: matrix.container == null
       run: |
         which matlab || echo "MATLAB not in PATH"
         matlab -batch "version" || echo "MATLAB batch mode failed"
         echo "MATLAB_ROOT=$(dirname $(dirname $(which matlab)))" >> $GITHUB_ENV
-    
-    - name: Set dummy MATLAB path for container builds
-      if: matrix.container != null
-      run: |
-        echo "MATLAB_ROOT=/usr/local/MATLAB/R2023b" >> $GITHUB_ENV
     
     - name: Cache pip packages
       uses: actions/cache@v4
@@ -170,19 +150,10 @@ jobs:
     
     - name: Install Python dependencies
       run: |
-        # For containers, use system Python3; otherwise use python from setup-python
-        if [ "${{ matrix.container }}" != "" ]; then
-          # In containers, disable pip cache to avoid permission issues
-          python3 -m pip install --no-cache-dir --upgrade pip
-          python3 -m pip install --no-cache-dir sphinx sphinx-rtd-theme myst-parser sphinx-design
-          # Try to install saxonche, but continue if it fails (not available for all Python versions)
-          python3 -m pip install --no-cache-dir saxonche 2>/dev/null || echo "saxonche not available, continuing without it"
-        else
-          python -m pip install --upgrade pip
-          pip install sphinx sphinx-rtd-theme myst-parser sphinx-design
-          # Try to install saxonche, but continue if it fails (not available for all Python versions)
-          pip install saxonche 2>/dev/null || echo "saxonche not available, continuing without it"
-        fi
+        python -m pip install --upgrade pip
+        pip install sphinx sphinx-rtd-theme myst-parser sphinx-design
+        # Try to install saxonche, but continue if it fails (not available for all Python versions)
+        pip install saxonche 2>/dev/null || echo "saxonche not available, continuing without it"
     
     - name: Build and install UDA
       if: matrix.backend_uda == 'ON' && matrix.use_system_packages == true
@@ -334,12 +305,7 @@ jobs:
           PREFIX_PATH="-DCMAKE_PREFIX_PATH=$HOME/boost;$HOME/hdf5"
         fi
         
-        # Skip MATLAB for container builds
-        if [ "${{ matrix.container }}" != "" ]; then
-          MATLAB_OPTS="-DMatlab_ROOT_DIR=${MATLAB_ROOT}"
-        else
-          MATLAB_OPTS="-DMatlab_ROOT_DIR=${MATLAB_ROOT}"
-        fi
+        MATLAB_OPTS="-DMatlab_ROOT_DIR=${MATLAB_ROOT}"
         
         # Configure CMake with retry logic for git operations
         # Set git retry parameters to handle transient server errors
@@ -385,7 +351,6 @@ jobs:
         make -C build -j$(nproc) all
     
     - name: Run tests
-      if: matrix.container == null
       run: |
         # Create test database
         mkdir -p testdb
@@ -420,6 +385,19 @@ jobs:
       run: |
         make -C build install
     
+    - name: Create MATLAB Toolbox Package
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        # The toolbox is created during installation if AL_CREATE_TOOLBOX is ON (default)
+        # Verify the toolbox file was created
+        echo "Looking for MATLAB toolbox file in build directory:"
+        find build -name "*.mltbx" -type f
+        
+        # Create a known location for the artifact
+        mkdir -p artifacts
+        cp build/*.mltbx artifacts/ || echo "Warning: No toolbox file found"
+        ls -lh artifacts/
+    
     - name: List installed files
       run: |
         ls -lR install/
@@ -443,6 +421,15 @@ jobs:
         name: installation-${{ matrix.name }}
         path: install/
         retention-days: 7
+    
+    - name: Upload MATLAB Toolbox
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/upload-artifact@v4
+      with:
+        name: matlab-toolbox-${{ matrix.name }}
+        path: artifacts/*.mltbx
+        retention-days: 90
+        if-no-files-found: warn
 
   build-docs-only:
     name: Build Documentation Only
@@ -548,3 +535,63 @@ jobs:
         publish_dir: ./doc/_build/html
         destination_dir: docs
         commit_message: 'docs: update documentation from ${{ github.sha }}'
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-linux]
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Download MATLAB Toolbox artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: matlab-toolbox-*
+        path: release-artifacts
+        merge-multiple: true
+    
+    - name: List downloaded artifacts
+      run: |
+        echo "Downloaded artifacts:"
+        ls -lR release-artifacts/
+    
+    - name: Extract version from tag
+      id: version
+      run: |
+        TAG_NAME=${GITHUB_REF#refs/tags/}
+        echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
+        echo "version=${TAG_NAME#v}" >> $GITHUB_OUTPUT
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release ${{ steps.version.outputs.tag }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: |
+          release-artifacts/*.mltbx
+        body: |
+          ## IMAS-MATLAB Release ${{ steps.version.outputs.version }}
+          
+          This release includes the MATLAB toolbox package for IMAS Access Layer.
+          
+          ### Installation
+          
+          Download the `.mltbx` file for your platform and double-click it in MATLAB to install, or use:
+          ```matlab
+          matlab.addons.toolbox.installToolbox('IMAS-MATLAB_<version>.mltbx')
+          ```
+          
+          ### What's Changed
+          
+          See the full changelog below.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
