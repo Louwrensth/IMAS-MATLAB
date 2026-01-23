@@ -19,15 +19,11 @@ build:
             https://github.com/iterorganization/IMAS-Core.git \
             IMAS-Core
         fi
+      - ls -la
       - ln -sfn $PWD/IMAS-Core/common/doc_common $PWD/doc/doc_common
       - ls -la doc/
       - ls -la doc/doc_common/
       - echo "Created symlink doc/doc_common -> IMAS-Core/common/doc_common"
-
-    post_install:
-      # Make AL_COMMON_PATH available to the doc build
-      - echo "AL_COMMON_PATH=$PWD/IMAS-Core/common" >> $READTHEDOCS_ENV_PATH
-      - echo "AL_COMMON_PATH exported"
 
 # Build documentation in the "doc" directory with Sphinx
 sphinx:
