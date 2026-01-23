@@ -19,8 +19,9 @@ build:
             https://github.com/iterorganization/IMAS-Core.git \
             IMAS-Core
         fi
-      - ls -la
-      - ln -sfn ../IMAS-Core/common/doc_common doc/doc_common
+      - ln -sfn $PWD/IMAS-Core/common/doc_common $PWD/doc/doc_common
+      - ls -la doc/
+      - ls -la doc/doc_common/
       - echo "Created symlink doc/doc_common -> IMAS-Core/common/doc_common"
 
     post_install:
