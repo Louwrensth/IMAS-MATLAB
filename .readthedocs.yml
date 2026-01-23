@@ -19,12 +19,10 @@ build:
             https://github.com/iterorganization/IMAS-Core.git \
             "$READTHEDOCS_BUILD/IMAS-Core"
         fi
-
       # Create symlink from IMAS-Core/common/doc_common to doc/doc_common
       - mkdir -p "$READTHEDOCS_BUILD/doc"
-      - ln -sfn "$READTHEDOCS_BUILD/IMAS-Core/common/doc_common" \
-               "$READTHEDOCS_BUILD/doc/doc_common"
-      - echo "Created symlink: doc/doc_common -> IMAS-Core/common/doc_common"
+      - ln -sfn "$READTHEDOCS_BUILD/IMAS-Core/common/doc_common" "$READTHEDOCS_BUILD/doc/doc_common"
+      - echo "Created symlink doc/doc_common -> IMAS-Core/common/doc_common"
 
     post_install:
       # Make AL_COMMON_PATH available to the doc build
