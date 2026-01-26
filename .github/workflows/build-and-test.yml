@@ -452,10 +452,23 @@ jobs:
         release: R2023b
         products: MATLAB
     
+    - name: Setup vcpkg binary cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/vcpkg_cache
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-${{ github.sha }}
+        restore-keys: |
+          vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-
+          vcpkg-${{ runner.os }}-
+    
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: 'a42af01b72c28a8e1d7b48107b33e4f286a55ef6'
+      env:
+        VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg_cache,readwrite'
     
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
@@ -465,26 +478,68 @@ jobs:
     - name: Configure CMake
       shell: pwsh
       run: |
-        # Configure CMake with vcpkg toolchain
-        cmake -B build -S . `
-          -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install" `
-          -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-          -DVCPKG=ON `
-          -DAL_DOWNLOAD_DEPENDENCIES=ON `
-          -DAL_CORE_GIT_REPOSITORY="https://github.com/iterorganization/IMAS-Core.git" `
-          -DDD_GIT_REPOSITORY="https://github.com/iterorganization/IMAS-Data-Dictionary.git" `
-          -DAL_CORE_VERSION=develop `
-          -DDD_VERSION=main `
-          -DAL_EXAMPLES=ON `
-          -DAL_TESTS=OFF `
-          -DAL_PLUGINS=OFF `
-          -DAL_HLI_DOCS=OFF `
-          -DAL_DOCS_ONLY=OFF `
-          -DAL_BACKEND_HDF5=ON `
-          -DAL_BACKEND_MDSPLUS=OFF `
-          -DAL_BACKEND_UDA=OFF `
-          -DAL_BACKEND_UDAFAT=OFF `
-          -DAL_PYTHON_BINDINGS=OFF
+        # Set vcpkg environment variables to avoid download issues
+        $env:VCPKG_BINARY_SOURCES = "clear;files,${{ github.workspace }}/vcpkg_cache,readwrite"
+        $env:VCPKG_MAX_CONCURRENCY = "1"
+        $env:VCPKG_DOWNLOADS = "${{ github.workspace }}/vcpkg_downloads"
+        
+        # Create directories
+        New-Item -ItemType Directory -Force -Path vcpkg_cache | Out-Null
+        New-Item -ItemType Directory -Force -Path vcpkg_downloads | Out-Null
+        
+        # Configure CMake with vcpkg toolchain and retry logic
+        $maxAttempts = 3
+        $attempt = 1
+        $success = $false
+        
+        while (-not $success -and $attempt -le $maxAttempts) {
+          Write-Host "CMake configuration attempt $attempt of $maxAttempts..."
+          
+          try {
+            cmake -B build -S . `
+              -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install" `
+              -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+              -DVCPKG=ON `
+              -DVCPKG_INSTALL_OPTIONS="--clean-after-build" `
+              -DAL_DOWNLOAD_DEPENDENCIES=ON `
+              -DAL_CORE_GIT_REPOSITORY="https://github.com/iterorganization/IMAS-Core.git" `
+              -DDD_GIT_REPOSITORY="https://github.com/iterorganization/IMAS-Data-Dictionary.git" `
+              -DAL_CORE_VERSION=develop `
+              -DDD_VERSION=main `
+              -DAL_EXAMPLES=ON `
+              -DAL_TESTS=OFF `
+              -DAL_PLUGINS=OFF `
+              -DAL_HLI_DOCS=OFF `
+              -DAL_DOCS_ONLY=OFF `
+              -DAL_BACKEND_HDF5=ON `
+              -DAL_BACKEND_MDSPLUS=OFF `
+              -DAL_BACKEND_UDA=OFF `
+              -DAL_BACKEND_UDAFAT=OFF `
+              -DAL_PYTHON_BINDINGS=OFF
+            
+            if ($LASTEXITCODE -eq 0) {
+              $success = $true
+              Write-Host "CMake configuration succeeded!"
+            } else {
+              throw "CMake returned exit code $LASTEXITCODE"
+            }
+          } catch {
+            Write-Host "CMake configuration failed: $_"
+            if ($attempt -lt $maxAttempts) {
+              Write-Host "Waiting 15 seconds before retry..."
+              Start-Sleep -Seconds 15
+              # Clean up failed build directory
+              if (Test-Path build) {
+                Remove-Item -Path build -Recurse -Force -ErrorAction SilentlyContinue
+              }
+            } else {
+              Write-Host "CMake configuration failed after $maxAttempts attempts"
+              exit 1
+            }
+          }
+          
+          $attempt++
+        }
     
     - name: Build
       shell: pwsh
