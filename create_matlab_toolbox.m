@@ -94,7 +94,7 @@ try
     fprintf('\n--- Installation Instructions ---\n');
     fprintf('1. Double-click: %s\n', outputFile);
     fprintf('   OR\n');
-    fprintf('2. Run: matlab -batch "matlab.addons.install(''%s'')"\n', outputFile);
+    fprintf('2. Run: matlab -batch "matlab.addons.install(''%s'')"\n', outputFileName);
     
     % Clean up temp directory
     fprintf('\n  Cleaning up temporary files...\n');
