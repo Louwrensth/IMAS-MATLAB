@@ -8,7 +8,15 @@ get_target_property( M_FOLDER al-mex SOURCE_DIR )
 set( M_FOLDER ${M_FOLDER}/matlab )
 
 if( AL_BACKEND_MDSPLUS )
-  get_target_property( MDSPLUS_MODEL_DIR al-mdsplus-model BINARY_DIR )
+  if( TARGET al-mdsplus-model )
+    get_target_property( MDSPLUS_MODEL_DIR al-mdsplus-model BINARY_DIR )
+  else()
+    if( DEFINED ENV{MDSPLUS_MODELS_PATH} )
+      set( MDSPLUS_MODEL_DIR "$ENV{MDSPLUS_MODELS_PATH}" )
+    else()
+      set( MDSPLUS_MODEL_DIR "$ENV{ids_path}" )
+    endif()
+  endif()
 endif()
 
 # Examples that use MDSplus backend

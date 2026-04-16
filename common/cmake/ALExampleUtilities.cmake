@@ -5,7 +5,9 @@ set( EXAMPLE_ENVIRONMENT_WITHOUT_PLUGINS
 )
 
 if( AL_PLUGINS )
-  get_target_property( PLUGIN_DIR al-plugins BINARY_DIR )
+  if( TARGET al-plugins )
+    get_target_property( PLUGIN_DIR al-plugins BINARY_DIR )
+  endif()
   set( EXAMPLE_ENVIRONMENT_WITH_PLUGINS 
     ${TEST_ENVIRONMENT}
     "IMAS_AL_ENABLE_PLUGINS=TRUE"

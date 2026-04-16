@@ -4,7 +4,15 @@ set( LIB_FOLDER ${CMAKE_CURRENT_BINARY_DIR}/../ )
 set( M_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../matlab )
 
 if( AL_BACKEND_MDSPLUS )
-  get_target_property( MDSPLUS_MODEL_DIR al-mdsplus-model BINARY_DIR )
+  if( TARGET al-mdsplus-model )
+    get_target_property( MDSPLUS_MODEL_DIR al-mdsplus-model BINARY_DIR )
+  else()
+    if( DEFINED ENV{MDSPLUS_MODELS_PATH} )
+      set( MDSPLUS_MODEL_DIR "$ENV{MDSPLUS_MODELS_PATH}" )
+    else()
+      set( MDSPLUS_MODEL_DIR "$ENV{ids_path}" )
+    endif()
+  endif()
 endif()
 
 add_test( NAME al-mex-test 
@@ -31,24 +39,26 @@ set_tests_properties( al-mex-test PROPERTIES
 )
 
 if( AL_PLUGINS )
-  add_test( NAME al-partial-get-test 
-    COMMAND
-      ${Matlab_MAIN_PROGRAM}
-        -nodisplay
-        -batch "addpath ${LIB_FOLDER} ${M_FOLDER}; res = runtests('imas_partial_get_tests');exit(~all([res.Passed]))"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  )
-  get_target_property( PLUGIN_DIR al-plugins BINARY_DIR )
-  set( ENVIRONMENT_WITH_PLUGINS 
-    ${MATLAB_ENV}
-    "IMAS_AL_ENABLE_PLUGINS=TRUE"
-    "IMAS_AL_PLUGINS=${PLUGIN_DIR}"
-  )
+  if( TARGET al-plugins )
+    add_test( NAME al-partial-get-test 
+      COMMAND
+        ${Matlab_MAIN_PROGRAM}
+          -nodisplay
+          -batch "addpath ${LIB_FOLDER} ${M_FOLDER}; res = runtests('imas_partial_get_tests');exit(~all([res.Passed]))"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    get_target_property( PLUGIN_DIR al-plugins BINARY_DIR )
+    set( ENVIRONMENT_WITH_PLUGINS 
+      ${MATLAB_ENV}
+      "IMAS_AL_ENABLE_PLUGINS=TRUE"
+      "IMAS_AL_PLUGINS=${PLUGIN_DIR}"
+    )
 
-  set_tests_properties( al-partial-get-test PROPERTIES
-    TIMEOUT 3600
-    ENVIRONMENT "${ENVIRONMENT_WITH_PLUGINS}"
-  )
+    set_tests_properties( al-partial-get-test PROPERTIES
+      TIMEOUT 3600
+      ENVIRONMENT "${ENVIRONMENT_WITH_PLUGINS}"
+    )
+  endif()
 endif()
 
 # Tests require at least one backend (HDF5 or MDSPLUS)
